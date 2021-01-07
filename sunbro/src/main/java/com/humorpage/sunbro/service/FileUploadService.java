@@ -2,6 +2,7 @@ package com.humorpage.sunbro.service;
 
 import com.humorpage.sunbro.model.UploadFile;
 import com.humorpage.sunbro.respository.FileUploadRepository;
+import com.humorpage.sunbro.result.SingleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,21 +18,23 @@ public class FileUploadService {
     private String uploadFolderPath = "C://Users/tjsh0/sunbro/";
 
     @Autowired
+    private ResponseService responseService;
+
+    @Autowired
     private FileUploadRepository fileUploadRepository;
 
-    public void uploadToLocal(MultipartFile file) {
-
+    public SingleResult<String> uploadToLocal(MultipartFile file) {
         try {
             byte[] data = file.getBytes();
 
             Path path = Paths.get(uploadFolderPath + file.getOriginalFilename());
             Files.write(path, data);
-            System.out.print(file);
             System.out.print(path);
+            return responseService.getSingleResult(path.toString());
         } catch (IOException e) {
             e.printStackTrace();
+            return responseService.getSingleResult(null);
         }
-
     }
 
     public UploadFile uploadToDb(MultipartFile file) {

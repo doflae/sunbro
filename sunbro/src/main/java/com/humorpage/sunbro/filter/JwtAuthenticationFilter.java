@@ -6,11 +6,13 @@ import com.humorpage.sunbro.provider.JwtTokenProvider;
 import com.humorpage.sunbro.provider.RedisProvider;
 import com.humorpage.sunbro.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -21,7 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 // import 생략
-
+@Slf4j
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -36,8 +39,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private RedisProvider redisProvider;
 
-    // Jwt Provier 주입
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    //Provier 주입
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CookieProvider cookieProvider, RedisProvider redisProvider) {
+        this.cookieProvider = cookieProvider;
+        this.redisProvider = redisProvider;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -66,6 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }catch (ExpiredJwtException e){
+            System.out.print("ACCESS_TOKEN Expired");
             Cookie refreshToken = CookieProvider.getCookie(httpServletRequest,JwtTokenProvider.REFRESH_TOKEN_NAME);
             if(refreshToken!=null){
                 refreshJwt = refreshToken.getValue();

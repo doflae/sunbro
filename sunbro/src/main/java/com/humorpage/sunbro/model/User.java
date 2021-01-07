@@ -1,6 +1,7 @@
 package com.humorpage.sunbro.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,7 +41,8 @@ public class User implements UserDetails {
     private List<String> roles = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Board> boards = new ArrayList<>();
 
     @Override

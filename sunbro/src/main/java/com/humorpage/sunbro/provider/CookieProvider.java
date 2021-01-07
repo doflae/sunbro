@@ -1,8 +1,11 @@
 package com.humorpage.sunbro.provider;
 
+import org.springframework.stereotype.Service;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+@Service
 public class CookieProvider {
     public static Cookie createCookie(String cookieName, String value){
         Cookie token = new Cookie(cookieName,value);
