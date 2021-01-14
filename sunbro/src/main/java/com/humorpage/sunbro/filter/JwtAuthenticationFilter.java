@@ -40,10 +40,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private RedisProvider redisProvider;
 
     //Provier 주입
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CookieProvider cookieProvider, RedisProvider redisProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CookieProvider cookieProvider, RedisProvider redisProvider, UserService userService) {
         this.cookieProvider = cookieProvider;
         this.redisProvider = redisProvider;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.userService = userService;
     }
 
     @Override
@@ -71,7 +72,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }catch (ExpiredJwtException e){
-            System.out.print("ACCESS_TOKEN Expired");
             Cookie refreshToken = CookieProvider.getCookie(httpServletRequest,JwtTokenProvider.REFRESH_TOKEN_NAME);
             if(refreshToken!=null){
                 refreshJwt = refreshToken.getValue();

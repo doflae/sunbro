@@ -3,6 +3,7 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.model.UploadFile;
 import com.humorpage.sunbro.response.FileUploadResponse;
+import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("/api")
 public class FileUploadApiController {
@@ -24,8 +27,8 @@ public class FileUploadApiController {
 
 
     @PostMapping("/upload/local")
-    public void upload(@RequestParam("file") MultipartFile multipartFile) {
-        fileUploadService.uploadToLocal(multipartFile);
+    public SingleResult<String> upload(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest req) {
+        return fileUploadService.uploadToLocal(multipartFile, req);
     }
 
     @PostMapping("/upload/db")

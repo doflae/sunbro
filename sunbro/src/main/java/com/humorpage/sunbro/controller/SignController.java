@@ -4,6 +4,7 @@ import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.provider.CookieProvider;
 import com.humorpage.sunbro.provider.JwtTokenProvider;
+import com.humorpage.sunbro.provider.RedisProvider;
 import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.SingleResult;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 
@@ -42,11 +42,13 @@ public class SignController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RedisProvider redisProvider;
+
     @ApiOperation(value = "로그인", notes = "이메일 회원 로그인을 한다.")
     @PostMapping(value = "/signin")
     public SingleResult<String> signin(@ApiParam(value = "회원ID ", required = true) @RequestParam String uid,
                                @ApiParam(value = "비밀번호", required = true) @RequestParam String password,
-                               HttpServletRequest req,
                                HttpServletResponse res) {
         System.out.print(uid+password);
         try{
@@ -54,9 +56,10 @@ public class SignController {
             if (!passwordEncoder.matches(password, user.getPassword()))
                 throw new CIdSigninFailedException();
             final String token = jwtTokenProvider.generateToken(user);
-            final String refreshtoken = jwtTokenProvider.generateRefreshToken(user);
+            final String refreshjwt = jwtTokenProvider.generateRefreshToken(user);
             Cookie accessToken = CookieProvider.createCookie(JwtTokenProvider.ACCESS_TOKEN_NAME, token);
-            Cookie refreshToken = CookieProvider.createCookie(JwtTokenProvider.REFRESH_TOKEN_NAME, refreshtoken);
+            Cookie refreshToken = CookieProvider.createCookie(JwtTokenProvider.REFRESH_TOKEN_NAME, refreshjwt);
+            redisProvider.setDataExpire(refreshjwt,user.getUid(),JwtTokenProvider.RefreshtokenValidMilisecond);
             res.addCookie(accessToken);
             res.addCookie(refreshToken);
             return responseService.getSingleResult(token);
