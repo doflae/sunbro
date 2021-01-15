@@ -36,10 +36,13 @@ public class FileUploadService {
     public SingleResult<String> uploadToLocal(MultipartFile file, HttpServletRequest req) {
         try {
             byte[] data = file.getBytes();
-
-            String uploadFolderPath = "C:/Users/tjsh0/Desktop/React_project/humorpage/humorpage/public/images/";
+            String uploadFolderPath;
             String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
-            System.out.print(tmp[tmp.length-1]);
+            if (tmp[0].equals("image")){
+                uploadFolderPath = "C:/Users/tjsh0/Desktop/React_project/humorpage/humorpage/public/images/";
+            }else{
+                uploadFolderPath = "C:/Users/tjsh0/Desktop/React_project/humorpage/humorpage/public/videos/";
+            }
             String filename = filenameGenerate()+"."+tmp[tmp.length-1];
             Path path = Paths.get(uploadFolderPath + filename);
             Files.write(path, data);
