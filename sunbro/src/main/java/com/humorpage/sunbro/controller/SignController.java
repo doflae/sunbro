@@ -7,7 +7,6 @@ import com.humorpage.sunbro.provider.JwtTokenProvider;
 import com.humorpage.sunbro.provider.RedisProvider;
 import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.result.CommonResult;
-import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.ResponseService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -47,10 +46,9 @@ public class SignController {
 
     @ApiOperation(value = "로그인", notes = "이메일 회원 로그인을 한다.")
     @PostMapping(value = "/signin")
-    public SingleResult<String> signin(@ApiParam(value = "회원ID ", required = true) @RequestParam String uid,
+    public CommonResult signin(@ApiParam(value = "회원ID ", required = true) @RequestParam String uid,
                                @ApiParam(value = "비밀번호", required = true) @RequestParam String password,
                                HttpServletResponse res) {
-        System.out.print(uid+password);
         try{
             final User user = repository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
             if (!passwordEncoder.matches(password, user.getPassword()))
@@ -62,10 +60,10 @@ public class SignController {
             redisProvider.setDataExpire(refreshjwt,user.getUid(),JwtTokenProvider.RefreshtokenValidMilisecond);
             res.addCookie(accessToken);
             res.addCookie(refreshToken);
-            return responseService.getSingleResult(token);
+            return responseService.getSuccessResult();
         }catch (Exception e){
             System.out.print(e);
-            return responseService.getSingleResult(null);
+            return responseService.getFailResult();
         }
     }
 

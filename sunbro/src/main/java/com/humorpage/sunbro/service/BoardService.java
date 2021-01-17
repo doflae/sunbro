@@ -23,8 +23,6 @@ public class BoardService {
         User user = userRepository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
         board.setUser(user);
         return boardRepository.save(board);
-
-
     }
 
 

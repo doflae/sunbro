@@ -18,7 +18,6 @@ public class BoardVaildator implements Validator {
         Board b = (Board) obj;
         if (StringUtils.isEmpty(b.getContent())){
             errors.rejectValue("content","key","내용을 입력하세요");
-
         }
 
     }

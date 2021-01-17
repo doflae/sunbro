@@ -2,8 +2,11 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.respository.BoardRepository;
+import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.BoardService;
+import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.vaildator.BoardVaildator;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -30,6 +33,9 @@ public class BoardController {
     @Autowired
     private BoardVaildator boardVaildator;
 
+    @Autowired
+    private ResponseService responseService;
+
     @GetMapping("/list")
     public String list(Model model){
       List<Board> boards = boardRepository.findAll();
@@ -51,17 +57,15 @@ public class BoardController {
 
         return "board/form";
     }
-
-    @PostMapping("/form")
-    public String postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
+    @ApiOperation(value = "업로드", notes="html코드를 받아 최종적으로 업로드한다.")
+    @PostMapping(value = "/form")
+    public CommonResult postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
         boardVaildator.validate(board, bindingResult);
         if (bindingResult.hasErrors()){
-            return "board/form";
-
+            return responseService.getFailResult();
         }
         String username = authentication.getName();
         boardService.save(username, board);
-//        boardRepository.save(board);
-        return "redirect:/board/list";
+        return responseService.getSuccessResult();
     }
 }
