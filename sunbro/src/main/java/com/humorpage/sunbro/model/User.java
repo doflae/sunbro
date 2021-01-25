@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private long msrl;
     @Column(nullable = false, unique = true, length = 30)
     private String uid;
@@ -38,6 +39,7 @@ public class User implements UserDetails {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
+    @JsonIgnore
     private List<String> roles = new ArrayList<>();
 
 
@@ -46,6 +48,7 @@ public class User implements UserDetails {
     private List<Board> boards = new ArrayList<>();
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
