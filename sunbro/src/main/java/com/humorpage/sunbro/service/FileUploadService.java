@@ -1,7 +1,5 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.model.UploadFile;
-import com.humorpage.sunbro.respository.FileUploadRepository;
 import com.humorpage.sunbro.result.SingleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,8 +19,6 @@ public class FileUploadService {
     @Autowired
     private ResponseService responseService;
 
-    @Autowired
-    private FileUploadRepository fileUploadRepository;
 
     private static final SecureRandom random = new SecureRandom();
     public static String filenameGenerate(){
@@ -52,28 +48,5 @@ public class FileUploadService {
             System.out.print("hi");
             return responseService.getSingleResult(null);
         }
-    }
-
-    public UploadFile uploadToDb(MultipartFile file) {
-
-        UploadFile uploadFile = new UploadFile();
-        try {
-            uploadFile.setFileData(file.getBytes());
-            uploadFile.setFileType(file.getContentType());
-            uploadFile.setFileName(file.getOriginalFilename());
-            UploadFile uploadFileToRet = fileUploadRepository.save(uploadFile);
-            return uploadFileToRet;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-    }
-
-    public UploadFile downloadFile(String fileId){
-        UploadFile uploadFileToRet = fileUploadRepository.getOne(fileId);
-
-        return uploadFileToRet;
-
     }
 }

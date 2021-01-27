@@ -58,6 +58,7 @@ public class BoardController {
     public CommonResult postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
         boardVaildator.validate(board, bindingResult);
         if (bindingResult.hasErrors()){
+            //bindingResult에 오류 내역있으니 뽑아서 응답에 넣고 프론트에서 처리하는 걸로
             return responseService.getFailResult();
         }
         String username = authentication.getName();

@@ -1,36 +1,30 @@
 package com.humorpage.sunbro.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.humorpage.sunbro.model.Audit.DateAudit;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
-@Getter
-@Setter
 @Entity
+@Data
 @Table(name="comment")
-public class Comment extends DateAudit {
+public class Comment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name ="cno")
-    private Integer cno;
+    private long id;
 
-    private String user;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    private String comment;
+    @NotNull
+    private String content;
 
+    //JsonBackReference는 직렬화를 수행하지 않는 곳에 붙인다
     @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="epi_id")
+    @ManyToOne
+    @JoinColumn(name="board_id")
     private Board board;
-
-    public Comment(){
-    }
-
-    public Comment(String user, String comment){
-        this.user= user;
-        this.comment = comment;
-    }
 }
