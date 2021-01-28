@@ -2,9 +2,12 @@ package com.humorpage.sunbro.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -27,4 +30,13 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name="board_id")
     private Board board;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "created")
+    @CreationTimestamp
+    private LocalDateTime created;
+
+    @GeneratedValue
+    @Column(name ="updated")
+    private LocalDateTime updated;
 }

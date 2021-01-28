@@ -1,20 +1,23 @@
 package com.humorpage.sunbro.controller;
 
+import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.respository.BoardRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.BoardService;
+import com.humorpage.sunbro.service.LikesService;
 import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.vaildator.BoardVaildator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/board")
@@ -32,27 +35,10 @@ public class BoardController {
     @Autowired
     private ResponseService responseService;
 
-    @GetMapping("/list")
-    public String list(Model model){
-      List<Board> boards = boardRepository.findAll();
-      model.addAttribute("boards", boards);
-    return "board/list";
-
-    }
-
-    @GetMapping("/form")
-    public String form(Model model, @RequestParam(required = false)Long id){
-        if (id == null){
-            model.addAttribute("board", new Board());
+    @Autowired
+    private LikesService likesService;
 
 
-        }else {
-            Board board = boardRepository.findById(id).orElse(null);
-            model.addAttribute("board", board);
-        }
-
-        return "board/form";
-    }
     @ApiOperation(value = "업로드", notes="html코드를 받아 최종적으로 업로드한다.")
     @PostMapping(value = "/form")
     public CommonResult postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
@@ -65,5 +51,17 @@ public class BoardController {
         boardService.save(username, board);
         return responseService.getSuccessResult();
     }
+    @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on/off")
+    @PostMapping(value = "/like")
+    public CommonResult likeBoard(@RequestParam("board_id") Long board_id, Authentication authentication){
+        String uid = authentication.getName();
+        try{
+            likesService.save(uid,board_id);
+            return responseService.getSuccessResult();
+        }catch (CIdSigninFailedException e){
+            return responseService.getFailResult();
+        }
+    }
+
 
 }

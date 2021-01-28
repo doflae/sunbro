@@ -43,13 +43,28 @@ public class User implements UserDetails {
     private List<String> roles = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Board> boards = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Comment> comments = new ArrayList<>();
+//
+//    @JsonBackReference
+//    @ManyToMany(
+//            cascade = CascadeType.REMOVE
+//    )
+//    @JoinTable(
+//            name="user_board",
+//            joinColumns = @JoinColumn(name = "user_id"),
+//            inverseJoinColumns = @JoinColumn(name = "board_id")
+//    )
+//    private List<Board> likedBoards = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Likes> likes = new ArrayList<>();
 
     @Override
     @JsonIgnore

@@ -1,11 +1,15 @@
 package com.humorpage.sunbro.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +27,29 @@ public class Board {
     private String title;
     private String content;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "created")
+    @CreationTimestamp
+    private LocalDateTime created;
+
+    @GeneratedValue
+    @Column(name ="updated")
+    private LocalDateTime updated;
+
+    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Likes> likes = new ArrayList<>();
+
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "author_id")
+    private User author;
+//
+//    @JsonManagedReference
+//    @ManyToMany(
+//            cascade = CascadeType.REMOVE,
+//            mappedBy = "likedBoards"
+//    )
+//    private List<User> likedUsers = new ArrayList<>();
 
     //Board->Comment관계와 Comment->Board관계에 의해 서로를 계속 직렬화 -> 무한루프 오류
     //(그냥 본인 조회할때 반대편으로도 조회한다고 생각)
