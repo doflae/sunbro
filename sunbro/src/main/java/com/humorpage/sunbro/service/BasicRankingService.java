@@ -1,7 +1,7 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.model.Board;
-import com.humorpage.sunbro.respository.BoardRepository;
+import com.humorpage.sunbro.model.BoardThumbnail;
+import com.humorpage.sunbro.respository.BoardThumbnailRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,33 +18,33 @@ public class BasicRankingService implements RankingService {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private BoardRepository boardRepository;
+    private BoardThumbnailRepository boardThumbnailRepository;
 
     @Autowired
     private RedisTemplate redisTemplate;
 
     @Override
-    public List<Board> getRanking(RankingType type){
+    public List<BoardThumbnail> getRanking(RankingType type){
         LocalDateTime now = LocalDateTime.now();
-        List<Board> boards;
+        List<BoardThumbnail> boards;
         switch (type){
             case ALL:
-                boards = boardRepository.findAll();
+                boards = boardThumbnailRepository.findAll();
                 break;
             case WEEK:
-                boards = boardRepository.findByCreatedGreaterThan(now.minusDays(7));
+                boards = boardThumbnailRepository.findByCreatedGreaterThan(now.minusDays(7));
                 break;
             case MONTH:
-                boards =  boardRepository.findByCreatedGreaterThan(now.minusMonths(1));
+                boards =  boardThumbnailRepository.findByCreatedGreaterThan(now.minusMonths(1));
                 break;
             case DAILY:
-                boards = boardRepository.findByCreatedGreaterThan(now.minusDays(1));
+                boards = boardThumbnailRepository.findByCreatedGreaterThan(now.minusDays(1));
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
         }
         return boards.stream()
-                .sorted(Comparator.comparing(Board::getBoardlikesLength).reversed())
+                .sorted(Comparator.comparing(BoardThumbnail::getLikes).reversed())
                 .collect(Collectors.toList());
     }
 }

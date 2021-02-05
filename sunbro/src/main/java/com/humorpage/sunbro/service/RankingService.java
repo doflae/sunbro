@@ -1,11 +1,11 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.model.Board;
+import com.humorpage.sunbro.model.BoardThumbnail;
 
 import java.util.List;
 
 public interface RankingService {
     String RANKING_GETTING_KEY = "ranking:get";
 
-    List<Board> getRanking(RankingType type);
+    List<BoardThumbnail> getRanking(RankingType type);
 }

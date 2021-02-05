@@ -2,12 +2,15 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Board;
+import com.humorpage.sunbro.model.BoardThumbnail;
+import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.respository.BoardRepository;
+import com.humorpage.sunbro.respository.BoardThumbnailRepository;
+import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.result.CommonResult;
-import com.humorpage.sunbro.service.BoardService;
-import com.humorpage.sunbro.service.CacheRankingService;
-import com.humorpage.sunbro.service.LikesService;
-import com.humorpage.sunbro.service.ResponseService;
+import com.humorpage.sunbro.result.ListResult;
+import com.humorpage.sunbro.result.SingleResult;
+import com.humorpage.sunbro.service.*;
 import com.humorpage.sunbro.vaildator.BoardVaildator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.util.StringUtils;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -25,6 +29,12 @@ public class BoardController {
 
     @Autowired
     private BoardRepository boardRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BoardThumbnailRepository boardThumbnailRepository;
 
     @Autowired
     private BoardService boardService;
@@ -67,13 +77,53 @@ public class BoardController {
     }
 
     @GetMapping("/recently")
-    List<Board> recently(@RequestParam(value = "board_id",required = false) Long board_id){
+    List<BoardThumbnail> recently(@RequestParam(value = "board_id",required = false) Long board_id){
         if(board_id==null){
-            System.out.println("withoutkey");
-            return boardRepository.findRecentlyWithoutId(PageRequest.of(0,10));
+            return boardThumbnailRepository.findByOrderByIdDesc(PageRequest.of(0,10));
         }else{
-            return boardRepository.findRecentlyWithId(board_id, PageRequest.of(0,10));
+            return boardThumbnailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,10));
         }
     }
 
+    @GetMapping("/rank")
+    List<BoardThumbnail> ranked(@RequestParam(required = false, defaultValue = "DAILY") RankingType rankType){
+        return cacheRankingService.getRanking(rankType);
+    }
+
+    @GetMapping("/boards/detail")
+    SingleResult<Board> detail(@RequestParam(required = true,value = "board_id") Long id){
+
+        try {
+            Board board = boardRepository.findById(id).orElseThrow(CIdSigninFailedException::new);
+            return responseService.getSingleResult(board);
+        }
+        catch (CIdSigninFailedException e){
+            return (SingleResult<Board>) responseService.getFailResult();
+        }
+
+    }
+
+    @GetMapping("/boards/search")
+    ListResult<BoardThumbnail> all(@RequestParam(required = false, defaultValue = "") String title,
+                   @RequestParam(required = false, defaultValue = "") String uid,
+                   @RequestParam(required = false, defaultValue = "") String content) {
+        if (StringUtils.isEmpty(title) && StringUtils.isEmpty(content) && StringUtils.isEmpty(uid)) {
+            return (ListResult<BoardThumbnail>) responseService.getFailResult();
+        }
+        else if(StringUtils.isEmpty(title) && StringUtils.isEmpty(content)){
+            try{
+                User user = userRepository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
+                return responseService.getListResult(user.getBoards());
+            }
+            catch (CIdSigninFailedException e){
+                return (ListResult<BoardThumbnail>) responseService.getFailResult();
+            }
+        }
+        else if(StringUtils.isEmpty(title) && StringUtils.isEmpty(uid)){
+            return responseService.getListResult(boardThumbnailRepository.findByContent(content));
+        }
+        else {
+            return responseService.getListResult(boardThumbnailRepository.findByTitle(title));
+        }
+    }
 }

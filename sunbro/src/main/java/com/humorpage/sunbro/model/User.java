@@ -42,7 +42,7 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<Board> boards = new ArrayList<>();
+    private List<BoardThumbnail> boards = new ArrayList<>();
 
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     @JsonIgnore
@@ -64,7 +64,7 @@ public class User implements UserDetails {
         return list;
     }
 
-    public List<Board> getBoards(){
+    public List<BoardThumbnail> getBoards(){
         return this.boards;
     }
 

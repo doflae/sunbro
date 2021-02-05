@@ -1,8 +1,6 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.model.Board;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.humorpage.sunbro.model.BoardThumbnail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -16,7 +14,6 @@ import static java.lang.String.format;
 
 @Service
 public class CacheRankingService implements RankingService{
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private BasicRankingService rankingService;
@@ -25,13 +22,13 @@ public class CacheRankingService implements RankingService{
     private RedisTemplate redisTemplate;
 
     @Override
-    public List<Board> getRanking(RankingType type){
-        ValueOperations<String, List<Board>> operations = redisTemplate.opsForValue();
+    public List<BoardThumbnail> getRanking(RankingType type){
+        ValueOperations<String, List<BoardThumbnail>> operations = redisTemplate.opsForValue();
         final String key = format("%s:%s", RANKING_GETTING_KEY, type.name().toLowerCase());
-        final List<Board> cachedRankingList = operations.get(key);
+        final List<BoardThumbnail> cachedRankingList = operations.get(key);
 
         if(CollectionUtils.isEmpty(cachedRankingList)){
-            final List<Board> rankingList = rankingService.getRanking(type);
+            final List<BoardThumbnail> rankingList = rankingService.getRanking(type);
             operations.set(key, rankingList, 30L, TimeUnit.SECONDS);
             return rankingList;
         }else{
