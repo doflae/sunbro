@@ -1,7 +1,7 @@
 package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.model.User;
-import com.humorpage.sunbro.provider.JwtTokenProvider;
+import com.humorpage.sunbro.service.JwtTokenService;
 import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
@@ -23,7 +23,7 @@ class UserApiController {
     private UserRepository repository;
 
     @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    private JwtTokenService jwtTokenService;
 
     @Autowired
     private ResponseService responseService;
@@ -41,10 +41,11 @@ class UserApiController {
 
     @ApiOperation(value = "회원 단건 조회", notes = "userId로 회원을 조회한다")
     @GetMapping(value = "/user/{msrl}")
-    public SingleResult<User> findUserById(@ApiParam(value = "회원ID", required = true) @PathVariable long msrl) {
+    public SingleResult<User> findUserById(@ApiParam(value = "msrl", required = true) @PathVariable long msrl) {
         // 결과데이터가 단일건인경우 getBasicResult를 이용해서 결과를 출력한다.
         return responseService.getSingleResult(repository.findById(msrl).orElse(null));
     }
+
 
     @ApiOperation(value = "회원 입력", notes = "회원을 입력한다")
     @PostMapping(value = "/user")

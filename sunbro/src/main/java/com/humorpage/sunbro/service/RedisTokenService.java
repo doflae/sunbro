@@ -1,4 +1,4 @@
-package com.humorpage.sunbro.provider;
+package com.humorpage.sunbro.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -8,10 +8,11 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 
 @Service
-public class RedisProvider {
+public class RedisTokenService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
 
     public String getData(String key){
         ValueOperations<String,String> valueOperations = stringRedisTemplate.opsForValue();

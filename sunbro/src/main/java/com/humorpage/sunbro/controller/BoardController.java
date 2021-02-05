@@ -5,6 +5,7 @@ import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.respository.BoardRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.BoardService;
+import com.humorpage.sunbro.service.CacheRankingService;
 import com.humorpage.sunbro.service.LikesService;
 import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.vaildator.BoardVaildator;
@@ -12,12 +13,10 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/board")
@@ -37,6 +36,9 @@ public class BoardController {
 
     @Autowired
     private LikesService likesService;
+
+    @Autowired
+    private CacheRankingService cacheRankingService;
 
 
     @ApiOperation(value = "업로드", notes="html코드를 받아 최종적으로 업로드한다.")
@@ -63,5 +65,13 @@ public class BoardController {
         }
     }
 
+    @GetMapping("/recently")
+    List<Board> recently(@RequestParam(required = false, value="board_key") Long board_id){
+        if(board_id==null){
+            return boardRepository.findRecentlyWithoutId();
+        }else{
+            return boardRepository.findRecentlyWithId(board_id);
+        }
+    }
 
 }

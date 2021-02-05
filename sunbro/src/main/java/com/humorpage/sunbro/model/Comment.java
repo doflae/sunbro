@@ -1,26 +1,30 @@
 package com.humorpage.sunbro.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
 @Table(name="comment")
-public class Comment {
+public class Comment implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "author_id")
+    private User author;
 
     @NotNull
     private String content;
@@ -39,4 +43,9 @@ public class Comment {
     @GeneratedValue
     @Column(name ="updated")
     private LocalDateTime updated;
+
+    @OneToMany(mappedBy = "comment")
+    @JsonIgnore
+    private List<Commentlikes> commentlikes = new ArrayList<>();
+
 }

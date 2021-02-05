@@ -15,7 +15,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Data
@@ -24,10 +23,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Table(name="user")
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
-    private long msrl;
+    private Long msrl;
     @Column(nullable = false, unique = true, length = 30)
     private String uid;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -37,39 +37,35 @@ public class User implements UserDetails {
     private String name;
     private boolean enabled;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Builder.Default
-    @JsonIgnore
-    private List<String> roles = new ArrayList<>();
+    private String role;
 
 
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Board> boards = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Comment> comments = new ArrayList<>();
-//
-//    @JsonBackReference
-//    @ManyToMany(
-//            cascade = CascadeType.REMOVE
-//    )
-//    @JoinTable(
-//            name="user_board",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name = "board_id")
-//    )
-//    private List<Board> likedBoards = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<Likes> likes = new ArrayList<>();
+    private List<Boardlikes> boardlikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Commentlikes> commentlikes = new ArrayList<>();
 
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
+        list.add(new SimpleGrantedAuthority("ROLE_"+role));
+        return list;
+    }
+
+    public List<Board> getBoards(){
+        return this.boards;
     }
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

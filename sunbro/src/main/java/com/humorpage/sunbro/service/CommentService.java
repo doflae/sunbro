@@ -24,7 +24,7 @@ public class CommentService {
     public Comment save(String uid, Long board_id, Comment comment){
         User user = userRepository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
         Board board = boardRepository.findById(board_id).orElseThrow(CIdSigninFailedException::new);
-        comment.setUser(user);
+        comment.setAuthor(user);
         comment.setBoard(board);
         return commentRepository.save(comment);
     }

@@ -2,11 +2,11 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.User;
-import com.humorpage.sunbro.provider.CookieProvider;
-import com.humorpage.sunbro.provider.JwtTokenProvider;
-import com.humorpage.sunbro.provider.RedisProvider;
 import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.result.CommonResult;
+import com.humorpage.sunbro.service.CookieService;
+import com.humorpage.sunbro.service.JwtTokenService;
+import com.humorpage.sunbro.service.RedisTokenService;
 import com.humorpage.sunbro.service.ResponseService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collections;
 
 @Api(tags = {"1. Sign"})
 @RequiredArgsConstructor
@@ -33,7 +32,7 @@ public class SignController {
     private UserRepository repository;
 
     @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    private JwtTokenService jwtTokenService;
 
     @Autowired
     private ResponseService responseService;
@@ -42,7 +41,7 @@ public class SignController {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private RedisProvider redisProvider;
+    private RedisTokenService redisTokenService;
 
     @ApiOperation(value = "로그인", notes = "이메일 회원 로그인을 한다.")
     @PostMapping(value = "/signin")
@@ -53,11 +52,11 @@ public class SignController {
             final User user = repository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
             if (!passwordEncoder.matches(password, user.getPassword()))
                 throw new CIdSigninFailedException();
-            final String token = jwtTokenProvider.generateToken(user);
-            final String refreshjwt = jwtTokenProvider.generateRefreshToken(user);
-            Cookie accessToken = CookieProvider.createCookie(JwtTokenProvider.ACCESS_TOKEN_NAME, token);
-            Cookie refreshToken = CookieProvider.createCookie(JwtTokenProvider.REFRESH_TOKEN_NAME, refreshjwt);
-            redisProvider.setDataExpire(refreshjwt,user.getUid(),JwtTokenProvider.RefreshtokenValidMilisecond);
+            final String token = jwtTokenService.generateToken(user);
+            final String refreshjwt = jwtTokenService.generateRefreshToken(user);
+            Cookie accessToken = CookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token);
+            Cookie refreshToken = CookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt);
+            redisTokenService.setDataExpire(refreshjwt,user.getUid(), JwtTokenService.RefreshtokenValidMilisecond);
             res.addCookie(accessToken);
             res.addCookie(refreshToken);
             return responseService.getSuccessResult();
@@ -76,7 +75,7 @@ public class SignController {
         repository.save(User.builder()
                 .uid(uid)
                 .password(passwordEncoder.encode(password))
-                .roles(Collections.singletonList("ROLE_USER"))
+                .role("USER")
                 .name(name)
                 .build());
         return responseService.getSuccessResult();

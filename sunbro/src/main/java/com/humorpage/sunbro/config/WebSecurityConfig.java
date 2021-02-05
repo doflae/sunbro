@@ -1,9 +1,9 @@
 package com.humorpage.sunbro.config;
 
 import com.humorpage.sunbro.filter.JwtAuthenticationFilter;
-import com.humorpage.sunbro.provider.CookieProvider;
-import com.humorpage.sunbro.provider.JwtTokenProvider;
-import com.humorpage.sunbro.provider.RedisProvider;
+import com.humorpage.sunbro.service.CookieService;
+import com.humorpage.sunbro.service.JwtTokenService;
+import com.humorpage.sunbro.service.RedisTokenService;
 import com.humorpage.sunbro.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,16 +30,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private DataSource dataSource;
 
     @Autowired
-    private final CookieProvider cookieProvider;
+    private final CookieService cookieService;
 
     @Autowired
-    private final RedisProvider redisProvider;
+    private final RedisTokenService redisTokenService;
 
     @Autowired
     private final UserService userService;
 
     @Autowired
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenService jwtTokenService;
 
     @Bean
     @Override
@@ -59,7 +59,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "api/**").permitAll() // api로 시작하는 GET요청 리소스는 누구나 접근가능
                 .anyRequest().hasRole("USER") // 그외 나머지 요청은 모두 인증된 회원만 접근 가능
                 .and()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,cookieProvider,redisProvider,userService), UsernamePasswordAuthenticationFilter.class); // jwt token 필터를 id/password 인증 필터 전에 넣는다
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService, cookieService, redisTokenService,userService), UsernamePasswordAuthenticationFilter.class); // jwt token 필터를 id/password 인증 필터 전에 넣는다
     }
 
 //    @Autowired

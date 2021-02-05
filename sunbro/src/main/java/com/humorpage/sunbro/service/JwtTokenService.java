@@ -1,4 +1,4 @@
-package com.humorpage.sunbro.provider;
+package com.humorpage.sunbro.service;
 
 import com.humorpage.sunbro.model.User;
 import io.jsonwebtoken.Claims;
@@ -16,7 +16,7 @@ import java.util.Date;
 
 
 @Component
-public class JwtTokenProvider {
+public class JwtTokenService {
 
     @Value("${spring.jwt.secret}")
     private String SECRET_KEY;

@@ -1,4 +1,4 @@
-package com.humorpage.sunbro.provider;
+package com.humorpage.sunbro.service;
 
 import org.springframework.stereotype.Service;
 
@@ -6,11 +6,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 @Service
-public class CookieProvider {
+public class CookieService {
     public static Cookie createCookie(String cookieName, String value){
         Cookie token = new Cookie(cookieName,value);
         token.setHttpOnly(true);
-        token.setMaxAge((int)JwtTokenProvider.AccesstokenValidMilisecond);
+        token.setMaxAge((int) JwtTokenService.AccesstokenValidMilisecond);
         token.setPath("/");
         return token;
     }
