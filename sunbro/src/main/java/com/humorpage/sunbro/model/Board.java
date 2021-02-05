@@ -12,6 +12,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@NamedQueries({
+        @NamedQuery(name="Board.findRecentlyWithId",
+        query = "SELECT b FROM Board b where b.id <:board_id order by b.id desc")
+})
+@NamedEntityGraphs({
+        @NamedEntityGraph(name="Board.BoardForThumbnail",attributeNodes = {
+                @NamedAttributeNode("id"),
+                @NamedAttributeNode("title"),
+                @NamedAttributeNode("content"),
+                @NamedAttributeNode("created"),
+                @NamedAttributeNode("author"),
+                @NamedAttributeNode("thumbnail")
+        })
+})
 @Entity
 @Data
 @Table(name="board")
@@ -19,12 +33,15 @@ public class Board implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private long id;
 
     @NotBlank
+    @Column(name = "title")
     private String title;
 
     @NotBlank
+    @Column(name="content")
     private String content;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

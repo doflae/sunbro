@@ -11,6 +11,7 @@ import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.vaildator.BoardVaildator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -66,11 +67,12 @@ public class BoardController {
     }
 
     @GetMapping("/recently")
-    List<Board> recently(@RequestParam(required = false, value="board_key") Long board_id){
+    List<Board> recently(@RequestParam(value = "board_id",required = false) Long board_id){
         if(board_id==null){
-            return boardRepository.findRecentlyWithoutId();
+            System.out.println("withoutkey");
+            return boardRepository.findRecentlyWithoutId(PageRequest.of(0,10));
         }else{
-            return boardRepository.findRecentlyWithId(board_id);
+            return boardRepository.findRecentlyWithId(board_id, PageRequest.of(0,10));
         }
     }
 

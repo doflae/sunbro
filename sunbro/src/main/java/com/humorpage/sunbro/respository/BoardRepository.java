@@ -1,8 +1,12 @@
 package com.humorpage.sunbro.respository;
 
 import com.humorpage.sunbro.model.Board;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,9 +19,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     List<Board> findByCreatedGreaterThan(LocalDateTime localDateTime);
 
-    @Query(value = "SELECT * FROM board where id<?1 order by id desc limit 0,10",nativeQuery = true)
-    List<Board> findRecentlyWithId(Long board_id);
+    List<Board> findRecentlyWithId(@Param("board_id") Long board_id, Pageable pageable);
 
-    @Query(value = "SELECT * FROM board order by id desc limit 0,10",nativeQuery = true)
-    List<Board> findRecentlyWithoutId();
+    @Query(value = "SELECT b FROM Board b order by b.id desc")
+    List<Board> findRecentlyWithoutId(Pageable pageable);
 }
