@@ -38,6 +38,11 @@ public class ResponseService {
         setSuccessResult(result);
         return result;
     }
+    public <T> SingleResult<T> getFailSingleResult(){
+        SingleResult<T> result = new SingleResult<>();
+        setFailedResult(result);
+        return result;
+    }
     // 다중건 결과를 처리하는 메소드
     public <T> ListResult<T> getListResult(List<T> list) {
         ListResult<T> result = new ListResult<>();
@@ -59,6 +64,13 @@ public class ResponseService {
         result.setMsg(CommonResponse.FAIL.getMsg());
         return result;
     }
+
+    private void setFailedResult(CommonResult result){
+        result.setSuccess(false);
+        result.setCode(CommonResponse.FAIL.getCode());
+        result.setMsg(CommonResponse.FAIL.getMsg());
+    }
+
     // 결과 모델에 api 요청 성공 데이터를 세팅해주는 메소드
     private void setSuccessResult(CommonResult result) {
         result.setSuccess(true);

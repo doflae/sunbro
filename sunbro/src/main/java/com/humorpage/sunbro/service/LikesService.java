@@ -1,13 +1,11 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
-import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.model.Boardlikes;
-import com.humorpage.sunbro.model.User;
-import com.humorpage.sunbro.respository.BoardLikesRepository;
-import com.humorpage.sunbro.respository.BoardRepository;
-import com.humorpage.sunbro.respository.UserRepository;
+import com.humorpage.sunbro.model.Commentlikes;
+import com.humorpage.sunbro.respository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,18 +20,40 @@ public class LikesService {
     @Autowired
     private BoardRepository boardRepository;
 
-    public void save(String uid, Long board_id){
+    @Autowired
+    private CommentRepository commentRepository;
 
-        User user = userRepository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
-        Board board = boardRepository.findById(board_id).orElseThrow(CIdSigninFailedException::new);
-        Boardlikes likes = boardLikesRepository.findByUserAndBoard(user, board);
-        if (likes!=null){
-            boardLikesRepository.delete(likes);
-        }else{
-            likes = new Boardlikes();
-            likes.setBoard(board);
-            likes.setUser(user);
-            boardLikesRepository.save(likes);
+    @Autowired
+    private CommentLikesRepository commentLikesRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public void saveBoard(String uid, Long board_id){
+        try{
+            Long msrl = jdbcTemplate.queryForObject("SELECT msrl FROM user where uid=?", Long.class, uid);
+            Boardlikes boardlikes = boardLikesRepository.findByBoardIdAndUserMsrl(board_id,msrl);
+            if(boardlikes!=null){
+                boardLikesRepository.delete(boardlikes);
+            }else{
+                jdbcTemplate.update("INSERT INTO boardlikes (board_id, user_id) VALUES(?,?)",board_id,msrl);
+            }
+        }catch (DataAccessException ignored){
+
+        }
+    }
+
+    public void saveComment(String uid, Long comment_id){
+        try{
+            Long msrl = jdbcTemplate.queryForObject("SELECT msrl FROM user where uid=?",Long.class,uid);
+            Commentlikes commentlikes = commentLikesRepository.findByCommentIdAndUserMsrl(comment_id,msrl);
+            if(commentlikes!=null){
+                commentLikesRepository.delete(commentlikes);
+            }else{
+                jdbcTemplate.update("INSERT INTO commentlikes (comment_id, user_id) VALUES(?,?)",comment_id,msrl);
+            }
+        }catch (NullPointerException ignored){
+
         }
     }
 }

@@ -43,7 +43,7 @@ public class Board implements Serializable {
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
     private List<Boardlikes> boardlikes = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
     private User author;
 

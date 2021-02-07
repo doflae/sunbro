@@ -69,7 +69,7 @@ public class BoardController {
     public CommonResult likeBoard(@RequestParam("board_id") Long board_id, Authentication authentication){
         String uid = authentication.getName();
         try{
-            likesService.save(uid,board_id);
+            likesService.saveBoard(uid,board_id);
             return responseService.getSuccessResult();
         }catch (CIdSigninFailedException e){
             return responseService.getFailResult();
@@ -90,20 +90,20 @@ public class BoardController {
         return cacheRankingService.getRanking(rankType);
     }
 
-    @GetMapping("/boards/detail")
-    SingleResult<Board> detail(@RequestParam(required = true,value = "board_id") Long id){
+    @GetMapping("/detail/{board_id}")
+    SingleResult<Board> detail(@PathVariable("board_id") Long id){
 
         try {
             Board board = boardRepository.findById(id).orElseThrow(CIdSigninFailedException::new);
             return responseService.getSingleResult(board);
         }
         catch (CIdSigninFailedException e){
-            return (SingleResult<Board>) responseService.getFailResult();
+            return responseService.getFailSingleResult();
         }
 
     }
 
-    @GetMapping("/boards/search")
+    @GetMapping("/search")
     ListResult<BoardThumbnail> all(@RequestParam(required = false, defaultValue = "") String title,
                    @RequestParam(required = false, defaultValue = "") String uid,
                    @RequestParam(required = false, defaultValue = "") String content) {

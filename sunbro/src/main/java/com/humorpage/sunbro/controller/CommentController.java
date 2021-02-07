@@ -5,6 +5,7 @@ import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Comment;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.CommentService;
+import com.humorpage.sunbro.service.LikesService;
 import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.vaildator.CommentValidator;
 import io.swagger.annotations.ApiOperation;
@@ -31,6 +32,9 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
+    @Autowired
+    private LikesService likesService;
+
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
     @PostMapping(value = "/form")
     public CommonResult postForm(@Valid Comment comment, @RequestParam("board_id") Long board_id, BindingResult bindingResult, Authentication authentication){
@@ -45,6 +49,18 @@ public class CommentController {
             return responseService.getSuccessResult();
         }
         catch (CIdSigninFailedException e){
+            return responseService.getFailResult();
+        }
+    }
+
+    @ApiOperation(value = "댓글좋아요", notes = "comment_id를 받아 좋아요 on/off")
+    @PostMapping(value = "/like")
+    public CommonResult likeComment(@RequestParam("comment_id") Long comment_id, Authentication authentication){
+        String uid = authentication.getName();
+        try{
+            likesService.saveComment(uid,comment_id);
+            return responseService.getSuccessResult();
+        }catch (CIdSigninFailedException e){
             return responseService.getFailResult();
         }
     }
