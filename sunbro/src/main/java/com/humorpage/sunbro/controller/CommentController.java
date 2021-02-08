@@ -55,13 +55,14 @@ public class CommentController {
 
     @ApiOperation(value = "댓글좋아요", notes = "comment_id를 받아 좋아요 on/off")
     @PostMapping(value = "/like")
-    public CommonResult likeComment(@RequestParam("comment_id") Long comment_id, Authentication authentication){
-        String uid = authentication.getName();
+    public CommonResult likeComment(@RequestParam("id") Long comment_id, Authentication authentication){
+        String uid;
         try{
-            likesService.saveComment(uid,comment_id);
-            return responseService.getSuccessResult();
-        }catch (CIdSigninFailedException e){
-            return responseService.getFailResult();
+            uid = authentication.getName();
+        }catch (NullPointerException e){
+            return responseService.setDetailResult(false, -1, "Token Expired");
         }
+        likesService.saveComment(uid,comment_id);
+        return responseService.getSuccessResult();
     }
 }

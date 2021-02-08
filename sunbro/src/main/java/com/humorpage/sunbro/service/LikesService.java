@@ -1,14 +1,10 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.model.Boardlikes;
-import com.humorpage.sunbro.model.Commentlikes;
 import com.humorpage.sunbro.respository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-
-import java.sql.SQLSyntaxErrorException;
 
 @Service
 public class LikesService {
@@ -56,7 +52,7 @@ public class LikesService {
                     jdbcTemplate.update("INSERT INTO commentlikes (comment_id, user_num) VALUES(?,?)", comment_id, usernum);
                 }
             }
-        }catch (NullPointerException ignored){
+        }catch (DataAccessException ignored){
 
         }
     }

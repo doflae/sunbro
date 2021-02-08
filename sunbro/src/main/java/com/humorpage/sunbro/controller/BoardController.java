@@ -66,15 +66,15 @@ public class BoardController {
     }
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on/off")
     @PostMapping(value = "/like")
-    public CommonResult likeBoard(@RequestParam("board_id") Long board_id, Authentication authentication){
-        String uid = authentication.getName();
-        System.out.println(uid);
+    public CommonResult likeBoard(@RequestParam("id") Long board_id, Authentication authentication){
+        String uid;
         try{
-            likesService.saveBoard(uid,board_id);
-            return responseService.getSuccessResult();
-        }catch (CIdSigninFailedException e){
-            return responseService.getFailResult();
+            uid = authentication.getName();
+        }catch (NullPointerException e){
+            return responseService.setDetailResult(false, -1, "Token Expired");
         }
+        likesService.saveBoard(uid, board_id);
+        return responseService.getSuccessResult();
     }
 
     @GetMapping("/recently")
