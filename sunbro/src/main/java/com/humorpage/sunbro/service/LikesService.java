@@ -8,6 +8,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLSyntaxErrorException;
+
 @Service
 public class LikesService {
 
@@ -31,12 +33,13 @@ public class LikesService {
 
     public void saveBoard(String uid, Long board_id){
         try{
-            Long msrl = jdbcTemplate.queryForObject("SELECT msrl FROM user where uid=?", Long.class, uid);
-            Boardlikes boardlikes = boardLikesRepository.findByBoardIdAndUserMsrl(board_id,msrl);
-            if(boardlikes!=null){
-                boardLikesRepository.delete(boardlikes);
+            Long usernum = jdbcTemplate.queryForObject("SELECT usernum FROM user where uid=?", Long.class, uid);
+            if(jdbcTemplate.queryForObject("select id from boardlikes where board_id=? and user_num=?",Long.class,board_id,usernum)!=null){
+                jdbcTemplate.update("DELETE from boardlikes where board_id=? and user_num=?",board_id,usernum);
             }else{
-                jdbcTemplate.update("INSERT INTO boardlikes (board_id, user_id) VALUES(?,?)",board_id,msrl);
+                if(jdbcTemplate.queryForObject("select id from board where id=?",Long.class,board_id)!=null) {
+                    jdbcTemplate.update("INSERT INTO boardlikes (board_id, user_num) VALUES(?,?)", board_id, usernum);
+                }
             }
         }catch (DataAccessException ignored){
 
@@ -45,12 +48,13 @@ public class LikesService {
 
     public void saveComment(String uid, Long comment_id){
         try{
-            Long msrl = jdbcTemplate.queryForObject("SELECT msrl FROM user where uid=?",Long.class,uid);
-            Commentlikes commentlikes = commentLikesRepository.findByCommentIdAndUserMsrl(comment_id,msrl);
-            if(commentlikes!=null){
-                commentLikesRepository.delete(commentlikes);
+            Long usernum = jdbcTemplate.queryForObject("SELECT usernum FROM user where uid=?",Long.class,uid);
+            if(jdbcTemplate.queryForObject("select id from commentlikes where comment_id=? and user_num=?",Long.class,comment_id,usernum)!=null){
+                jdbcTemplate.update("delete from commentlikes where comment_id=? and user_num=?",comment_id,usernum);
             }else{
-                jdbcTemplate.update("INSERT INTO commentlikes (comment_id, user_id) VALUES(?,?)",comment_id,msrl);
+                if(jdbcTemplate.queryForObject("select id from comment where id=?",Long.class,comment_id)!=null) {
+                    jdbcTemplate.update("INSERT INTO commentlikes (comment_id, user_num) VALUES(?,?)", comment_id, usernum);
+                }
             }
         }catch (NullPointerException ignored){
 

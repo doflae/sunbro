@@ -23,7 +23,7 @@ public class Comment implements Serializable {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author_num")
     private User author;
 
     @NotNull

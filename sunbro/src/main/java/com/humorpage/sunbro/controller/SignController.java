@@ -56,12 +56,11 @@ public class SignController {
             final String refreshjwt = jwtTokenService.generateRefreshToken(user);
             Cookie accessToken = CookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token);
             Cookie refreshToken = CookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt);
-            redisTokenService.setDataExpire(refreshjwt,user.getUid(), JwtTokenService.RefreshtokenValidMilisecond);
+            redisTokenService.setDataExpire(refreshjwt,String.valueOf(user.getUsernum()), JwtTokenService.RefreshtokenValidMilisecond);
             res.addCookie(accessToken);
             res.addCookie(refreshToken);
             return responseService.getSuccessResult();
         }catch (Exception e){
-            System.out.print(e);
             return responseService.getFailResult();
         }
     }
@@ -70,7 +69,7 @@ public class SignController {
     @PostMapping(value = "/signup")
     public CommonResult signup(@ApiParam(value = "회원ID ", required = true) @RequestParam String uid,
                                @ApiParam(value = "비밀번호", required = true) @RequestParam String password,
-                               @ApiParam(value = "이름",required = false) @RequestParam String name) {
+                               @ApiParam(value = "이름") @RequestParam String name) {
 
         repository.save(User.builder()
                 .uid(uid)

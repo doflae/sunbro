@@ -11,6 +11,6 @@ public interface CommentLikesRepository extends JpaRepository<Commentlikes, Long
     List<Commentlikes> findAllByUser(Long user_id);
     List<Commentlikes> findAllByComment(Long comment_id);
 
-    @Query(value = "SELECT id,comment_id, user_id from commentlikes where user_id=?1 and comment_id=?2", nativeQuery = true)
-    Commentlikes findByCommentIdAndUserMsrl(Long user_id, Long comment_id);
+    @Query(value = "SELECT id,comment_id, user_num from commentlikes where comment_id=?1 and user_num=?2", nativeQuery = true)
+    Commentlikes findByCommentIdAndUsernum(Long comment_id, Long usernum);
 }

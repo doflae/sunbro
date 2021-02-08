@@ -27,7 +27,8 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
-    private Long msrl;
+    @Column(name = "usernum")
+    private Long usernum;
     @Column(nullable = false, unique = true, length = 30)
     private String uid;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -59,7 +60,7 @@ public class User implements UserDetails {
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
+        List<GrantedAuthority> list = new ArrayList<>();
         list.add(new SimpleGrantedAuthority("ROLE_"+role));
         return list;
     }

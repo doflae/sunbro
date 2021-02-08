@@ -13,7 +13,8 @@ public class UserThumbNail implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
-    private Long msrl;
+    @Column(name = "usernum")
+    private Long usernum;
     @Column(nullable = false, unique = true, length = 30)
     private String uid;
 }

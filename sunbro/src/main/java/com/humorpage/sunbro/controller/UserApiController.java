@@ -61,10 +61,10 @@ class UserApiController {
     @ApiOperation(value = "회원 수정", notes = "회원정보를 수정한다")
     @PutMapping(value = "/user")
     public SingleResult<User> modify(
-            @ApiParam(value = "회원번호", required = true) @RequestParam long msrl,
+            @ApiParam(value = "회원번호", required = true) @RequestParam Long usernum,
             @ApiParam(value = "회원아이디", required = true) @RequestParam String uid) {
         User user = User.builder()
-                .msrl(msrl)
+                .usernum(usernum)
                 .uid(uid)
                 .enabled(true)
                 .build();

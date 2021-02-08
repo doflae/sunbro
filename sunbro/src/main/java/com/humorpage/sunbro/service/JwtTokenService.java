@@ -21,9 +21,11 @@ public class JwtTokenService {
     @Value("${spring.jwt.secret}")
     private String SECRET_KEY;
 
-    public final static long AccesstokenValidMilisecond = 1000L * 10; // 10초만 토큰 유효
+//    public final static long AccesstokenValidMilisecond = 1000L * 10; // 10초만 토큰 유효
+    public final static long AccesstokenValidMilisecond = 1000L * 20; // 20초만 토큰 유효
 
-    public final static long RefreshtokenValidMilisecond = 1000L * 60 * 24 * 2; // 2일 유효
+//    public final static long RefreshtokenValidMilisecond = 1000L * 60 * 24 * 2; // 2일 유효
+    public final static long RefreshtokenValidMilisecond = 1000L * 60; // 60초 유효
 
     final static public String ACCESS_TOKEN_NAME = "accessToken";
     final static public String REFRESH_TOKEN_NAME = "refreshToken";
@@ -41,8 +43,8 @@ public class JwtTokenService {
                 .parseClaimsJws(token)
                 .getBody();
     }
-    public String getUsername(String token) {
-        return extractAllClaims(token).get("uid", String.class);
+    public Long getUsernum(String token) {
+        return extractAllClaims(token).get("usernum", Long.class);
     }
 
     public Boolean isTokenExpired(String token) {
@@ -51,31 +53,29 @@ public class JwtTokenService {
     }
 
     public String generateToken(User user) {
-        return doGenerateToken(user.getUsername(), AccesstokenValidMilisecond);
+        return doGenerateToken(user.getUsernum(), AccesstokenValidMilisecond);
     }
 
     public String generateRefreshToken(User user) {
-        return doGenerateToken(user.getUsername(), RefreshtokenValidMilisecond);
+        return doGenerateToken(user.getUsernum(), RefreshtokenValidMilisecond);
     }
 
-    public String doGenerateToken(String uid, long expireTime) {
+    public String doGenerateToken(Long usernum, long expireTime) {
 
         Claims claims = Jwts.claims();
-        claims.put("uid", uid);
+        claims.put("usernum", usernum);
 
-        String jwt = Jwts.builder()
+        return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expireTime))
                 .signWith(getSigningKey(SECRET_KEY), SignatureAlgorithm.HS256)
                 .compact();
-
-        return jwt;
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getUsername(token);
+    public Boolean validateToken(String token, User user) {
+        final Long usernum = getUsernum(token);
 
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (usernum.equals(user.getUsernum()) && !isTokenExpired(token));
     }
 }

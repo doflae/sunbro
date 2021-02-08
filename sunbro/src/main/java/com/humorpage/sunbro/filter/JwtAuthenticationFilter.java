@@ -1,5 +1,6 @@
 package com.humorpage.sunbro.filter;
 
+import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.service.CookieService;
 import com.humorpage.sunbro.service.JwtTokenService;
@@ -20,7 +21,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.html.Option;
 import java.io.IOException;
+import java.util.Optional;
 
 // import 생략
 @Slf4j
@@ -28,16 +31,16 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
-    private JwtTokenService jwtTokenService;
+    private final JwtTokenService jwtTokenService;
 
     @Autowired
     private CookieService cookieService;
 
     @Autowired
-    private RedisTokenService redisTokenService;
+    private final RedisTokenService redisTokenService;
 
     //Provier 주입
     public JwtAuthenticationFilter(JwtTokenService jwtTokenService, CookieService cookieService, RedisTokenService redisTokenService, UserService userService) {
@@ -52,21 +55,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final Cookie jwtToken = CookieService.getCookie(httpServletRequest, JwtTokenService.ACCESS_TOKEN_NAME);
 
-        String username = null;
+        Long usernum = null;
         String jwt = null;
         String refreshJwt = null;
-        String refreshUname = null;
+        Long refreshUnum;
 
         try{
             if(jwtToken != null){
                 jwt = jwtToken.getValue();
-                username = jwtTokenService.getUsername(jwt);
+                usernum = jwtTokenService.getUsernum(jwt);
             }
-            if(username!=null){
-                UserDetails userDetails = userService.loadUserByUsername(username);
+            if(usernum!=null){
+                User user = userService.loadUserByUsernum(usernum).orElseThrow(CIdSigninFailedException::new);
 
-                if(jwtTokenService.validateToken(jwt,userDetails)){
-                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
+                if(jwtTokenService.validateToken(jwt,user)){
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }
@@ -76,29 +79,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if(refreshToken!=null){
                 refreshJwt = refreshToken.getValue();
             }
-        }catch(Exception e){
+        }catch(CIdSigninFailedException ignored){
 
         }
 
         try{
             if(refreshJwt != null){
-                refreshUname = redisTokenService.getData(refreshJwt);
-
-                if(refreshUname.equals(jwtTokenService.getUsername(refreshJwt))){
-                    UserDetails userDetails = userService.loadUserByUsername(refreshUname);
-                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
+                refreshUnum = Long.parseLong(redisTokenService.getData(refreshJwt));
+                if(refreshUnum.equals(jwtTokenService.getUsernum(refreshJwt))){
+                    User user = userService.loadUserByUsernum(refreshUnum).orElseThrow(CIdSigninFailedException::new);
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 
-                    User user = new User();
-                    user.setUid(refreshUname);
-                    String newToken = jwtTokenService.generateToken(user);
+                    User n_user = new User();
+                    n_user.setUsernum(refreshUnum);
+                    String newToken = jwtTokenService.generateToken(n_user);
 
-                    Cookie newAccessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME,newToken);
+                    Cookie newAccessToken = CookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME,newToken);
                     httpServletResponse.addCookie(newAccessToken);
                 }
             }
-        }catch(ExpiredJwtException e){
+        }catch(ExpiredJwtException | CIdSigninFailedException ignored){
 
         }
 

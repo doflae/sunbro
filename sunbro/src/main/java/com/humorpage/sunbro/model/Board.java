@@ -44,7 +44,7 @@ public class Board implements Serializable {
     private List<Boardlikes> boardlikes = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author_num")
     private User author;
 
     private Integer likes;

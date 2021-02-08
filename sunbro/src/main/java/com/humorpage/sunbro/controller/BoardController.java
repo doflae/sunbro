@@ -68,6 +68,7 @@ public class BoardController {
     @PostMapping(value = "/like")
     public CommonResult likeBoard(@RequestParam("board_id") Long board_id, Authentication authentication){
         String uid = authentication.getName();
+        System.out.println(uid);
         try{
             likesService.saveBoard(uid,board_id);
             return responseService.getSuccessResult();

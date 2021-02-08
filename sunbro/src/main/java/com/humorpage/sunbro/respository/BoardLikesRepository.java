@@ -14,6 +14,6 @@ public interface BoardLikesRepository extends JpaRepository<Boardlikes, Long> {
     List<Boardlikes> findAllByBoard(Long board_id);
     Boardlikes findByUserAndBoard(User user, Board board);
 
-    @Query(value = "SELECT id, board_id, user_id from boardlikes where user_id=?1 and board_id=?2",nativeQuery = true)
-    Boardlikes findByBoardIdAndUserMsrl(Long user_id, Long board_id);
+    @Query(value = "SELECT id, board_id, user_num from boardlikes where board_id=?1 and user_num=?2",nativeQuery = true)
+    Boardlikes findByBoardIdAndUserMsrl(Long board_id, Long user_num);
 }

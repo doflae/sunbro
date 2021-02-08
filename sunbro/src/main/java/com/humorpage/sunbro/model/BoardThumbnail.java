@@ -27,7 +27,7 @@ public class BoardThumbnail implements Serializable {
     private String content;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author_num")
     private UserThumbNail author;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

@@ -22,6 +22,6 @@ public class Commentlikes implements Serializable {
 
     @JsonBackReference
     @ManyToOne
-    @JoinColumn(name="user_id")
+    @JoinColumn(name="user_num")
     private User user;
 }
