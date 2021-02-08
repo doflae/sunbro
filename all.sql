@@ -24,15 +24,15 @@ DROP TABLE IF EXISTS `board`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `board` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `author_id` bigint(20) NOT NULL,
+  `author_num` int(11) DEFAULT NULL,
   `title` varchar(100) NOT NULL DEFAULT '0',
   `content` text NOT NULL DEFAULT '0',
   `created` datetime DEFAULT current_timestamp(),
   `updated` datetime DEFAULT NULL ON UPDATE current_timestamp(),
   `thumbnail` tinytext DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK_board_user` (`author_id`) USING BTREE,
-  CONSTRAINT `FK_board_user` FOREIGN KEY (`author_id`) REFERENCES `user` (`msrl`)
+  KEY `FK_board_user` (`author_num`) USING BTREE,
+  CONSTRAINT `FK_board_user` FOREIGN KEY (`author_num`) REFERENCES `user` (`usernum`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8 COMMENT='자료';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -55,14 +55,14 @@ DROP TABLE IF EXISTS `boardlikes`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boardlikes` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) NOT NULL,
+  `user_num` int(11) NOT NULL,
   `board_id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK_likes_user` (`user_id`),
   KEY `FK_likes_board` (`board_id`),
-  CONSTRAINT `FK_likes_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`),
-  CONSTRAINT `FK_likes_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`msrl`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+  KEY `FK_likes_user` (`user_num`) USING BTREE,
+  CONSTRAINT `FK_boardlikes_user` FOREIGN KEY (`user_num`) REFERENCES `user` (`usernum`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_likes_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -85,15 +85,15 @@ DROP TABLE IF EXISTS `comment`;
 CREATE TABLE `comment` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `board_id` bigint(20) NOT NULL,
+  `author_num` int(11) DEFAULT NULL,
   `content` text NOT NULL,
-  `author_id` bigint(20) NOT NULL,
   `created` datetime NOT NULL DEFAULT current_timestamp(),
   `updated` datetime DEFAULT NULL ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `FK_comment_board` (`board_id`),
-  KEY `FK_comment_user` (`author_id`) USING BTREE,
-  CONSTRAINT `FK_comment_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`),
-  CONSTRAINT `FK_comment_user` FOREIGN KEY (`author_id`) REFERENCES `user` (`msrl`)
+  KEY `FK_comment_user` (`author_num`),
+  CONSTRAINT `FK_comment_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_comment_user` FOREIGN KEY (`author_num`) REFERENCES `user` (`usernum`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -103,7 +103,7 @@ CREATE TABLE `comment` (
 
 LOCK TABLES `comment` WRITE;
 /*!40000 ALTER TABLE `comment` DISABLE KEYS */;
-INSERT INTO `comment` VALUES (1,1,'test',30,'2021-01-29 01:46:59',NULL),(2,1,'test2',30,'2021-01-29 01:48:31',NULL),(3,1,'test2',30,'2021-01-29 03:27:10',NULL);
+INSERT INTO `comment` VALUES (1,1,30,'test','2021-01-29 01:46:59',NULL),(2,1,30,'test2','2021-01-29 01:48:31',NULL),(3,1,30,'test2','2021-01-29 03:27:10',NULL);
 /*!40000 ALTER TABLE `comment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -117,12 +117,12 @@ DROP TABLE IF EXISTS `commentlikes`;
 CREATE TABLE `commentlikes` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `comment_id` bigint(20) NOT NULL,
-  `user_id` bigint(20) NOT NULL,
+  `user_num` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK__user` (`user_id`),
-  KEY `FK__board` (`comment_id`) USING BTREE,
-  CONSTRAINT `FK__user` FOREIGN KEY (`user_id`) REFERENCES `user` (`msrl`),
-  CONSTRAINT `FK_commentlikes_comment` FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`)
+  KEY `FK_commentlikes_comment` (`comment_id`),
+  KEY `FK_commentlikes_user` (`user_num`),
+  CONSTRAINT `FK_commentlikes_comment` FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_commentlikes_user` FOREIGN KEY (`user_num`) REFERENCES `user` (`usernum`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -136,30 +136,6 @@ LOCK TABLES `commentlikes` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `upload_file`
---
-
-DROP TABLE IF EXISTS `upload_file`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `upload_file` (
-  `fileid` varchar(50) DEFAULT NULL,
-  `filedata` bigint(20) NOT NULL,
-  `filename` varchar(50) DEFAULT NULL,
-  `filetype` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `upload_file`
---
-
-LOCK TABLES `upload_file` WRITE;
-/*!40000 ALTER TABLE `upload_file` DISABLE KEYS */;
-/*!40000 ALTER TABLE `upload_file` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user`
 --
 
@@ -167,13 +143,13 @@ DROP TABLE IF EXISTS `user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user` (
-  `msrl` bigint(20) NOT NULL AUTO_INCREMENT,
+  `usernum` int(11) NOT NULL AUTO_INCREMENT,
   `uid` varchar(30) DEFAULT NULL,
   `password` varchar(100) DEFAULT NULL,
   `name` varchar(30) DEFAULT NULL,
   `enabled` tinyint(4) NOT NULL,
   `role` char(50) NOT NULL DEFAULT 'USER',
-  PRIMARY KEY (`msrl`)
+  PRIMARY KEY (`usernum`)
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -196,4 +172,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-02-05 14:19:01
+-- Dump completed on 2021-02-08 21:57:25
