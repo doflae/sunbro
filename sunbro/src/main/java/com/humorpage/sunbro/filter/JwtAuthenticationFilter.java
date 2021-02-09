@@ -3,6 +3,7 @@ package com.humorpage.sunbro.filter;
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.advice.exception.JwtRefreshTokenExpiredException;
 import com.humorpage.sunbro.model.User;
+import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.service.CookieService;
 import com.humorpage.sunbro.service.JwtTokenService;
 import com.humorpage.sunbro.service.RedisTokenService;
@@ -51,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException, JwtRefreshTokenExpiredException {
 
-        final Cookie jwtToken = CookieService.getCookie(httpServletRequest, JwtTokenService.ACCESS_TOKEN_NAME);
+        final Cookie jwtToken = cookieService.getCookie(httpServletRequest, JwtTokenService.ACCESS_TOKEN_NAME);
 
         Long usernum = null;
         String jwt = null;
@@ -64,16 +65,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 usernum = jwtTokenService.getUsernum(jwt);
             }
             if(usernum!=null){
-                User user = userService.loadUserByUsernum(usernum).orElseThrow(CIdSigninFailedException::new);
+                UserSimple userSimple = userService.loadUserSimpleByUsernum(usernum).orElseThrow(CIdSigninFailedException::new);
 
-                if(jwtTokenService.validateToken(jwt,user)){
-                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities());
+                if(jwtTokenService.validateToken(jwt,userSimple)){
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple,null,userSimple.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }
             }
         }catch (ExpiredJwtException e){
-            Cookie refreshToken = CookieService.getCookie(httpServletRequest, JwtTokenService.REFRESH_TOKEN_NAME);
+            Cookie refreshToken = cookieService.getCookie(httpServletRequest, JwtTokenService.REFRESH_TOKEN_NAME);
             if(refreshToken!=null){
                 refreshJwt = refreshToken.getValue();
             }
@@ -84,17 +85,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (refreshJwt != null) {
                 refreshUnum = Long.parseLong(redisTokenService.getData(refreshJwt));
                 if (refreshUnum.equals(jwtTokenService.getUsernum(refreshJwt))) {
-                    System.out.print("?\n");
-                    User user = userService.loadUserByUsernum(refreshUnum).orElseThrow(CIdSigninFailedException::new);
-                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                    UserSimple userSimple = userService.loadUserSimpleByUsernum(refreshUnum).orElseThrow(CIdSigninFailedException::new);
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple, null, userSimple.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-                    System.out.print("here\n");
-                    User n_user = new User();
+                    UserSimple n_user = new UserSimple();
                     n_user.setUsernum(refreshUnum);
                     String newToken = jwtTokenService.generateToken(n_user);
 
-                    Cookie newAccessToken = CookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, newToken);
+                    Cookie newAccessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, newToken);
                     httpServletResponse.addCookie(newAccessToken);
                 }
             }

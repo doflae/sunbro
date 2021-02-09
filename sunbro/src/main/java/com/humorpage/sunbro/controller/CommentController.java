@@ -3,6 +3,7 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Comment;
+import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.CommentService;
 import com.humorpage.sunbro.service.LikesService;
@@ -55,14 +56,19 @@ public class CommentController {
 
     @ApiOperation(value = "댓글좋아요", notes = "comment_id를 받아 좋아요 on/off")
     @PostMapping(value = "/like")
-    public CommonResult likeComment(@RequestParam("id") Long comment_id, Authentication authentication){
-        String uid;
+    public CommonResult likeComment(@RequestParam("id") Long comment_id, @RequestParam("onoff") boolean on, Authentication authentication){
+        Long usernum;
         try{
-            uid = authentication.getName();
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            usernum = userSimple.getUsernum();
         }catch (NullPointerException e){
             return responseService.setDetailResult(false, -1, "Token Expired");
         }
-        likesService.saveComment(uid,comment_id);
+        if(on){
+            likesService.savelikeComment(usernum,comment_id);
+        }else{
+            likesService.deletelikeComment(usernum,comment_id);
+        }
         return responseService.getSuccessResult();
     }
 }

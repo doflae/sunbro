@@ -1,6 +1,7 @@
 package com.humorpage.sunbro.service;
 
 import com.humorpage.sunbro.model.User;
+import com.humorpage.sunbro.model.UserSimple;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -52,12 +53,12 @@ public class JwtTokenService {
         return expiration.before(new Date());
     }
 
-    public String generateToken(User user) {
-        return doGenerateToken(user.getUsernum(), AccesstokenValidMilisecond);
+    public String generateToken(UserSimple userSimple) {
+        return doGenerateToken(userSimple.getUsernum(), AccesstokenValidMilisecond);
     }
 
-    public String generateRefreshToken(User user) {
-        return doGenerateToken(user.getUsernum(), RefreshtokenValidMilisecond);
+    public String generateRefreshToken(UserSimple userSimple) {
+        return doGenerateToken(userSimple.getUsernum(), RefreshtokenValidMilisecond);
     }
 
     public String doGenerateToken(Long usernum, long expireTime) {
@@ -73,9 +74,9 @@ public class JwtTokenService {
                 .compact();
     }
 
-    public Boolean validateToken(String token, User user) {
+    public Boolean validateToken(String token, UserSimple userSimple) {
         final Long usernum = getUsernum(token);
 
-        return (usernum.equals(user.getUsernum()) && !isTokenExpired(token));
+        return (usernum.equals(userSimple.getUsernum()) && !isTokenExpired(token));
     }
 }

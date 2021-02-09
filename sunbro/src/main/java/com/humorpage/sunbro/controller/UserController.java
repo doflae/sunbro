@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api")
-class UserApiController {
+@RequestMapping("/user")
+class UserController {
 
     @Autowired
     private UserRepository repository;

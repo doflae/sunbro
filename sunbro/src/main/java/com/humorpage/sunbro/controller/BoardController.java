@@ -4,6 +4,7 @@ import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.model.BoardThumbnail;
 import com.humorpage.sunbro.model.User;
+import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.BoardRepository;
 import com.humorpage.sunbro.respository.BoardThumbnailRepository;
 import com.humorpage.sunbro.respository.UserRepository;
@@ -66,14 +67,20 @@ public class BoardController {
     }
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on/off")
     @PostMapping(value = "/like")
-    public CommonResult likeBoard(@RequestParam("id") Long board_id, Authentication authentication){
-        String uid;
+    public CommonResult likeBoard(@RequestParam("id") Long board_id,@RequestParam("onoff") boolean on, Authentication authentication){
+        Long usernum;
         try{
-            uid = authentication.getName();
+            UserSimple userSimple = (UserSimple)authentication.getPrincipal();
+            usernum = userSimple.getUsernum();
         }catch (NullPointerException e){
             return responseService.setDetailResult(false, -1, "Token Expired");
         }
-        likesService.saveBoard(uid, board_id);
+        if(on){
+            likesService.savelikeBoard(usernum,board_id);
+        }
+        else{
+            likesService.deletelikeBoard(usernum, board_id);
+        }
         return responseService.getSuccessResult();
     }
 
