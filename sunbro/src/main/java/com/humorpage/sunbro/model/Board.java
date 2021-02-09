@@ -45,7 +45,7 @@ public class Board implements Serializable {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_num")
-    private User author;
+    private UserSimple author;
 
     private Integer likes;
 

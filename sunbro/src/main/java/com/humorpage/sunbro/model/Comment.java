@@ -24,7 +24,7 @@ public class Comment implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "author_num")
-    private User author;
+    private UserSimple author;
 
     @NotNull
     private String content;

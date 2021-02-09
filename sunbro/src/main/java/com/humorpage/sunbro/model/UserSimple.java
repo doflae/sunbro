@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Entity
 @Table(name="user")
 @Data
-public class UserThumbNail implements Serializable {
+public class UserSimple implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore

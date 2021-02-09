@@ -20,8 +20,9 @@ public class Commentlikes implements Serializable {
     @JoinColumn(name="comment_id")
     private Comment comment;
 
+
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name="user_num")
-    private User user;
+    private UserSimple user;
 }
