@@ -1,0 +1,66 @@
+
+.ql-editor {
+    max-height: 400px;
+}
+.quill-blur {
+display: none;
+}
+.quill{
+    margin:10px 10px 10px 10px;
+}
+@media screen{
+    .edit-focus .quill {
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        z-index: 1;
+    }
+    .edit-focus .quill-blur {
+        display: block;
+        top: 300px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        z-index: 1;
+    }
+    .edit-focus .ql-editor {
+        box-sizing: border-box;
+        height: 250px;
+    }
+    .edit-focus .navbar {
+        display: none;
+    }
+    .edit-focus .main-panel {
+        padding: 0 !important;
+    }
+    .edit-focus .main-panel .main-content {
+        min-height: unset !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}
+.editor_submit{
+    background-color: #11698e;
+    color: #fff;
+    float: right;
+    height: 2.5rem;
+    width: 3.5rem;
+    font-size: 1rem;
+    margin: 5px 5px;
+}
+.editor_title{
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+    width: 80%;
+    font-size: 1.5rem;
+    font-weight: normal;
+    border-bottom: 1px solid rgba(94, 93, 93, 0.418);
+}
+.editor_navbar{
+    padding: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
