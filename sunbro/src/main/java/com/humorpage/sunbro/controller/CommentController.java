@@ -4,21 +4,22 @@ package com.humorpage.sunbro.controller;
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Comment;
 import com.humorpage.sunbro.model.UserSimple;
+import com.humorpage.sunbro.respository.CommentRepository;
 import com.humorpage.sunbro.result.CommonResult;
+import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.service.CommentService;
 import com.humorpage.sunbro.service.LikesService;
 import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.vaildator.CommentValidator;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RequestMapping("/comment")
 @RestController
@@ -35,6 +36,15 @@ public class CommentController {
 
     @Autowired
     private LikesService likesService;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @ApiOperation(value = "댓글 열람",notes = "게시글의 id를 받아 해당 글의 댓글 열람")
+    @GetMapping(value = "/list")
+    public List<Comment> getComment(@RequestParam(value = "content_id",required = true) Long board_id){
+        return commentRepository.findAllByBoardId(board_id);
+    }
 
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
     @PostMapping(value = "/form")
