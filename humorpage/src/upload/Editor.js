@@ -3,7 +3,6 @@ import React,{Component} from "react"
 import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import { uploadFile } from "./UploadFile";
-import {authWrapper} from "../auth/AuthWrapper"
 import { uploadContent} from "./UploadContent";
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 const __ISIOS__ = navigator.userAgent.match(/iPad|iPhone|iPod/i) ? true : false;
@@ -25,8 +24,6 @@ class Editor extends Component {
       var title = document.querySelector(".editor_title").value
 
       var content = document.querySelector(".ql-editor").innerHTML
-      console.log(title)
-      console.log(content)
       if (title!==null && content!=="<p><br></p>"){
         console.log("hi")
         let data = new FormData();
@@ -34,7 +31,6 @@ class Editor extends Component {
         data.append('content',content)
         return uploadContent(data).then(res =>{
           if (res.status === 200){
-            console.log("hi success")
             this.props.history.push("/")
           }
           else{
@@ -238,4 +234,4 @@ class Editor extends Component {
       )
     }
   }
-export default authWrapper(withRouter(Editor));
+export default withRouter(Editor);

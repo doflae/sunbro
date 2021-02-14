@@ -3,6 +3,7 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Comment;
+import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.CommentRepository;
 import com.humorpage.sunbro.result.CommonResult;
@@ -42,21 +43,26 @@ public class CommentController {
 
     @ApiOperation(value = "댓글 열람",notes = "게시글의 id를 받아 해당 글의 댓글 열람")
     @GetMapping(value = "/list")
-    public List<Comment> getComment(@RequestParam(value = "content_id",required = true) Long board_id){
-        return commentRepository.findAllByBoardId(board_id);
+    public ListResult<Comment> getComment(@RequestParam(value = "content_id") Long board_id){
+        return responseService.getListResult(commentRepository.findAllByBoardId(board_id));
     }
 
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
     @PostMapping(value = "/form")
     public CommonResult postForm(@Valid Comment comment, @RequestParam("board_id") Long board_id, BindingResult bindingResult, Authentication authentication){
         commentValidator.validate(comment,bindingResult);
+        UserSimple userSimple = null;
+        try{
+            userSimple = (UserSimple) authentication.getPrincipal();
+        }catch (NullPointerException ignored){
+
+        }
         if(bindingResult.hasErrors()){
             //bindingResult에 오류 내역잇으니 뽑아서 응답에 넣고 프론트에서 처리하는 걸로
             return responseService.getFailResult();
         }
-        String uid = authentication.getName();
         try{
-            commentService.save(uid,board_id,comment);
+            commentService.save(userSimple,board_id,comment);
             return responseService.getSuccessResult();
         }
         catch (CIdSigninFailedException e){
@@ -67,17 +73,16 @@ public class CommentController {
     @ApiOperation(value = "댓글좋아요", notes = "comment_id를 받아 좋아요 on/off")
     @PostMapping(value = "/like")
     public CommonResult likeComment(@RequestParam("id") Long comment_id, @RequestParam("onoff") boolean on, Authentication authentication){
-        Long usernum;
+        UserSimple userSimple;
         try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            usernum = userSimple.getUsernum();
+            userSimple = (UserSimple) authentication.getPrincipal();
         }catch (NullPointerException e){
             return responseService.setDetailResult(false, -1, "Token Expired");
         }
         if(on){
-            likesService.savelikeComment(usernum,comment_id);
+            likesService.savelikeComment(userSimple.getUsernum(),comment_id);
         }else{
-            likesService.deletelikeComment(usernum,comment_id);
+            likesService.deletelikeComment(userSimple.getUsernum(),comment_id);
         }
         return responseService.getSuccessResult();
     }

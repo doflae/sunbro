@@ -23,8 +23,7 @@ public class CommentService {
     @Autowired
     private BoardRepository boardRepository;
 
-    public Comment save(String uid, Long board_id, Comment comment){
-        UserSimple userSimple = userSimpleRepository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
+    public Comment save(UserSimple userSimple, Long board_id, Comment comment){
         Board board = boardRepository.findById(board_id).orElseThrow(CIdSigninFailedException::new);
         comment.setAuthor(userSimple);
         comment.setBoard(board);

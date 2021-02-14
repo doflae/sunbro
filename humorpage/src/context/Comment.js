@@ -37,24 +37,24 @@ export class Comment extends Component{
 				)}
 				
 				<div className="comment-main">
-					<p className="comment-subscript">
-						<p className="comment-left">
-							<p className="comment-author">
+					<div className="comment-subscript">
+						<div className="comment-left">
+							<div className="comment-author">
 								{c.author.uid}
-							</p>
-							<p className="comment-others">
+							</div>
+							<div className="comment-others">
 								{c.created}
-							</p>
-						</p>
-						<p className="comment-right">
+							</div>
+						</div>
+						<div className="comment-right">
 							<a className="re-comment" onClick={this.recommentClick(`${c.id}`)}>
 								답글
 							</a>
-						</p>
-					</p>
-					<p className="comment-context">
+						</div>
+					</div>
+					<div className="comment-context">
 						{c.content}
-					</p>
+					</div>
 				</div>
 			</div>
 		)

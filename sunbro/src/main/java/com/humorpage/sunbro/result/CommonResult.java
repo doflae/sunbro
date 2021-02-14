@@ -1,5 +1,6 @@
 package com.humorpage.sunbro.result;
 
+import com.humorpage.sunbro.model.UserSimple;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;

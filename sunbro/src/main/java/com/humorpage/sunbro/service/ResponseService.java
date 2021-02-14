@@ -1,5 +1,6 @@
 package com.humorpage.sunbro.service;
 
+import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
@@ -12,7 +13,7 @@ public class ResponseService {
 
     // enum으로 api 요청 결과에 대한 code, message를 정의합니다.
     public enum CommonResponse {
-        SUCCESS(0, "성공하였습니디."),
+        SUCCESS(0, "성공하였습니다."),
         FAIL(-1, "실패하였습니다.");
 
         int code;
@@ -48,6 +49,11 @@ public class ResponseService {
         ListResult<T> result = new ListResult<>();
         result.setList(list);
         setSuccessResult(result);
+        return result;
+    }
+    public <T> ListResult<T> getNullListResult(){
+        ListResult<T> result = null;
+        setFailedResult(result);
         return result;
     }
     // 성공 결과만 처리하는 메소드

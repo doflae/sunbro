@@ -1,7 +1,6 @@
 import React, {Component} from "react"
 import Axios from "axios"
 import {AuthContext} from "./AuthContext"
-import {authUrl} from "../data/Urls"
 
 export class AuthProviderImpl extends Component{
     constructor(props){
@@ -16,7 +15,7 @@ export class AuthProviderImpl extends Component{
         let credential_form = new FormData();
         credential_form.append('uid',credentials['uid'])
         credential_form.append('password',credentials['password'])
-        return Axios.post(authUrl,credential_form).then(response =>{
+        return Axios.post("/account/login",credential_form).then(response =>{
             if (response.data.success === true){
                 this.setState({
                     isAuthenticated:true,

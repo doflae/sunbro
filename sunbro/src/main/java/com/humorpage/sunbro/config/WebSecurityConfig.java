@@ -26,8 +26,6 @@ import javax.sql.DataSource;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private DataSource dataSource;
 
     @Autowired
     private final CookieService cookieService;
@@ -57,9 +55,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests() // 다음 리퀘스트에 대한 사용권한 체크
                 .antMatchers("/**","/*/signin", "/*/signup", "/account/register" ,"/css/**", "/api/**").permitAll() // 가입 및 인증 주소는 누구나 접근가능
                 .antMatchers(HttpMethod.GET, "api/**").permitAll() // api로 시작하는 GET요청 리소스는 누구나 접근가능
-                .anyRequest().hasRole("USER") // 그외 나머지 요청은 모두 인증된 회원만 접근 가능
-                .and()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService, cookieService, redisTokenService,userService), UsernamePasswordAuthenticationFilter.class); // jwt token 필터를 id/password 인증 필터 전에 넣는다
+                .anyRequest().hasRole("USER"); // 그외 나머지 요청은 모두 인증된 회원만 접근 가능
+//                .and()
+//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService, cookieService, redisTokenService,userService), UsernamePasswordAuthenticationFilter.class); // jwt token 필터를 id/password 인증 필터 전에 넣는다
     }
 
 //    @Autowired

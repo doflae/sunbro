@@ -47,9 +47,6 @@ public class Board implements Serializable {
     @JoinColumn(name = "author_num")
     private UserSimple author;
 
-    private Integer likes;
-
-
     @JsonManagedReference
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();

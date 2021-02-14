@@ -1,6 +1,5 @@
-import React, {Component, createElement} from "react";
-import {Context} from "./Context";
-import {CommentBox} from "./CommentBox";
+import React, {Component} from "react";
+import CommentBox from "./CommentBox";
 
 export class Thumbnail extends Component{
     constructor(props){
@@ -35,19 +34,19 @@ export class Thumbnail extends Component{
         return this.props.contexts.map(c =>
             <div className="content" key={c.id}>
                 <div className="content_top">
-                    <p className="content_top_left">
+                    <div className="content_top_left">
                         {c.author.img==null?(
                             <img className="author_img" src="/images/user_default.jpg"/>
                         )
                         :(
                             <img className="author_img" src={c.author.img}/>
                         )}
-                    </p>
-                    <p className="content_top_center">
+                    </div>
+                    <div className="content_top_center">
                         <div className="author_name">{c.author.uid}</div>
                         <div className="created">3 시간전</div>
-                    </p>
-                    <p className="content_top_right"></p>
+                    </div>
+                    <div className="content_top_right"></div>
                 </div>
                 <div className="content_title">
                     {c.title}

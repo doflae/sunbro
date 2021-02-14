@@ -5,34 +5,33 @@ import './static/css/Content.css'
 import './static/css/Comment.css'
 import "react-quill/dist/quill.snow.css"
 import './static/css/Editor.css'
-import {HumorDataStore} from "./data/DataStore"
-import {Provider} from "react-redux"
-import {BrowserRouter as Router, Route, Switch} from "react-router-dom"
+import {Route, Switch,withRouter} from "react-router-dom"
 import {ContextConnector} from "./context/ContextConnector"
-import {AuthProviderImpl} from "./auth/AuthProviderImpl"
-import Header from "./header/Header"
 import Footer from "./footer/Footer"
 import Editor from "./upload/Editor"
+import {Header} from "./header/Header"
 import {AuthPrompt} from "./auth/AuthPrompt"
-export default class App extends Component{
-
+import {AuthProviderImpl} from "./auth/AuthProviderImpl"
+import {Provider} from "react-redux"
+import {HumorDataStore} from "./data/DataStore"
+class App extends Component{
   render(){
-    return <AuthProviderImpl>
-        <Provider store = {HumorDataStore}>
-          <Router>
+    return<AuthProviderImpl> 
+          <Provider store = {HumorDataStore}>
             <div className="App">
-            <Header/>
+              <Header/>
             <Switch>
-              <div className="main">
-                <Route exact path="/contexts" component={ContextConnector}/>
-                <Route exact path="/upload" component={Editor}/>
-                <Route exact path="/login" component={AuthPrompt}/>
-              </div>
+              <React.Fragment>
+                <Route exact path="/" component={ContextConnector}/>
+                <Route path="/upload" component={Editor}/>
+                <Route path="/login" component={AuthPrompt}/>
+                <Route path="/contexts" component={ContextConnector}/>
+              </React.Fragment>
             </Switch>
             <Footer/>
           </div>
-          </Router>
-        </Provider>
-    </AuthProviderImpl>
+          </Provider>
+          </AuthProviderImpl>
   }
 }
+export default withRouter(App);

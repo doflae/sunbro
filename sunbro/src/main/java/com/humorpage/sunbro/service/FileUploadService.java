@@ -1,7 +1,9 @@
 package com.humorpage.sunbro.service;
 
+import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.result.SingleResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,15 +31,17 @@ public class FileUploadService {
         }
         return sb.toString();
     }
-    public SingleResult<String> uploadToLocal(MultipartFile file, HttpServletRequest req) {
+    public SingleResult<String> uploadToLocal(MultipartFile file) {
         try {
             byte[] data = file.getBytes();
             String uploadFolderPath;
             String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
             if (tmp[0].equals("image")){
-                uploadFolderPath = "C:/Users/tjsh0/Desktop/React_project/humorpage/humorpage/public/images/";
+                uploadFolderPath = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/images/";
+                //uploadFolderPath = "C:/Users/tjsh0/Desktop/React_project/humorpage/humorpage/public/images/";
             }else{
-                uploadFolderPath = "C:/Users/tjsh0/Desktop/React_project/humorpage/humorpage/public/videos/";
+                uploadFolderPath = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/videos/";
+                //uploadFolderPath = "C:/Users/tjsh0/Desktop/React_project/humorpage/humorpage/public/videos/";
             }
             String filename = filenameGenerate()+"."+tmp[tmp.length-1];
             Path path = Paths.get(uploadFolderPath + filename);
@@ -45,7 +49,6 @@ public class FileUploadService {
             return responseService.getSingleResult(filename);
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.print("hi");
             return responseService.getSingleResult(null);
         }
     }

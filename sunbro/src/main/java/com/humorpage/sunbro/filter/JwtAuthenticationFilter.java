@@ -1,5 +1,6 @@
 package com.humorpage.sunbro.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.advice.exception.JwtRefreshTokenExpiredException;
 import com.humorpage.sunbro.model.User;
@@ -11,6 +12,7 @@ import com.humorpage.sunbro.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -25,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 // import 생략
-@Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -41,7 +42,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private final RedisTokenService redisTokenService;
 
-    //Provier 주입
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    //Provider 주입
     public JwtAuthenticationFilter(JwtTokenService jwtTokenService, CookieService cookieService, RedisTokenService redisTokenService, UserService userService) {
         this.cookieService = cookieService;
         this.redisTokenService = redisTokenService;
@@ -66,7 +70,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             if(usernum!=null){
                 UserSimple userSimple = userService.loadUserSimpleByUsernum(usernum).orElseThrow(CIdSigninFailedException::new);
-
+                if(httpServletResponse.getHeader("user")==null){
+                    httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
+                }
                 if(jwtTokenService.validateToken(jwt,userSimple)){
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple,null,userSimple.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
@@ -89,19 +95,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple, null, userSimple.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-                    UserSimple n_user = new UserSimple();
-                    n_user.setUsernum(refreshUnum);
-                    String newToken = jwtTokenService.generateToken(n_user);
-
+                    String newToken = jwtTokenService.generateToken(userSimple);
+                    if (httpServletResponse.getHeader("user")==null){
+                        httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
+                    }
                     Cookie newAccessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, newToken);
                     httpServletResponse.addCookie(newAccessToken);
                 }
             }
         }
-        catch (ExpiredJwtException ignored){
+        catch (ExpiredJwtException |NumberFormatException ignored){
 
         }
-
         filterChain.doFilter(httpServletRequest,httpServletResponse);
     }
 }

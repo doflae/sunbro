@@ -42,7 +42,9 @@ button:focus{
 	font-size: 1.2rem;
 	font-weight: 800;
 }
-
+.head_logo_text{
+	cursor: pointer;
+}
 .head_logo_img{
 	cursor: pointer;
 	max-width: 40px;

@@ -18,8 +18,7 @@ public class BoardService {
     private UserSimpleRepository userSimpleRepository;
 
 
-    public Board save(String uid, Board board) {
-        UserSimple userSimple = userSimpleRepository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
+    public Board save(UserSimple userSimple, Board board) {
         board.setAuthor(userSimple);
         return boardRepository.save(board);
     }

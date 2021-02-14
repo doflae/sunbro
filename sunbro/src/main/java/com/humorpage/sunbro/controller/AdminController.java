@@ -23,8 +23,8 @@ import javax.validation.Valid;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/user")
-class UserController {
+@RequestMapping("/admin")
+class AdminController {
 
     @Autowired
     private UserRepository userRepository;
@@ -41,11 +41,11 @@ class UserController {
     private PasswordEncoder passwordEncoder;
 
 
-    @ApiOperation(value = "회원 단건 조회", notes = "usernum으로 회원을 조회한다")
-    @GetMapping(value = "/{usernum}")
-    public SingleResult<User> findUserById(@ApiParam(value = "msrl", required = true) @PathVariable Long usernum) {
-        return responseService.getSingleResult(userRepository.findById(usernum).orElse(null));
-    }
+//    @ApiOperation(value = "회원 단건 조회", notes = "usernum으로 회원을 조회한다")
+//    @GetMapping(value = "/{usernum}")
+//    public SingleResult<User> findUserById(@ApiParam(value = "msrl", required = true) @PathVariable Long usernum) {
+//        return responseService.getSingleResult(userRepository.findById(usernum).orElse(null));
+//    }
 
 
 //    @ApiOperation(value = "회원 수정", notes = "회원정보를 수정한다")
@@ -60,25 +60,5 @@ class UserController {
 //                .build();
 //        return responseService.getSingleResult(repository.save(user));
 //    }
-
-    @ApiOperation(value = "회원 탈퇴", notes = "authentication의 정보, 입력받은 id, pw 대조하여 확인 후 유저 삭제")
-    @PostMapping(value = "/delete")
-    public CommonResult delete(@ApiParam(value = "id",required = true)@RequestParam String uid,
-                               @ApiParam(value = "pw", required = true)@RequestParam String password,
-                               Authentication authentication) {
-        try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            if (!userSimple.getUid().equals(uid)){
-                return responseService.getFailResult();
-            }
-            if (!passwordEncoder.matches(password,userSimple.getPassword())){
-                return responseService.getFailResult();
-            }
-            userSimpleRepository.delete(userSimple);
-            return responseService.getSuccessResult();
-        }catch (Exception e){
-            return responseService.getFailResult();
-        }
-    }
 
 }

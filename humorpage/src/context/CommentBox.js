@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 import {Comment} from './Comment'
 import Dropzone from "react-dropzone"
 import { uploadFile } from '../upload/UploadFile';
-export class CommentBox extends Component{
+import {withRouter} from "react-router-dom"
+class CommentBox extends Component{
     constructor(props){
         super(props)
 
@@ -14,12 +15,13 @@ export class CommentBox extends Component{
     }
     componentDidMount(){
         const {items} = this.state
-        console.log(this.props)
-		this.getData();
+        this.getData();
         this.setState({
             preItems:items,
             items:items+10,
         });
+        console.log(this.props)
+		console.log(this.state)
 	}
 	getData = () => {
         const {commentList, items, preItems} = this.state
@@ -147,3 +149,4 @@ export class CommentBox extends Component{
         </div>
     }
 }
+export default withRouter(CommentBox);
