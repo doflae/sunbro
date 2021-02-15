@@ -8,7 +8,6 @@ export const AuthPrompt = withRouter(authWrapper(class extends Component{
 	constructor(props){
 		super(props);
 		this.state={
-			logined:false,
 			errorMessage: null
 		}
 		this.defaultAttrs = {required:true};
@@ -19,12 +18,12 @@ export const AuthPrompt = withRouter(authWrapper(class extends Component{
 	}
 
 	authenticate = (credentials) => {
-		console.log(this.props)
 		this.props.authenticate(credentials)
-		.catch(err => this.setState({errorMessage:err.message}))
-		.then(
-			this.setState({logined:true},
-				()=>this.props.history.push("/contexts")));//로그인 성공시 이동경로
+		.then((res)=>{
+			console.log(res)
+			this.props.history.push("/contexts")
+		})
+		.catch(err => this.setState({errorMessage:err.message}));//로그인 성공시 이동경로
 	}
 
 	render = () =>

@@ -4,6 +4,7 @@ import {connect} from "react-redux"
 import {loadData} from "../data/ActionCreators"
 import {authWrapper} from "../auth/AuthWrapper"
 import {Thumbnail} from "./Thumbnail"
+import Axios from "axios"
 const mapStateToProps = (dataStore) => ({
     ...dataStore
 })
@@ -19,8 +20,8 @@ export const ContextConnector = authWrapper(connect(mapStateToProps, mapDispatch
 
             this.state = {
                 contextList : [],
-                items: 10,
-                preItems: 0,
+                last_board:0,
+                user:null,
             };
         }
 
@@ -34,24 +35,26 @@ export const ContextConnector = authWrapper(connect(mapStateToProps, mapDispatch
         }
 
         getData = () => {
-            const {preItems, items, contextList} = this.state;
+            const {last_board,contextList} = this.state;
             var resturl = '/board/recently?'
-            if(preItems===0){
-                
+            if(last_board===0){
+                this.props.request('get',resturl).then(res=>{
+                    console.log(res)
+                    if("user" in res.headers){
+                        console.log(res.headers['user'])
+                        this.setState({
+                            user:JSON.parse(res.headers['user']),
+                        })
+                    }
+                    this.setState({
+                        contextList:[...contextList, ...res.data.list]
+                    })
+                })
             }
-            fetch(resturl)
-            .then((res) => res.json())
-            .then( data =>{
-                let result = data
-                this.setState({
-                    contextList:[...contextList, ...result],
-                });
-            });
         }
 
         infiniteScroll = () => {
             const { documentElement, body } = document;
-            const { items } = this.state;
 
             const scrollHeight = Math.max(documentElement.scrollHeight, body.scrollHeight);
             const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
@@ -59,13 +62,11 @@ export const ContextConnector = authWrapper(connect(mapStateToProps, mapDispatch
 
             if (scrollTop + clientHeight >= scrollHeight) {
                 this.setState({
-                    preItems: items,
-                    items: items + 10,
+                    preItems: 10,
                 });
                 this.getData();
             }
         }
-
         render(){
             const contextList = this.state.contextList;
             return <Switch>

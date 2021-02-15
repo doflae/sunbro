@@ -1,8 +1,8 @@
 import React from "react"
 
 export const AuthContext = React.createContext({
-    isAuthenticated:false,
-    webToken:null,
+    user:null,
     authenticate:(uid, password)=>{},
-    signout:()=>{}
+    signout:()=>{},
+    request:(method,url,data)=>{}
 })
