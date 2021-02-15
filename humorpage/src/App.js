@@ -11,13 +11,18 @@ import Footer from "./footer/Footer"
 import Editor from "./upload/Editor"
 import {Header} from "./header/Header"
 import {AuthPrompt} from "./auth/AuthPrompt"
-import {AuthProviderImpl} from "./auth/AuthProviderImpl"
 import {Provider} from "react-redux"
+import {authWrapper} from "./auth/AuthWrapper";
 import {HumorDataStore} from "./data/DataStore"
 class App extends Component{
+  constructor(props){
+    super(props);
+    this.state={
+      user:null,
+    }
+  }
   render(){
-    return<AuthProviderImpl> 
-          <Provider store = {HumorDataStore}>
+    return<Provider store = {HumorDataStore}>
             <div className="App">
               <Header/>
             <Switch>
@@ -31,7 +36,6 @@ class App extends Component{
             <Footer/>
           </div>
           </Provider>
-          </AuthProviderImpl>
   }
 }
-export default withRouter(App);
+export default authWrapper(withRouter(App));

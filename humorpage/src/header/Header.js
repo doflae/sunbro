@@ -5,17 +5,17 @@ import logo from "../static/img/logo.jpg"
 export const Header = withRouter(authWrapper(class extends Component{
   constructor(props){
     super(props)
-  }
-  componentDidMount(){
-    console.log(this.props)
+    this.state={
+      user:null,
+    }
   }
   handleLogout = () => (e) =>{
-    console.log("logout")
+    this.props.signout();
   }
 
   imageClick = () => (e) =>{
     console.log(this.props)
-    //this.props.history.push("/contexts")
+    this.props.history.push("/contexts")
   }
 
   render = () =>
@@ -24,10 +24,10 @@ export const Header = withRouter(authWrapper(class extends Component{
       <img src={logo} className="head_logo_img" alt="logo"/>
       <div className="head_logo_text">Nogary</div>
     </div>
-    {this.props.isAuthentcated?(
-      <div className="head_logout head_elem" onClick={this.handleLogout()}>Logout</div>
+    {this.props.user!==null?(
+      <div className="head_sign head_elem" onClick={this.handleLogout()}>Logout</div>
     ):(
-      <div className="head_login head_elem"><Link to="/login">Login</Link></div>
+      <div className="head_sign head_elem"><Link to="/login">Login</Link></div>
     )}
     
     </header>

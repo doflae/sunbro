@@ -6,9 +6,19 @@ export class AuthProviderImpl extends Component{
     constructor(props){
         super(props);
         this.state={
-            isAuthenticated:false,
-            webToken:null
+            user:null,
         }
+    }
+
+    request = (method, url, data=null) =>{
+        return Axios({method,url,data,}).then(res=>{
+            if("user" in res.headers){
+                this.setState({
+                    user:JSON.parse(res.headers['user'])
+                })
+            }
+            return res
+        })
     }
 
     authenticate = (credentials) =>{
@@ -16,28 +26,26 @@ export class AuthProviderImpl extends Component{
         credential_form.append('uid',credentials['uid'])
         credential_form.append('password',credentials['password'])
         return Axios.post("/account/login",credential_form).then(response =>{
-            if (response.data.success === true){
+            if ("user" in response.headers){
                 this.setState({
-                    isAuthenticated:true,
-                    webToken:response.data.data
+                    user:JSON.parse(response.headers['user']),
                 })
-                return true;
-            } else {
+            }else {
                 throw new Error("Invalid Credential");
             }
+            return response
         })
     }
 
     signout = () =>{
         this.setState({
-            isAuthenticated:false,
-            webToken:null
+            user:null,
         })
     }
 
     render = () =>
         <AuthContext.Provider value={{...this.state,
-        authenticate:this.authenticate, signout:this.signout}}>
+        authenticate:this.authenticate, signout:this.signout, request:this.request}}>
             {this.props.children}
         </AuthContext.Provider>
 }
