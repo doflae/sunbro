@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/file")
 public class FileUploadApiController {
 
 
@@ -26,7 +26,7 @@ public class FileUploadApiController {
     @Autowired
     private ResponseService responseService;
 
-    @PostMapping("/upload/local")
+    @PostMapping("/upload")
     public SingleResult<String> upload(@RequestParam("file") MultipartFile multipartFile, Authentication authentication) {
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();

@@ -4,6 +4,7 @@ import CommentBox from "./CommentBox";
 export class Thumbnail extends Component{
     constructor(props){
         super(props)
+
     }
     componentDidMount(){
         let b = new Set();
@@ -25,6 +26,35 @@ export class Thumbnail extends Component{
             this.setState({
                 commentboxOn:cmt
             })
+        }
+    }
+    like = (target) => (e) =>{
+        let btn;
+        if(e.target.lastElementChild){
+            btn = e.target
+        }else{
+            btn = e.target.parentElement
+        }
+        if(target.like===true){
+            this.props.request('get',`/board/likeoff?id=${target.id}`).then(res=>{
+                if (!res.data.success){
+                    this.props.history.push("/login")
+                }
+            })
+            target.like = false
+            btn.style.backgroundColor="#e7e6e1"
+            btn.lastElementChild.innerText=target.likes-1
+            target.likes-=1
+        }else{
+            this.props.request('get',`/board/likeon?id=${target.id}`).then(res=>{
+                if (!res.data.success){
+                    this.props.history.push("/login")
+                }
+            })
+            target.like=true
+            btn.style.backgroundColor="#f875aa"
+            btn.lastElementChild.innerText=target.likes+1
+            target.likes+=1
         }
     }
     render(){
@@ -56,8 +86,9 @@ export class Thumbnail extends Component{
                 <div className="conext_bottom">
                     <button className="see_detail">펼치기</button>
                     <div className="buttons">
-                        <button className="comment_btn content_btn" onClick={this.getCommentBox(c.id)}>댓글{c.comment_cnt}</button>
-                        <button className="like_btn content_btn">좋아요{c.likes}</button>
+                        <button className="content_btn" onClick={this.getCommentBox(c.id)}><span>댓글</span><span>{c.comments_num}</span></button>
+                        <button className="like_btn content_btn" onClick={this.like(c)}><span>좋아요</span><span>{c.likes}</span></button>
+                        
                         <button className="scrap_btn content_btn">공유하기</button>    
                     </div>
                 </div>

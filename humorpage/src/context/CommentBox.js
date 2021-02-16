@@ -1,40 +1,41 @@
 import React, {Component} from 'react';
 import {Comment} from './Comment'
 import Dropzone from "react-dropzone"
-import { uploadFile } from '../upload/UploadFile';
 import {withRouter} from "react-router-dom"
+import {authWrapper} from "../auth/AuthWrapper"
+
 class CommentBox extends Component{
     constructor(props){
         super(props)
 
         this.state = {
             commentList : [],
-            items: 3,
-            preItems: 0
+            last_id : null,
         };
     }
     componentDidMount(){
-        const {items} = this.state
         this.getData();
-        this.setState({
-            preItems:items,
-            items:items+10,
-        });
-        console.log(this.props)
-		console.log(this.state)
 	}
 	getData = () => {
-        const {commentList, items, preItems} = this.state
+        const {commentList, last_id} = this.state
 		const id = this.props.content_id
-        var resturl = `/comment/list?content_id=${id}`
-		fetch(resturl)
-		.then((res) => res.json())
-		.then( data =>{
-            console.log(data)
-			this.setState({
-				commentList:commentList.concat([...data])
-			});
-		});
+        var resturl = `/comment/list?board_id=${id}`
+        if (last_id){
+            resturl+=`&last_id=${last_id}`
+        }
+        this.props.request("get",resturl).then(res=>{
+            if(last_id===null){
+                this.setState({
+                    commentList:commentList.concat([...res.data.list]),
+                    last_id:0,
+                })
+            }else{
+                this.setState({
+                    commentList:commentList.concat([...res.data.list]),
+                    last_id:res.data.list[res.data.list.length-1]['id'],
+                })
+            }
+        })
     }
 
     seeMore = () => (e) =>{
@@ -46,8 +47,36 @@ class CommentBox extends Component{
         });
     }
 
+    isEmpty = (st) => {
+        return (st.length === 0 || !st.trim());
+    }
+
     submitComment = () => (e) =>{
-        console.log(e.target.previousElement.value);
+        let tmp = e.target;
+        let image_src = tmp.parentElement.previousElementSibling.firstElementChild.getAttribute('src');
+        let content = tmp.parentElement.previousElementSibling.previousElementSibling.value
+        console.log('hi')
+        console.log(content)
+        console.log(this.isEmpty(content))
+        if (!this.isEmpty(content)){
+            content = '<p>'+content+"</p>"
+        }
+        if(!this.isEmpty(image_src)){
+            content+=`<img src=${image_src} class="comment_context_img" height="100px" width="auto"/>`;
+        }
+        if(!this.isEmpty(content)){
+            let data = new FormData();
+            data.append('content',content)
+            data.append('board_id',this.props.content_id)
+            console.log('upload!!!!!!!!!!!')
+            return this.props.request('post',"/comment/upload",data).then(res =>{
+                if(res.status==200 && res.data.success){
+                    console.log('hi')
+                }else{
+                    console.log('bye')
+                }
+            })
+        }
     }
 
     imageHandler = () => (e) =>{
@@ -58,7 +87,6 @@ class CommentBox extends Component{
     }
 
     onDrop = async(acceptFile) =>{
-        console.log("hiwing")
         try{
             await acceptFile.reduce((pacc, _file, i) =>{
                 if(_file.type.split("/")[0] ==="image"){
@@ -76,27 +104,26 @@ class CommentBox extends Component{
 
     savefile = (file) =>{
         const formData = new FormData();
-        formData.append('file', file)
+        formData.append('file',file)
         const nowDate = new Date().getTime();
         const workings = {...this.state.workings, [nowDate]:true};
         this.setState({workings});
-        return uploadFile(formData,{
+        return this.props.request("post","/file/upload",formData,{
             headers:{
-              'Content-Type':'multipart/form-data'
+            'Content-Type':'multipart/form-data'
             }
-          }).then(
+        }).then(
             (res)=>{
-                console.log(res);
-              //반환 데이터에는 public/images 이후의 경로를 반환
-              return res.data
+            //반환 데이터에는 public/images 이후의 경로를 반환
+            return res.data
             },
             (error)=>{
-              console.error("saveFile error:", error);
-              workings[nowDate] = false;
-              this.setState({workings});
-              return Promise.reject(error);
+            console.error("saveFile error:", error);
+            workings[nowDate] = false;
+            this.setState({workings});
+            return Promise.reject(error);
             }
-          );
+        );
     }
     render(){
         const commentList = this.state.commentList
@@ -129,7 +156,7 @@ class CommentBox extends Component{
                                     c14-14,33.2-22.4,54.4-22.4s40.4,8.8,54.4,22.4c14,14,22.4,33.2,22.4,54.4C287.6,250.8,278.8,270,264.8,284z"/>
                                 <circle cx="352.8" cy="150" r="19.6"/>
                     </svg>
-                <button className="comment-btn" onClick={this.submitComment()} type="submit">등록</button>
+                <button className="comment_btn" onClick={this.submitComment()} type="submit">등록</button>
                 </div>
                 <Dropzone
                     ref = {(el)=>(this.dropzone = el)}
@@ -149,4 +176,4 @@ class CommentBox extends Component{
         </div>
     }
 }
-export default withRouter(CommentBox);
+export default authWrapper(withRouter(CommentBox));

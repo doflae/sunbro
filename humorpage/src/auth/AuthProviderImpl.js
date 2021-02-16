@@ -2,6 +2,7 @@ import React, {Component} from "react"
 import Axios from "axios"
 import {AuthContext} from "./AuthContext"
 
+Axios.defaults.withCredentials=true;
 export class AuthProviderImpl extends Component{
     constructor(props){
         super(props);
@@ -10,11 +11,16 @@ export class AuthProviderImpl extends Component{
         }
     }
 
-    request = (method, url, data=null) =>{
-        return Axios({method,url,data,}).then(res=>{
+    request = (method, url, data=null, params=null) =>{
+        return Axios({method,url,data,params,}).then(res=>{
+            console.log(res)
             if("user" in res.headers){
                 this.setState({
-                    user:JSON.parse(res.headers['user'])
+                    user:JSON.parse(res.headers['user']),
+                })
+            }else{
+                this.setState({
+                    user:null,
                 })
             }
             return res
@@ -38,8 +44,12 @@ export class AuthProviderImpl extends Component{
     }
 
     signout = () =>{
-        this.setState({
-            user:null,
+        Axios.get('/account/logout').then(res=>{
+            if(res.data.success){
+                this.setState({
+                    user:null,
+                })
+            }
         })
     }
 

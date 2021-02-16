@@ -16,7 +16,7 @@ export class Comment extends Component{
 			node.className = "comment-input"
 			var txt_area = document.createElement("textarea")
 			var btn = document.createElement("button")
-			btn.className="comment-btn"
+			btn.className="comment_btn"
 			btn.type = "submit"
 			btn.innerText = "등록"
 			node.appendChild(txt_area)
@@ -52,8 +52,7 @@ export class Comment extends Component{
 							</a>
 						</div>
 					</div>
-					<div className="comment-context">
-						{c.content}
+					<div className="comment-context" dangerouslySetInnerHTML={{__html:c.content}}>
 					</div>
 				</div>
 			</div>

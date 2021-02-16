@@ -3,8 +3,8 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Comment;
-import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
+import com.humorpage.sunbro.respository.CommentLikesRepository;
 import com.humorpage.sunbro.respository.CommentRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
@@ -12,14 +12,15 @@ import com.humorpage.sunbro.service.CommentService;
 import com.humorpage.sunbro.service.LikesService;
 import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.vaildator.CommentValidator;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashSet;
 import java.util.List;
 
 @RequestMapping("/comment")
@@ -39,17 +40,35 @@ public class CommentController {
     private LikesService likesService;
 
     @Autowired
+    private CommentLikesRepository commentLikesRepository;
+
+    @Autowired
     private CommentRepository commentRepository;
 
     @ApiOperation(value = "댓글 열람",notes = "게시글의 id를 받아 해당 글의 댓글 열람")
     @GetMapping(value = "/list")
-    public ListResult<Comment> getComment(@RequestParam(value = "content_id") Long board_id){
-        return responseService.getListResult(commentRepository.findAllByBoardId(board_id));
+    public ListResult<Comment> getComment(@RequestParam(value = "board_id") Long board_id, @RequestParam(value="last_id", required = false)Long comment_id, Authentication authentication){
+        List<Comment> commentList;
+        if(comment_id==null){
+            commentList=commentRepository.findTop3ByBoardIdOrderByLikesAsc(board_id);
+        }else{
+            commentList=commentRepository.findByBoardIdGreaterThanOrderByIdAsc(board_id,comment_id, PageRequest.of(0,10));
+        }
+        try{
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            HashSet<Long> commentlikesList= new HashSet<>(commentLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
+            commentList.forEach(comment -> {
+                comment.setLike(commentlikesList.contains(comment.getId()));
+            });
+        }catch (NullPointerException ignored){
+
+        }
+        return responseService.getListResult(commentList);
     }
 
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
-    @PostMapping(value = "/form")
-    public CommonResult postForm(@Valid Comment comment, @RequestParam("board_id") Long board_id, BindingResult bindingResult, Authentication authentication){
+    @PostMapping(value = "/upload")
+    public CommonResult uploadComment(@Valid Comment comment, @RequestParam("board_id") Long board_id, BindingResult bindingResult, Authentication authentication){
         commentValidator.validate(comment,bindingResult);
         UserSimple userSimple = null;
         try{

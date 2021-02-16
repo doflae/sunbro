@@ -60,6 +60,7 @@ button:focus{
 	background-color: #ec4646;
 	color:#ffffff;
 	width: 10%;
+	cursor: pointer;
 	height: 80%;
 	margin-right: 10px;
 	margin-left: 10px;

@@ -39,15 +39,7 @@ public class Board implements Serializable {
     @Column(name ="updated")
     private LocalDateTime updated;
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
-    private List<Boardlikes> boardlikes = new ArrayList<>();
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_num")
     private UserSimple author;
-
-    @JsonManagedReference
-    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
-    private List<Comment> comments = new ArrayList<>();
 }

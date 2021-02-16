@@ -2,8 +2,10 @@ package com.humorpage.sunbro.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -44,8 +46,13 @@ public class Comment implements Serializable {
     @Column(name ="updated")
     private LocalDateTime updated;
 
-    @OneToMany(mappedBy = "comment")
-    @JsonIgnore
-    private List<Commentlikes> commentlikes = new ArrayList<>();
+//    @JsonManagedReference
+//    @OneToMany(mappedBy = "comment")
+//    private List<Commentlikes> commentlikes = new ArrayList<>();
 
+    @Formula("(select count(*) from commentlikes cl where cl.comment_id=id)")
+    private int likes;
+
+    @Transient
+    private boolean like;
 }

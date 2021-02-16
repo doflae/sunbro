@@ -3,11 +3,9 @@ package com.humorpage.sunbro.controller;
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.model.BoardThumbnail;
+import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
-import com.humorpage.sunbro.respository.BoardRepository;
-import com.humorpage.sunbro.respository.BoardThumbnailRepository;
-import com.humorpage.sunbro.respository.UserRepository;
-import com.humorpage.sunbro.respository.UserSimpleRepository;
+import com.humorpage.sunbro.respository.*;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
@@ -22,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
 import javax.validation.Valid;
+import java.util.HashSet;
+import java.util.List;
 
 @RestController
 @RequestMapping("/board")
@@ -52,11 +52,14 @@ public class BoardController {
     private UserSimpleRepository userSimpleRepository;
 
     @Autowired
+    private BoardLikesRepository boardLikesRepository;
+
+    @Autowired
     private CacheRankingService cacheRankingService;
 
 
     @ApiOperation(value = "업로드", notes="html코드를 받아 최종적으로 업로드한다.")
-    @PostMapping(value = "/form")
+    @PostMapping(value = "/upload")
     public CommonResult postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
@@ -71,36 +74,64 @@ public class BoardController {
             return responseService.setDetailResult(false,-1,"Need to Login");
         }
     }
-    @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on/off")
-    @PostMapping(value = "/like")
-    public CommonResult likeBoard(@RequestParam("id") Long board_id,@RequestParam("onoff") boolean on, Authentication authentication){
+    @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")
+    @GetMapping(value = "/likeon")
+    public CommonResult likeBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
         UserSimple userSimple;
         try{
             userSimple = (UserSimple)authentication.getPrincipal();
         }catch (NullPointerException e){
             return responseService.setDetailResult(false, -1, "Token Expired");
         }
-        if(on){
-            likesService.savelikeBoard(userSimple.getUsernum(),board_id);
+        likesService.savelikeBoard(userSimple.getUsernum(),board_id);
+        return responseService.getSuccessResult();
+    }
+    @ApiOperation(value="좋아요 취소",notes = "board_id를 받아 좋아요 off")
+    @GetMapping(value = "likeoff")
+    public CommonResult likecancelBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
+        UserSimple userSimple;
+        try{
+            userSimple = (UserSimple) authentication.getPrincipal();
+        }catch (NullPointerException e){
+            return responseService.setDetailResult(false, -1, "Token Expired");
         }
-        else{
-            likesService.deletelikeBoard(userSimple.getUsernum(), board_id);
-        }
+        likesService.deletelikeBoard(userSimple.getUsernum(),board_id);
         return responseService.getSuccessResult();
     }
 
     @GetMapping("/recently")
-    ListResult<BoardThumbnail> recently(@RequestParam(value = "board_id",required = false) Long board_id){
+    ListResult<BoardThumbnail> recently(@RequestParam(value = "board_id",required = false) Long board_id, Authentication authentication){
+        List<BoardThumbnail> boardThumbnailList;
         if(board_id==null){
-            return responseService.getListResult(boardThumbnailRepository.findByOrderByIdDesc(PageRequest.of(0,10)));
+            boardThumbnailList = boardThumbnailRepository.findByOrderByIdDesc(PageRequest.of(0,10));
         }else{
-            return responseService.getListResult(boardThumbnailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,10)));
+            boardThumbnailList = boardThumbnailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,10));
         }
+        try {
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
+            boardThumbnailList.forEach(boardThumbnail -> {
+                boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
+            });
+        }catch (NullPointerException ignored){
+
+        }
+        return responseService.getListResult(boardThumbnailList);
     }
 
     @GetMapping("/rank")
-    ListResult<BoardThumbnail> ranked(@RequestParam(required = false, defaultValue = "DAILY") RankingType rankType){
-        return responseService.getListResult(cacheRankingService.getRanking(rankType));
+    ListResult<BoardThumbnail> ranked(@RequestParam(required = false, defaultValue = "DAILY") RankingType rankType, Authentication authentication){
+        List<BoardThumbnail> boardThumbnailList = cacheRankingService.getRanking(rankType);
+        try{
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
+            boardThumbnailList.forEach(boardThumbnail -> {
+                boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
+            });
+        }catch (NullPointerException ignored){
+
+        }
+        return responseService.getListResult(boardThumbnailList);
     }
 
     @GetMapping("/detail/{board_id}")
@@ -117,29 +148,41 @@ public class BoardController {
     @GetMapping("/search")
     ListResult<BoardThumbnail> all(@RequestParam(required = false, defaultValue = "") String title,
                    @RequestParam(required = false, defaultValue = "") String uid,
-                   @RequestParam(required = false, defaultValue = "") String content) {
-
+                   @RequestParam(required = false, defaultValue = "") String content,Authentication authentication) {
+        List<BoardThumbnail> boardThumbnailList;
         if (StringUtils.isEmpty(title) && StringUtils.isEmpty(content) && StringUtils.isEmpty(uid)) {
-            return responseService.getNullListResult();
+            boardThumbnailList=null;
         }
         else if(StringUtils.isEmpty(title) && StringUtils.isEmpty(content)){
             try{
                 UserSimple target = userSimpleRepository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
-                return responseService.getListResult(boardThumbnailRepository.findAllByAuthor(target.getUsernum()));
+                boardThumbnailList = boardThumbnailRepository.findAllByAuthor(target.getUsernum());
             }
             catch (CIdSigninFailedException e){
-                return responseService.getNullListResult();
+                boardThumbnailList = null;
             }
         }
         else if(StringUtils.isEmpty(title) && StringUtils.isEmpty(uid)){
-            return responseService.getListResult(boardThumbnailRepository.findByContentContaining(content));
+            boardThumbnailList = boardThumbnailRepository.findByContentContaining(content);
         }
         else if (StringUtils.isEmpty(content) && StringUtils.isEmpty(uid)){
-            return responseService.getListResult(boardThumbnailRepository.findByTitleContaining(title));
+            boardThumbnailList = boardThumbnailRepository.findByTitleContaining(title);
         }else if (StringUtils.isEmpty(uid)){
-            return responseService.getListResult(boardThumbnailRepository.findByTitleContainingOrContentContaining(title,content));
+            boardThumbnailList = boardThumbnailRepository.findByTitleContainingOrContentContaining(title,content);
         }else{
-            return responseService.getNullListResult();
+            boardThumbnailList = null;
         }
+        if (boardThumbnailList==null)
+            return responseService.getListResult(null);
+        try{
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
+            boardThumbnailList.forEach(boardThumbnail -> {
+                boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
+            });
+        }catch (NullPointerException ignored){
+
+        }
+        return responseService.getListResult(boardThumbnailList);
     }
 }

@@ -44,7 +44,7 @@ public class BasicRankingService implements RankingService {
                 throw new IllegalStateException("Unexpected value: " + type);
         }
         return boards.stream()
-                .sorted(Comparator.comparing(BoardThumbnail::GetBoardlikesNum).reversed())
+                .sorted(Comparator.comparing(BoardThumbnail::getLikes).reversed())
                 .collect(Collectors.toList());
     }
 }

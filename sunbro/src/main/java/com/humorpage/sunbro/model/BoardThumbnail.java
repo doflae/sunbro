@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -39,14 +40,18 @@ public class BoardThumbnail implements Serializable {
     @CreationTimestamp
     private LocalDateTime created;
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "boardThumbnail", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Boardlikes> boardlikes = new ArrayList<>();
+//    @JsonManagedReference
+//    @OneToMany(mappedBy = "boardThumbnail", fetch = FetchType.LAZY)
+//    private List<Boardlikes> boardlikes = new ArrayList<>();
 
     private String thumbnail;
 
-    public int GetBoardlikesNum(){
-        return this.boardlikes.size();
-    }
+    @Formula("(select count(*) from boardlikes bl where bl.board_id=id)")
+    private int likes;
+
+    @Formula("(select count(*) from comment c where c.board_id=id)")
+    private int comments_num;
+
+    @Transient
+    private boolean like;
 }

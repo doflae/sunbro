@@ -4,7 +4,6 @@ import {connect} from "react-redux"
 import {loadData} from "../data/ActionCreators"
 import {authWrapper} from "../auth/AuthWrapper"
 import {Thumbnail} from "./Thumbnail"
-import Axios from "axios"
 const mapStateToProps = (dataStore) => ({
     ...dataStore
 })
@@ -37,20 +36,15 @@ export const ContextConnector = authWrapper(connect(mapStateToProps, mapDispatch
         getData = () => {
             const {last_board,contextList} = this.state;
             var resturl = '/board/recently?'
-            if(last_board===0){
-                this.props.request('get',resturl).then(res=>{
-                    console.log(res)
-                    if("user" in res.headers){
-                        console.log(res.headers['user'])
-                        this.setState({
-                            user:JSON.parse(res.headers['user']),
-                        })
-                    }
-                    this.setState({
-                        contextList:[...contextList, ...res.data.list]
-                    })
-                })
+            if(last_board!==0){
+                resturl+=`board_id=${last_board}`
             }
+            this.props.request('get',resturl).then(res=>{
+                this.setState({
+                    contextList:[...contextList, ...res.data.list],
+                    last_board:res.data.list[res.data.list.length-1]['id']
+                })
+            })
         }
 
         infiniteScroll = () => {

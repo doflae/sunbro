@@ -25,9 +25,9 @@ export const Header = withRouter(authWrapper(class extends Component{
       <div className="head_logo_text">Nogary</div>
     </div>
     {this.props.user!==null?(
-      <div className="head_sign head_elem" onClick={this.handleLogout()}>Logout</div>
+      <div className="head_sign" onClick={this.handleLogout()}>Logout</div>
     ):(
-      <div className="head_sign head_elem"><Link to="/login">Login</Link></div>
+      <div className="head_sign"><Link to="/login">Login</Link></div>
     )}
     
     </header>
