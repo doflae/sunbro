@@ -1,14 +1,12 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.model.UserSimple;
-import com.humorpage.sunbro.result.SingleResult;
+import com.humorpage.sunbro.utils.FFMpegVideoConvert;
+import com.humorpage.sunbro.utils.TemporaryFileStore;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,12 +16,17 @@ import java.util.Objects;
 @Service
 public class FileUploadService {
 
-    @Autowired
-    private ResponseService responseService;
+    private final FFMpegVideoConvert ffMpegVideoConvert;
+    private final TemporaryFileStore temporaryFileStore;
 
+    @Autowired
+    public FileUploadService(TemporaryFileStore temporaryFileStore, FFMpegVideoConvert ffMpegVideoConvert){
+        this.temporaryFileStore = temporaryFileStore;
+        this.ffMpegVideoConvert = ffMpegVideoConvert;
+    }
 
     private static final SecureRandom random = new SecureRandom();
-    public static String filenameGenerate(){
+    private static String filenameGenerate(){
         StringBuilder sb = new StringBuilder(26);
         for(int i = 0; i<26;i++){
             String randChar = "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
@@ -31,25 +34,28 @@ public class FileUploadService {
         }
         return sb.toString();
     }
-    public SingleResult<String> uploadToLocal(MultipartFile file) {
+    public String uploadImg(MultipartFile file) {
         try {
             byte[] data = file.getBytes();
-            String uploadFolderPath;
             String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
-            if (tmp[0].equals("image")){
-                uploadFolderPath = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/images/";
-                //uploadFolderPath = "C:/Users/tjsh0/Desktop/React_project/humorpage/humorpage/public/images/";
-            }else{
-                uploadFolderPath = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/videos/";
-                //uploadFolderPath = "C:/Users/tjsh0/Desktop/React_project/humorpage/humorpage/public/videos/";
-            }
             String filename = filenameGenerate()+"."+tmp[tmp.length-1];
-            Path path = Paths.get(uploadFolderPath + filename);
+            String imgFolderPath = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/images/";
+            Path path = Paths.get(imgFolderPath + filename);
             Files.write(path, data);
-            return responseService.getSingleResult(filename);
+            return filename;
         } catch (IOException e) {
             e.printStackTrace();
-            return responseService.getSingleResult(null);
+            return null;
+        }
+    }
+    public String uploadVideo(InputStream inputStream) throws FFMpegVideoConvert.VideoConvertException, IOException{
+        Path file =null;
+        try{
+            file = temporaryFileStore.store(inputStream);
+            String randName = filenameGenerate();
+            return ffMpegVideoConvert.convertVideo(file,randName);
+        }finally {
+            temporaryFileStore.delete(file);
         }
     }
 }

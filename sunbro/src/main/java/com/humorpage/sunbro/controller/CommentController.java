@@ -50,9 +50,9 @@ public class CommentController {
     public ListResult<Comment> getComment(@RequestParam(value = "board_id") Long board_id, @RequestParam(value="last_id", required = false)Long comment_id, Authentication authentication){
         List<Comment> commentList;
         if(comment_id==null){
-            commentList=commentRepository.findTop3ByBoardIdOrderByLikesAsc(board_id);
+            commentList=commentRepository.findTop3ByBoardOrderByLikesAsc(board_id);
         }else{
-            commentList=commentRepository.findByBoardIdGreaterThanOrderByIdAsc(board_id,comment_id, PageRequest.of(0,10));
+            commentList=commentRepository.findByBoardGreaterThanOrderByIdAsc(board_id,comment_id, PageRequest.of(0,10));
         }
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
@@ -68,7 +68,7 @@ public class CommentController {
 
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
     @PostMapping(value = "/upload")
-    public CommonResult uploadComment(@Valid Comment comment, @RequestParam("board_id") Long board_id, BindingResult bindingResult, Authentication authentication){
+    public CommonResult uploadComment(@Valid Comment comment, @RequestParam("board_id") Long board_id, BindingResult bindingResult, Authentication authentication) {
         commentValidator.validate(comment,bindingResult);
         UserSimple userSimple = null;
         try{

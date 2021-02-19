@@ -55,9 +55,7 @@ class CommentBox extends Component{
         let tmp = e.target;
         let image_src = tmp.parentElement.previousElementSibling.firstElementChild.getAttribute('src');
         let content = tmp.parentElement.previousElementSibling.previousElementSibling.value
-        console.log('hi')
-        console.log(content)
-        console.log(this.isEmpty(content))
+        
         if (!this.isEmpty(content)){
             content = '<p>'+content+"</p>"
         }
@@ -68,7 +66,6 @@ class CommentBox extends Component{
             let data = new FormData();
             data.append('content',content)
             data.append('board_id',this.props.content_id)
-            console.log('upload!!!!!!!!!!!')
             return this.props.request('post',"/comment/upload",data).then(res =>{
                 if(res.status==200 && res.data.success){
                     console.log('hi')
@@ -76,6 +73,8 @@ class CommentBox extends Component{
                     console.log('bye')
                 }
             })
+        }else{
+            alert("내용을 입력해주세요.")
         }
     }
 

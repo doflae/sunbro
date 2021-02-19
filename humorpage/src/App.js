@@ -14,16 +14,12 @@ import {AuthPrompt} from "./auth/AuthPrompt"
 import {Provider} from "react-redux"
 import {authWrapper} from "./auth/AuthWrapper";
 import {HumorDataStore} from "./data/DataStore"
+import Axios from "axios"
 class App extends Component{
-  test = () => (e)=>{
-    console.log(this.props)
-    console.log(this.state)
-  }
   render(){
     return<Provider store = {HumorDataStore}>
             <div className="App">
               <Header/>
-      <button onClick={this.test()}>test</button>
             <Switch>
               <React.Fragment>
                 <Route exact path="/" component={ContextConnector}/>

@@ -8,6 +8,12 @@ display: none;
 .quill{
     margin:10px 10px 10px 10px;
 }
+.ql-editor .ql-video{
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+}
 @media screen{
     .edit-focus .quill {
         top: 0;

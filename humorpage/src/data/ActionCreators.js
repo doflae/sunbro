@@ -1,5 +1,5 @@
 import {ActionTypes} from "./Types"
-import {RestDataSource} from "./RestDataSource"
+import {RestDataSource} from "./RestDataSource.js"
 
 const dataSource = new RestDataSource();
 

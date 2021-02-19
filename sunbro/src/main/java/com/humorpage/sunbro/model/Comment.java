@@ -31,15 +31,14 @@ public class Comment implements Serializable {
     @NotNull
     private String content;
 
-    //JsonBackReference는 직렬화를 수행하지 않는 곳에 붙인다
-    @JsonBackReference
-    @ManyToOne
-    @JoinColumn(name="board_id")
-    private Board board;
+    @Column(name="board_id")
+    @JsonIgnore
+    private Long board;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created")
     @CreationTimestamp
+    @JsonIgnore
     private LocalDateTime created;
 
     @GeneratedValue
@@ -50,6 +49,7 @@ public class Comment implements Serializable {
 //    @OneToMany(mappedBy = "comment")
 //    private List<Commentlikes> commentlikes = new ArrayList<>();
 
+    @Basic(fetch = FetchType.LAZY)
     @Formula("(select count(*) from commentlikes cl where cl.comment_id=id)")
     private int likes;
 

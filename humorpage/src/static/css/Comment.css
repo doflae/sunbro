@@ -41,6 +41,9 @@
 .comment-context{
 	padding-top: 5px;	
 }
+.comment_text{
+	margin-bottom: 5px;
+}
 .comment-box{
 	background: #e8e8e8;
 	width: 100%;
@@ -63,7 +66,7 @@
 	border-style: none;
 	resize: none;
 }
-.comment-btn{
+.comment_btn{
 	cursor: pointer;
 	float: right;
 	right: 10px;
@@ -86,4 +89,7 @@
 }
 .comment_preimgzone{
 	height: 0px;
+}
+.comment_context_img{
+	margin-top: 5px;
 }

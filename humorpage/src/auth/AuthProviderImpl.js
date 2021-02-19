@@ -2,7 +2,6 @@ import React, {Component} from "react"
 import Axios from "axios"
 import {AuthContext} from "./AuthContext"
 
-Axios.defaults.withCredentials=true;
 export class AuthProviderImpl extends Component{
     constructor(props){
         super(props);
@@ -10,10 +9,9 @@ export class AuthProviderImpl extends Component{
             user:null,
         }
     }
-
     request = (method, url, data=null, params=null) =>{
-        return Axios({method,url,data,params,}).then(res=>{
-            console.log(res)
+        return Axios({method,url,data,params,withCredentials:true})
+        .then((res)=>{
             if("user" in res.headers){
                 this.setState({
                     user:JSON.parse(res.headers['user']),
@@ -23,7 +21,7 @@ export class AuthProviderImpl extends Component{
                     user:null,
                 })
             }
-            return res
+            return res;
         })
     }
 

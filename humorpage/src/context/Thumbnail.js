@@ -81,7 +81,7 @@ export class Thumbnail extends Component{
                 <div className="content_title">
                     {c.title}
                 </div>
-                <div className="context_thumbnail_text">썸네일 글</div>
+                <div className="context_thumbnail_text" dangerouslySetInnerHTML={{__html:c.content}}></div>
                 <div className="context_thumbnail_img" dangerouslySetInnerHTML={{__html:c.thumbnail}}></div>
                 <div className="conext_bottom">
                     <button className="see_detail">펼치기</button>
