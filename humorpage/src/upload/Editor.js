@@ -73,12 +73,12 @@ class Editor extends Component {
     }
 
 
-    saveFile = (file, url) => {
+    saveFile = (file) => {
       console.log(file)
       const formData = new FormData();
       formData.append('file',file)
       console.log("bbbbbbbbb")
-      return this.props.request("post",url,formData,{
+      return this.props.request("post","/file/upload",formData,{
         headers:{
           'Content-Type':'multipart/form-data',
         }
@@ -101,7 +101,7 @@ class Editor extends Component {
         acceptedFiles.reduce((pacc, _file) => {
           if (_file.type.split("/")[0]==="video"){
             return pacc.then(() => {
-              this.saveFile(_file,"/file/video")
+              this.saveFile(_file)
               .then((res)=>{
                 const quill = this.quillRef.getEditor();
                 const range = quill.getSelection();
@@ -114,7 +114,7 @@ class Editor extends Component {
             );
           }else{
             return pacc.then(() => {
-              this.saveFile(_file,"/file/img")
+              this.saveFile(_file)
               .then((res)=>{
                 const quill = this.quillRef.getEditor();
                 const range = quill.getSelection();

@@ -21,7 +21,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/file")
-public class FileUploadApiController {
+public class FileUploadController {
 
 
     @Autowired
@@ -33,7 +33,7 @@ public class FileUploadApiController {
     @Autowired
     private FFMpegVideoConvert ffMpegVideoConvert;
 
-    @GetMapping(path = "/comment/delete")
+    @GetMapping(path = "/delete")
     public CommonResult deleteImg(@RequestParam(value = "src") String src, Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
@@ -44,7 +44,7 @@ public class FileUploadApiController {
         }
     }
 
-    @PostMapping(path = "/comment",
+    @PostMapping(path = "/upload",
             consumes = MULTIPART_FORM_DATA_VALUE,
             produces = APPLICATION_JSON_VALUE,
             headers = "Accept=application/json")
@@ -56,18 +56,6 @@ public class FileUploadApiController {
             return responseService.getSingleResult(fileUploadService.tempUpload(file,src,pw.substring(pw.length()-4)));
         }catch (NullPointerException e){
             e.printStackTrace();
-            return responseService.getFailSingleResult();
-        }
-    }
-    @PostMapping(path = "/board",
-            consumes = MULTIPART_FORM_DATA_VALUE,
-            produces = APPLICATION_JSON_VALUE,
-            headers = "Accept=application/json")
-    public SingleResult<String> uploadVideo(@RequestParam("file") MultipartFile file,Authentication authentication){
-        try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            return responseService.getSingleResult(null);
-        }catch (NullPointerException e){
             return responseService.getFailSingleResult();
         }
     }

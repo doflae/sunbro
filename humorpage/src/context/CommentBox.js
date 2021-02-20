@@ -111,7 +111,7 @@ class CommentBox extends Component{
         const nowDate = new Date().getTime();
         const workings = {...this.state.workings, [nowDate]:true};
         this.setState({workings});
-        return this.props.request("post","/file/comment",formData,{
+        return this.props.request("post","/file/upload",formData,{
             headers:{
             'Content-Type':'multipart/form-data'
             }

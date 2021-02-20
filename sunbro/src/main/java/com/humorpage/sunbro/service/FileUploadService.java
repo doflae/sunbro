@@ -72,7 +72,12 @@ public class FileUploadService {
             Date date = new Date();
             String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
             String filename = filenameGenerate()+last4str+"."+tmp[tmp.length-1];
-            String tempDir = "/temp/"+format.format(date);
+            String tempDir;
+            if (tmp[0].equals("image")){
+                tempDir = "images/temp/"+format.format(date);
+            }else{
+                tempDir = "videos/temp/"+format.format(date);
+            }
             File dir = new File(baseDir+tempDir);
             if(!dir.exists()){
                 if(dir.mkdirs()){
