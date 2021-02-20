@@ -79,21 +79,22 @@ class CommentBox extends Component{
     }
 
     imageHandler = () => (e) =>{
+        let target = e.target.parentElement.previousElementSibling;
         this.setState({
-            target:e.target.parentElement.previousElementSibling,
+            target:target,
         })
         if (this.dropzone) this.dropzone.open();
     }
 
     onDrop = async(acceptFile) =>{
         try{
-            await acceptFile.reduce((pacc, _file, i) =>{
+            await acceptFile.reduce((pacc, _file) =>{
                 if(_file.type.split("/")[0] ==="image"){
                     return pacc.then(async()=>{
                         await this.savefile(_file).then((res)=>{
                             let target = this.state.target
-                            target.style.height="auto";
-                            target.firstElementChild.src="/images/"+res.data;
+                            target.firstElementChild.src=res.data;
+                            target.lastElementChild.style.zIndex=0;
                         });
                     });
                 }
@@ -104,15 +105,19 @@ class CommentBox extends Component{
     savefile = (file) =>{
         const formData = new FormData();
         formData.append('file',file)
+        if (this.state.target.firstElementChild.src){
+            formData.append('src',this.state.target.firstElementChild.getAttribute("src"))
+        }
         const nowDate = new Date().getTime();
         const workings = {...this.state.workings, [nowDate]:true};
         this.setState({workings});
-        return this.props.request("post","/file/upload",formData,{
+        return this.props.request("post","/file/comment",formData,{
             headers:{
             'Content-Type':'multipart/form-data'
             }
         }).then(
             (res)=>{
+                console.log(res)
             //반환 데이터에는 public/images 이후의 경로를 반환
             return res.data
             },
@@ -123,6 +128,16 @@ class CommentBox extends Component{
             return Promise.reject(error);
             }
         );
+    }
+    imageDelete = () => (e) => {
+        let target = e.target;
+        this.props.request("get", `/file/comment/delete?src=${target.previousElementSibling.getAttribute("src")}`)
+        .then(res=>{
+            if (res.data.success){
+                target.style.zIndex=-1;
+                target.previousElementSibling.src = "";
+            }
+        })
     }
     render(){
         const commentList = this.state.commentList
@@ -138,7 +153,8 @@ class CommentBox extends Component{
             <div className="comment-input">
                 <textarea className="comment_textarea"></textarea>
                 <div className="comment_preimgzone">
-                <img className="comment_preimg" src="" height="100px" width="auto"></img>
+                    <img className="comment_preimg" src=""></img>
+                    <button className="comment_preimg_delete" onClick={this.imageDelete()}></button>
                 </div>
                 <div className="comment_bottom">
                     <svg className="comment_img" onClick={this.imageHandler()} widht="30px" height="30px" viewBox="0 0 420.8 420.8">

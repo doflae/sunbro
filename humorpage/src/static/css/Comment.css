@@ -88,8 +88,43 @@
 	height: 50px;
 }
 .comment_preimgzone{
-	height: 0px;
+	position: relative;
+	height: auto;
+	width: 60px;
+}
+.comment_preimg{
+	max-height: 100%;
+	max-width: 100%;
 }
 .comment_context_img{
 	margin-top: 5px;
+}
+.comment_preimg_delete{
+	position:absolute;
+	top:-5px;
+	right:-5px;
+	width: 19px;
+	height: 19px;
+	border-radius: 10px;
+	border: 0px;
+	opacity: 0.3;
+	z-index: -1;
+}
+.comment_preimg_delete:hover{
+	opacity: 1;
+}
+.comment_preimg_delete::before, .comment_preimg_delete::after{
+	position:absolute;
+	left: 8px;
+	bottom: 0px;
+	content: ' ';
+	height: 19px;
+	width: 2px;
+	background-color: #333;
+}
+.comment_preimg_delete::before{
+	transform: rotate(45deg);
+}
+.comment_preimg_delete::after{
+	transform: rotate(-45deg);
 }

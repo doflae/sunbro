@@ -1,11 +1,14 @@
 package com.humorpage.sunbro.controller;
 
 
+import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
+import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.FileUploadService;
 import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.utils.FFMpegVideoConvert;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +21,6 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/file")
-@CrossOrigin(origins = "http://localhost:3000")
 public class FileUploadApiController {
 
 
@@ -29,29 +31,43 @@ public class FileUploadApiController {
     private ResponseService responseService;
 
     @Autowired
-    private FFMpegVideoConvert videoFileUitls;
+    private FFMpegVideoConvert ffMpegVideoConvert;
 
-    @PostMapping(path = "/img",
+    @GetMapping(path = "/comment/delete")
+    public CommonResult deleteImg(@RequestParam(value = "src") String src, Authentication authentication){
+        try{
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            fileUploadService.deleteImg(src);
+            return responseService.getSuccessResult();
+        }catch (NullPointerException e){
+            return responseService.getFailResult();
+        }
+    }
+
+    @PostMapping(path = "/comment",
             consumes = MULTIPART_FORM_DATA_VALUE,
             produces = APPLICATION_JSON_VALUE,
             headers = "Accept=application/json")
-    public SingleResult<String> uploadImg(@RequestParam("file") MultipartFile file,Authentication authentication) {
+    public SingleResult<String> upload(@RequestParam("file") MultipartFile file,
+                                          @RequestParam(value = "src",required = false) String src, Authentication authentication) {
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            return responseService.getSingleResult(fileUploadService.uploadImg(file));
+            String pw = userSimple.getPassword();
+            return responseService.getSingleResult(fileUploadService.tempUpload(file,src,pw.substring(pw.length()-4)));
         }catch (NullPointerException e){
+            e.printStackTrace();
             return responseService.getFailSingleResult();
         }
     }
-    @PostMapping(path = "/video",
+    @PostMapping(path = "/board",
             consumes = MULTIPART_FORM_DATA_VALUE,
             produces = APPLICATION_JSON_VALUE,
             headers = "Accept=application/json")
     public SingleResult<String> uploadVideo(@RequestParam("file") MultipartFile file,Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            return responseService.getSingleResult(fileUploadService.uploadVideo(file.getInputStream()));
-        }catch (NullPointerException | IOException | FFMpegVideoConvert.VideoConvertException e){
+            return responseService.getSingleResult(null);
+        }catch (NullPointerException e){
             return responseService.getFailSingleResult();
         }
     }
