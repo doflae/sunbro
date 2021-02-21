@@ -1,11 +1,8 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.utils.FFMpegVideoConvert;
 import com.humorpage.sunbro.utils.TemporaryFileStore;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,9 +11,6 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.nio.file.attribute.UserPrincipal;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;

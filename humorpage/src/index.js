@@ -6,6 +6,7 @@ import App from './App';
 import * as serviceWorker from "./serviceWorker";
 import {AuthProviderImpl} from "./auth/AuthProviderImpl"
 
+
 ReactDOM.render(
   <React.StrictMode>
     <AuthProviderImpl>

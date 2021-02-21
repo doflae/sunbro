@@ -11,28 +11,38 @@ class CommentBox extends Component{
         this.state = {
             commentList : [],
             last_id : null,
+            keyList : new Set(),
         };
     }
     componentDidMount(){
         this.getData();
 	}
 	getData = () => {
-        const {commentList, last_id} = this.state
+        const {commentList, last_id, keyList} = this.state
 		const id = this.props.content_id
         var resturl = `/comment/list?board_id=${id}`
         if (last_id){
-            resturl+=`&last_id=${last_id}`
+            resturl+=`&comment_id=${last_id}`
         }
         this.props.request("get",resturl).then(res=>{
+            let temp = [];
+            let last_id = 0;
+            res.data.list.forEach(function(comment){
+                if (!keyList.has(comment.id)){
+                    keyList.add(comment.id)
+                    temp.push(comment)
+                }
+                last_id = comment.id;
+            })
             if(last_id===null){
                 this.setState({
-                    commentList:commentList.concat([...res.data.list]),
+                    commentList:commentList.concat([...temp]),
                     last_id:0,
                 })
             }else{
                 this.setState({
-                    commentList:commentList.concat([...res.data.list]),
-                    last_id:res.data.list[res.data.list.length-1]['id'],
+                    commentList:commentList.concat([...temp]),
+                    last_id:last_id,
                 })
             }
         })
@@ -41,10 +51,6 @@ class CommentBox extends Component{
     seeMore = () => (e) =>{
         const {preItems, items} = this.state
         this.getData();
-        this.setState({
-            preItems:items,
-            items:items+10,
-        });
     }
 
     isEmpty = (st) => {
@@ -60,7 +66,7 @@ class CommentBox extends Component{
             content = '<p>'+content+"</p>"
         }
         if(!this.isEmpty(image_src)){
-            content+=`<img src=${image_src} class="comment_context_img" height="100px" width="auto"/>`;
+            content+=`<img src="${image_src}" class="comment_context_img" height="100px" width="auto"/>`;
         }
         if(!this.isEmpty(content)){
             let data = new FormData();
@@ -141,12 +147,12 @@ class CommentBox extends Component{
     }
     render(){
         const commentList = this.state.commentList
-        const more_items = this.state.preItems
-        const comment_cnt = this.state.comment_cnt
+        const commentList_cnt = this.state.commentList.length
+        const comment_cnt = this.props.comment_cnt
         return <div className="comment-box">
             <Comment commentList={commentList}/>
             {
-                comment_cnt>more_items
+                comment_cnt>commentList_cnt
                 ?<div><button onClick={this.seeMore()}>더보기</button></div>
                 : null
             }

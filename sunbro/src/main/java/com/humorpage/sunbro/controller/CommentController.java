@@ -8,7 +8,9 @@ import com.humorpage.sunbro.respository.CommentLikesRepository;
 import com.humorpage.sunbro.respository.CommentRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
+import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.CommentService;
+import com.humorpage.sunbro.service.FileMoveService;
 import com.humorpage.sunbro.service.LikesService;
 import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.vaildator.CommentValidator;
@@ -45,14 +47,19 @@ public class CommentController {
     @Autowired
     private CommentRepository commentRepository;
 
+    @Autowired
+    private FileMoveService fileMoveService;
+
     @ApiOperation(value = "댓글 열람",notes = "게시글의 id를 받아 해당 글의 댓글 열람")
-    @GetMapping(value = "/list")
-    public ListResult<Comment> getComment(@RequestParam(value = "board_id") Long board_id, @RequestParam(value="last_id", required = false)Long comment_id, Authentication authentication){
+    @GetMapping("/list")
+    public ListResult<Comment> getComment(@RequestParam(value = "board_id") Long board_id,
+                                          @RequestParam(value = "comment_id", required = false)Long comment_id,
+                                          Authentication authentication){
         List<Comment> commentList;
         if(comment_id==null){
             commentList=commentRepository.findTop3ByBoardOrderByLikesAsc(board_id);
         }else{
-            commentList=commentRepository.findByBoardGreaterThanOrderByIdAsc(board_id,comment_id, PageRequest.of(0,10));
+            commentList=commentRepository.findByBoardAndIdGreaterThanOrderByIdAsc(board_id,comment_id, PageRequest.of(0,10));
         }
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
@@ -68,7 +75,10 @@ public class CommentController {
 
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
     @PostMapping(value = "/upload")
-    public CommonResult uploadComment(@Valid Comment comment, @RequestParam("board_id") Long board_id, BindingResult bindingResult, Authentication authentication) {
+    public SingleResult<Long> uploadComment(@Valid Comment comment,
+                                            @RequestParam Long board_id,
+                                            BindingResult bindingResult,
+                                            Authentication authentication) {
         commentValidator.validate(comment,bindingResult);
         UserSimple userSimple = null;
         try{
@@ -78,14 +88,15 @@ public class CommentController {
         }
         if(bindingResult.hasErrors()){
             //bindingResult에 오류 내역잇으니 뽑아서 응답에 넣고 프론트에서 처리하는 걸로
-            return responseService.getFailResult();
+            return responseService.getSingleResult(null);
         }
         try{
+            comment.setContent(fileMoveService.moveContents(comment.getContent()));
             commentService.save(userSimple,board_id,comment);
-            return responseService.getSuccessResult();
+            return responseService.getSingleResult(comment.getId());
         }
         catch (CIdSigninFailedException e){
-            return responseService.getFailResult();
+            return responseService.getSingleResult(null);
         }
     }
 

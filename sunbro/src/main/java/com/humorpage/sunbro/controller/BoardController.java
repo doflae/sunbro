@@ -57,8 +57,11 @@ public class BoardController {
     @Autowired
     private CacheRankingService cacheRankingService;
 
+    @Autowired
+    private FileMoveService fileMoveService;
 
-    @ApiOperation(value = "업로드", notes="html코드를 받아 최종적으로 업로드한다.")
+
+    @ApiOperation(value = "업로드", notes="html코드를 받아 저장소 옮기고 최종적으로 업로드한다.")
     @PostMapping(value = "/upload")
     public CommonResult postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
         try{
@@ -68,6 +71,7 @@ public class BoardController {
                 //bindingResult에 오류 내역있으니 뽑아서 응답에 넣고 프론트에서 처리하는 걸로
                 return responseService.getFailResult();
             }
+            board.setContent(fileMoveService.moveContents(board.getContent()));
             boardService.save(userSimple,board);
             return responseService.getSuccessResult();
         }catch (NullPointerException e){

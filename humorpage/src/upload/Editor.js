@@ -12,15 +12,30 @@ const Link = Quill.import("formats/link");
 
 class CustomVideo extends Video{
   static create(value){
-    const node = super.create(value);
-
-    const video = document.createElement('video')
+    const node = super.create();
+    const video = document.createElement('div')
     video.setAttribute('controls',true);
     video.setAttribute('type',"video/mp4");
-    video.setAttribute('style',"height:100%;width:100%");
-    video.setAttribute('src',this.sanitize(value));
+    video.setAttribute('style',"max-height:100%;max-width:100%");
+    video.setAttribute('class',"video_preview");
+    video.setAttribute('src',this.sanitize(value[0]));
+    const temp = document.createElement('div')
+    temp.setAttribute('class',"video_preview_tempData")
+    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    svg.setAttributeNS(null,"viewBox","-21 -117 682.66672 682")
+    svg.setAttributeNS(null,"width","24pt")
+    svg.setAttributeNS(null,"height","24pt")
+    svg.setAttributeNS(null,"style","display:block;margin:auto;")
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path")
+    path.setAttributeNS(null,"d","m626.8125 64.035156c-7.375-27.417968-28.992188-49.03125-56.40625-56.414062-50.082031-13.703125-250.414062-13.703125-250.414062-13.703125s-200.324219 0-250.40625 13.183593c-26.886719 7.375-49.03125 29.519532-56.40625 56.933594-13.179688 50.078125-13.179688 153.933594-13.179688 153.933594s0 104.378906 13.179688 153.933594c7.382812 27.414062 28.992187 49.027344 56.410156 56.410156 50.605468 13.707031 250.410156 13.707031 250.410156 13.707031s200.324219 0 250.40625-13.183593c27.417969-7.378907 49.03125-28.992188 56.414062-56.40625 13.175782-50.082032 13.175782-153.933594 13.175782-153.933594s.527344-104.382813-13.183594-154.460938zm-370.601562 249.878906v-191.890624l166.585937 95.945312zm0 0")
+    svg.appendChild(path)
+    temp.appendChild(svg)
+    const url = document.createElement("div")
+    url.setAttribute("style","text-overflow: ellipsis; text-align:center;")
+    url.innerText = this.sanitize(value[1]);
+    temp.appendChild(url);
     node.appendChild(video);
-
+    node.appendChild(temp);
     return node
   }
 
@@ -30,7 +45,7 @@ class CustomVideo extends Video{
 };
 
 CustomVideo.blotName = 'video';
-CustomVideo.className = "ql-video";
+CustomVideo.className = "ql-prevideo";
 CustomVideo.tagName = "DIV";
 
 Quill.register('formats/video', CustomVideo);
@@ -48,14 +63,18 @@ class Editor extends Component {
     submit = () => (e) =>{
       e.preventDefault();
       var title = document.querySelector(".editor_title").value
-
+      document.querySelectorAll(".ql-prevideo").forEach(function(elem){
+        elem.removeChild(elem.lastChild)
+        elem.removeAttribute("src")
+      });
       var content = document.querySelector(".ql-editor").innerHTML
       var real = document.querySelector(".ql-editor").innerText
-      if (title!==null && (!this.isEmpty(real) || content.search("img")!=-1)){
+      if (title!==null && (!this.isEmpty(real) || content.search("img")!=-1 || content.search("video")!=-1)){
         let data = new FormData();
         data.append('title',title)
         data.append('content',content)
         return this.props.request("post","/board/upload",data).then(res =>{
+          console.log(res)
           if (res.status ===200){
             this.props.history.push("/contexts");
           }else{
@@ -74,7 +93,6 @@ class Editor extends Component {
 
 
     saveFile = (file) => {
-      console.log(file)
       const formData = new FormData();
       formData.append('file',file)
       console.log("bbbbbbbbb")
@@ -106,7 +124,7 @@ class Editor extends Component {
                 const quill = this.quillRef.getEditor();
                 const range = quill.getSelection();
                 console.log("video");
-                quill.insertEmbed(range.index, "video", "/videos/"+res.data);
+                quill.insertEmbed(range.index, "video", [res.data,_file.name]);
                 quill.setSelection(range.index + 1);
                 quill.focus();
               })
@@ -119,7 +137,7 @@ class Editor extends Component {
                 const quill = this.quillRef.getEditor();
                 const range = quill.getSelection();
                 console.log("image");
-                quill.insertEmbed(range.index, "image", "/images/"+res.data);
+                quill.insertEmbed(range.index, "image", res.data);
                 quill.setSelection(range.index + 1);
                 quill.focus();
               });
@@ -223,17 +241,11 @@ class Editor extends Component {
     }
     this.setState({ contents: _contents || contents });
   };
-
-  test = () => (e) =>{
-    e.preventDefault();
-    this.props.request("get","/file/test").then(res=>console.log(res))
-  }
   
     render() {
       
       return (
         <div className="main-panel">
-          <button type="button" onClick={this.test()}>test</button>
           <div className="editor_navbar">
             <input type="text" className="editor_title"></input>
           </div>
@@ -265,7 +277,7 @@ class Editor extends Component {
           </Dropzone>
         </div>
           <div className="submitbar">
-            <button type="submit" onClick={this.submit} className="editor_submit">저장</button>
+            <button type="submit" onClick={this.submit()} className="editor_submit">저장</button>
           </div>
         </div>
       )
