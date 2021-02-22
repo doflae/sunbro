@@ -14,6 +14,32 @@ display: none;
     max-height: 100%;
     width: 100%;
 }
+.ql-editor .ql-prevideo{
+    position: relative;
+    height: 300px;
+    width: 300px;
+    background-color: #e8eae6;
+    cursor: pointer;
+    margin: 5px;
+}
+.ql-editor .ql-prevideo:hover{
+    background-color: #cdd0cb;
+}
+.ql-editor .video_preview_tempData{
+    content: 'test';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto auto auto auto;
+    width: 100%;
+    height: max-content;
+    white-space: nowrap;
+    overflow: hidden;
+    color: #1e212d;
+    font-size: 1em;
+}
 @media screen{
     .edit-focus .quill {
         top: 0;

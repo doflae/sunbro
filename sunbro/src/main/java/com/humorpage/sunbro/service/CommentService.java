@@ -23,9 +23,10 @@ public class CommentService {
     @Autowired
     private BoardRepository boardRepository;
 
-    public void save(UserSimple userSimple, Long board_id, Comment comment){
+    public void save(UserSimple userSimple, Long board_id, Long comment_id, Comment comment){
         comment.setAuthor(userSimple);
         comment.setBoard(board_id);
+        comment.setPid(comment_id);
         commentRepository.save(comment);
     }
 }

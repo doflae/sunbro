@@ -92,7 +92,7 @@ public class BoardController {
     }
     @ApiOperation(value="좋아요 취소",notes = "board_id를 받아 좋아요 off")
     @GetMapping(value = "likeoff")
-    public CommonResult likecancelBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
+    public CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
         UserSimple userSimple;
         try{
             userSimple = (UserSimple) authentication.getPrincipal();

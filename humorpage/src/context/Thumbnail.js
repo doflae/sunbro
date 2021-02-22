@@ -1,7 +1,8 @@
 import React, {Component} from "react";
 import CommentBox from "./CommentBox";
+import {sanitizeWrapper} from "../sanitize/sanitizeWrapper"
 
-export class Thumbnail extends Component{
+class Thumbnail extends Component{
     constructor(props){
         super(props)
 
@@ -12,6 +13,8 @@ export class Thumbnail extends Component{
             commentboxOn:b
         })
     }
+    clean = (dirty) => null;
+
     getCommentBox = (cid) => (e) =>{
         if(this.state.commentboxOn.has(cid)){
             const cmt = this.state.commentboxOn;
@@ -42,7 +45,7 @@ export class Thumbnail extends Component{
                 }
             })
             target.like = false
-            btn.style.backgroundColor="#e7e6e1"
+            btn.classList.toggle("like_on")
             btn.lastElementChild.innerText=target.likes-1
             target.likes-=1
         }else{
@@ -52,7 +55,7 @@ export class Thumbnail extends Component{
                 }
             })
             target.like=true
-            btn.style.backgroundColor="#f875aa"
+            btn.classList.toggle("like_on")
             btn.lastElementChild.innerText=target.likes+1
             target.likes+=1
         }
@@ -81,19 +84,21 @@ export class Thumbnail extends Component{
                 <div className="content_title">
                     {c.title}
                 </div>
-                <div className="context_thumbnail_text" dangerouslySetInnerHTML={{__html:c.content}}></div>
-                <div className="context_thumbnail_img" dangerouslySetInnerHTML={{__html:c.thumbnail}}></div>
+                <div className="context_thumbnail_text" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.content)}}></div>
+                <div className="context_thumbnail_img" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.thumbnail)}}></div>
                 <div className="conext_bottom">
                     <button className="see_detail">펼치기</button>
                     <div className="buttons">
-                        <button className="content_btn" onClick={this.getCommentBox(c.id)}><span>댓글</span><span>{c.comments_num}</span></button>
-                        <button className="like_btn content_btn" onClick={this.like(c)}><span>좋아요</span><span>{c.likes}</span></button>
+                        <button className="content_btn" onClick={this.getCommentBox(c.id)}><span>댓글</span><span>{c.total_comments_num}</span></button>
+                        <button className={c.like?("like_btn content_btn like_on"):
+                    ("like_btn content_btn like_off")}
+                    onClick={this.like(c)}><span>좋아요</span><span>{c.likes}</span></button>
                         
                         <button className="scrap_btn content_btn">공유하기</button>    
                     </div>
                 </div>
                 {this.state.commentboxOn.has(c.id)?(
-                    <CommentBox content_id={c.id}/>
+                    <CommentBox content_id={c.id} comment_cnt = {c.comments_num}/>
                 ):(
                     <></>
                 )}
@@ -101,3 +106,5 @@ export class Thumbnail extends Component{
             )
     }
 }
+
+export default sanitizeWrapper(Thumbnail)

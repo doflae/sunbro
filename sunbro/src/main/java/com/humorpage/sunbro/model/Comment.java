@@ -24,6 +24,9 @@ public class Comment implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "parent_id")
+    private Long pid;
+
     @ManyToOne
     @JoinColumn(name = "author_num")
     private UserSimple author;
@@ -55,4 +58,8 @@ public class Comment implements Serializable {
 
     @Transient
     private boolean like;
+
+    @Basic(fetch = FetchType.LAZY)
+    @Formula("(select count(*) from comment c where c.parent_id=id)")
+    private int children_cnt;
 }

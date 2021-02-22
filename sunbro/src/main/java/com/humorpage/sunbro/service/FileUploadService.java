@@ -79,7 +79,6 @@ public class FileUploadService {
                     Files.write(tempPath, data);
                     return tempDir+filename;
                 }else{
-                    System.out.println(dir.toString());
                     return null;
                 }
             }else{

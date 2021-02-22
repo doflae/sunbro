@@ -49,7 +49,12 @@ public class BoardThumbnail implements Serializable {
     @Formula("(select count(*) from boardlikes bl where bl.board_id=id)")
     private int likes;
 
+    //depth 0이상인 댓글은 thumbnail에 표시용
     @Formula("(select count(*) from comment c where c.board_id=id)")
+    private int total_comments_num;
+
+    //depth 0인 댓글만 => 댓글 더보기 버튼 제어용
+    @Formula("(select count(*) from comment c where c.board_id=id and c.parent_id=0)")
     private int comments_num;
 
     @Transient

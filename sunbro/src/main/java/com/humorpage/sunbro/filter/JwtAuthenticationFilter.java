@@ -107,7 +107,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         catch (ExpiredJwtException |NumberFormatException ignored){
 
         }
-        System.out.println(httpServletResponse.getHeaderNames());
         filterChain.doFilter(httpServletRequest,httpServletResponse);
     }
 }

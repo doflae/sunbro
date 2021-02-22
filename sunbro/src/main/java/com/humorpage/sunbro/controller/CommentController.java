@@ -3,6 +3,7 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Comment;
+import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.CommentLikesRepository;
 import com.humorpage.sunbro.respository.CommentRepository;
@@ -57,9 +58,9 @@ public class CommentController {
                                           Authentication authentication){
         List<Comment> commentList;
         if(comment_id==null){
-            commentList=commentRepository.findTop3ByBoardOrderByLikesAsc(board_id);
+            commentList=commentRepository.findTop3ByBoardAndPidIsOrderByLikesDesc(board_id, 0L);
         }else{
-            commentList=commentRepository.findByBoardAndIdGreaterThanOrderByIdAsc(board_id,comment_id, PageRequest.of(0,10));
+            commentList=commentRepository.findByBoardAndIdGreaterThanAndPidIsOrderByIdAsc(board_id,comment_id, 0L,PageRequest.of(0,10));
         }
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
@@ -77,6 +78,7 @@ public class CommentController {
     @PostMapping(value = "/upload")
     public SingleResult<Long> uploadComment(@Valid Comment comment,
                                             @RequestParam Long board_id,
+                                            @RequestParam(required = false,defaultValue = "0") Long comment_id,
                                             BindingResult bindingResult,
                                             Authentication authentication) {
         commentValidator.validate(comment,bindingResult);
@@ -92,7 +94,7 @@ public class CommentController {
         }
         try{
             comment.setContent(fileMoveService.moveContents(comment.getContent()));
-            commentService.save(userSimple,board_id,comment);
+            commentService.save(userSimple,board_id, comment_id,comment);
             return responseService.getSingleResult(comment.getId());
         }
         catch (CIdSigninFailedException e){
@@ -100,20 +102,29 @@ public class CommentController {
         }
     }
 
-    @ApiOperation(value = "댓글좋아요", notes = "comment_id를 받아 좋아요 on/off")
-    @PostMapping(value = "/like")
-    public CommonResult likeComment(@RequestParam("id") Long comment_id, @RequestParam("onoff") boolean on, Authentication authentication){
+    @ApiOperation(value = "댓글 좋아요", notes = "comment_id를 받아 좋아요 on")
+    @GetMapping(value = "/likeon")
+    public CommonResult likeComment(@RequestParam("id") Long comment_id, Authentication authentication){
         UserSimple userSimple;
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
         }catch (NullPointerException e){
             return responseService.setDetailResult(false, -1, "Token Expired");
         }
-        if(on){
-            likesService.savelikeComment(userSimple.getUsernum(),comment_id);
-        }else{
-            likesService.deletelikeComment(userSimple.getUsernum(),comment_id);
+        likesService.savelikeComment(userSimple.getUsernum(),comment_id);
+        return responseService.getSuccessResult();
+    }
+
+    @ApiOperation(value = "댓글 좋아요 취소", notes = "comment_id를 받아 좋아요 off")
+    @GetMapping(value = "/likeoff")
+    public CommonResult likeCancelComment(@RequestParam(value = "id") Long comment_id, Authentication authentication){
+        UserSimple userSimple;
+        try{
+            userSimple = (UserSimple) authentication.getPrincipal();
+        }catch (NullPointerException e){
+            return responseService.setDetailResult(false, -1, "Token expired");
         }
+        likesService.deletelikeComment(userSimple.getUsernum(),comment_id);
         return responseService.getSuccessResult();
     }
 }
