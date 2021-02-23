@@ -66,6 +66,7 @@ class Editor extends Component {
       document.querySelectorAll(".ql-prevideo").forEach(function(elem){
         elem.removeChild(elem.lastChild)
         elem.removeAttribute("src")
+        elem.firstElementChild.removeAttribute("class")
       });
       var content = document.querySelector(".ql-editor").innerHTML
       var real = document.querySelector(".ql-editor").innerText

@@ -25,6 +25,7 @@ public class Comment implements Serializable {
     private Long id;
 
     @Column(name = "parent_id")
+    @JsonIgnore
     private Long pid;
 
     @ManyToOne
@@ -41,7 +42,6 @@ public class Comment implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created")
     @CreationTimestamp
-    @JsonIgnore
     private LocalDateTime created;
 
     @GeneratedValue

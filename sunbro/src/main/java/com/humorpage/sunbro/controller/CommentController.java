@@ -18,6 +18,7 @@ import com.humorpage.sunbro.vaildator.CommentValidator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -51,16 +52,28 @@ public class CommentController {
     @Autowired
     private FileMoveService fileMoveService;
 
-    @ApiOperation(value = "댓글 열람",notes = "게시글의 id를 받아 해당 글의 댓글 열람")
+    @ApiOperation(value = "댓글 열람",notes = "게시글의 id또는 댓글의 id를 받아 해당 글의 댓글 열람")
     @GetMapping("/list")
-    public ListResult<Comment> getComment(@RequestParam(value = "board_id") Long board_id,
-                                          @RequestParam(value = "comment_id", required = false)Long comment_id,
+    public ListResult<Comment> getComment(@RequestParam(value = "board_id", required = false) Long board_id,
+                                          @RequestParam(value = "parent_id", required = false) Long parent_id,
+                                          @RequestParam(value = "comment_id", required = false) Long comment_id,
                                           Authentication authentication){
-        List<Comment> commentList;
-        if(comment_id==null){
-            commentList=commentRepository.findTop3ByBoardAndPidIsOrderByLikesDesc(board_id, 0L);
-        }else{
-            commentList=commentRepository.findByBoardAndIdGreaterThanAndPidIsOrderByIdAsc(board_id,comment_id, 0L,PageRequest.of(0,10));
+        List<Comment> commentList=null;
+        //depth가 0인 댓글
+        if(board_id!=null) {
+            if (comment_id == null) {
+                commentList = commentRepository.findTop3ByBoardAndPidIsOrderByLikesDesc(board_id, 0L);
+            } else {
+                commentList = commentRepository.findByBoardAndIdGreaterThanAndPidIsOrderByIdAsc(board_id, comment_id, 0L, PageRequest.of(0, 10));
+            }
+        }
+        //대댓글 -> board id 대신 parent comment id가 주어짐
+        else if(parent_id!=null){
+            if (comment_id == null){
+                commentList = commentRepository.findByPidIsOrderByIdAsc(parent_id, PageRequest.of(0,10));
+            }else{
+                commentList = commentRepository.findByPidIsAndIdGreaterThanOrderByIdAsc(parent_id, comment_id, PageRequest.of(0,10));
+            }
         }
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
@@ -86,7 +99,7 @@ public class CommentController {
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
         }catch (NullPointerException ignored){
-
+            return responseService.getFailSingleResult();
         }
         if(bindingResult.hasErrors()){
             //bindingResult에 오류 내역잇으니 뽑아서 응답에 넣고 프론트에서 처리하는 걸로

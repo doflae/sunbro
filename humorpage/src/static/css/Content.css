@@ -52,9 +52,17 @@
     display: flex;
     justify-content: space-evenly;
     width: 33%;
+    height: 100%;
     border: 0px;
     background-color: #e7e6e1;
 }
 .content_btn:hover{
     background-color:#aaaaaa;
+}
+
+.like_on{
+    background-color: #f875aa;
+}
+.like_on:hover{
+    background-color: #f875aa;
 }

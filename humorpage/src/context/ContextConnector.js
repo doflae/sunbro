@@ -3,7 +3,7 @@ import {Switch, Route, Redirect} from "react-router-dom"
 import {connect} from "react-redux"
 import {loadData} from "../data/ActionCreators"
 import {authWrapper} from "../auth/AuthWrapper"
-import {Thumbnail} from "./Thumbnail"
+import Thumbnail from "./Thumbnail"
 const mapStateToProps = (dataStore) => ({
     ...dataStore
 })
