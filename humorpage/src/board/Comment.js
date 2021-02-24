@@ -66,7 +66,7 @@ class Comment extends Component{
         let image_src = tmp.parentElement.previousElementSibling.firstElementChild.getAttribute('src');
         let content = tmp.parentElement.previousElementSibling.previousElementSibling.value
         if (!this.isEmpty(content)){
-            content = `<p><span class="recomment_target">${cname}</span>${content}</p>`
+            content = `<p><span class="recomment_target">@${cname}</span>${content}</p>`
         }
         if(!this.isEmpty(image_src)){
             content+=`<img src="${image_src}" class="comment_context_img" height="100px" width="auto"/>`;
@@ -201,7 +201,7 @@ class Comment extends Component{
 		}
 		let resturl = `/comment/list?parent_id=${cid}`
 		if(recommentLastid[cid]!==undefined){
-			resturl += `&${recommentLastid[cid]}`
+			resturl += `&comment_id=${recommentLastid[cid]}`
 		}
 		this.props.request("get",resturl).then(res=>{
 			recommentList[cid]=recommentList[cid].concat(...res.data.list)

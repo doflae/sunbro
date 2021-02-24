@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.2",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-regular-svg-icons": "^5.15.2",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
@@ -13,7 +12,7 @@
     "@testing-library/user-event": "^12.1.10",
     "axios": "^0.21.0",
     "jquery": "^1.9.1",
-    "js-cookie": "^2.2.1",
+    "js-ffmpeg": "0.0.27",
     "lodash": "^4.17.20",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",

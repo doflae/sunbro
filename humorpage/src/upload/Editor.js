@@ -1,39 +1,61 @@
 import ReactQuill, {Quill} from "react-quill"
-import React,{Component, useCallback} from "react"
+import React,{Component} from "react"
 import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
-import Axios from "axios"
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 const __ISIOS__ = navigator.userAgent.match(/iPad|iPhone|iPod/i) ? true : false;
 
 const Video = Quill.import('formats/video');
 const Link = Quill.import("formats/link");
 
+function dataURItoSrc(dataURI) {
+  // convert base64/URLEncoded data component to raw binary data held in a string
+  var byteString;
+  if (dataURI.split(',')[0].indexOf('base64') >= 0)
+      byteString = atob(dataURI.split(',')[1]);
+  else
+      byteString = unescape(dataURI.split(',')[1]);
+
+  // separate out the mime component
+  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+  // write the bytes of the string to a typed array
+  var ia = new Uint8Array(byteString.length);
+  for (var i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+  }
+
+  return new Blob([ia], {type:mimeString});
+}
+
 class CustomVideo extends Video{
   static create(value){
     const node = super.create();
     const video = document.createElement('div')
+    const temp = document.createElement('div')
+    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path")
     video.setAttribute('controls',true);
     video.setAttribute('type',"video/mp4");
     video.setAttribute('style',"max-height:100%;max-width:100%");
     video.setAttribute('class',"video_preview");
     video.setAttribute('src',this.sanitize(value[0]));
-    const temp = document.createElement('div')
     temp.setAttribute('class',"video_preview_tempData")
-    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
-    svg.setAttributeNS(null,"viewBox","-21 -117 682.66672 682")
+    node.style.backgroundColor = "#e8eae6"
+    node.classList.toggle("impossible-preview")
     svg.setAttributeNS(null,"width","24pt")
     svg.setAttributeNS(null,"height","24pt")
-    svg.setAttributeNS(null,"style","display:block;margin:auto;")
-    const path = document.createElementNS("http://www.w3.org/2000/svg","path")
-    path.setAttributeNS(null,"d","m626.8125 64.035156c-7.375-27.417968-28.992188-49.03125-56.40625-56.414062-50.082031-13.703125-250.414062-13.703125-250.414062-13.703125s-200.324219 0-250.40625 13.183593c-26.886719 7.375-49.03125 29.519532-56.40625 56.933594-13.179688 50.078125-13.179688 153.933594-13.179688 153.933594s0 104.378906 13.179688 153.933594c7.382812 27.414062 28.992187 49.027344 56.410156 56.410156 50.605468 13.707031 250.410156 13.707031 250.410156 13.707031s200.324219 0 250.40625-13.183593c27.417969-7.378907 49.03125-28.992188 56.414062-56.40625 13.175782-50.082032 13.175782-153.933594 13.175782-153.933594s.527344-104.382813-13.183594-154.460938zm-370.601562 249.878906v-191.890624l166.585937 95.945312zm0 0")
-    svg.appendChild(path)
-    temp.appendChild(svg)
     const url = document.createElement("div")
     url.setAttribute("style","text-overflow: ellipsis; text-align:center;")
     url.innerText = this.sanitize(value[1]);
+    temp.appendChild(svg)
     temp.appendChild(url);
+    svg.setAttributeNS(null,"viewBox","0 0 320.001 320.001")
+    svg.setAttributeNS(null,"enable-background","new 0 0 320.001 320.001")
+    svg.setAttributeNS(null,"style","display:block;margin:auto;")
+    path.setAttributeNS(null,"d","m295.84 146.049-256-144c-4.96-2.784-11.008-2.72-15.904.128-4.928 2.88-7.936 8.128-7.936 13.824v288c0 5.696 3.008 10.944 7.936 13.824 2.496 1.44 5.28 2.176 8.064 2.176 2.688 0 5.408-.672 7.84-2.048l256-144c5.024-2.848 8.16-8.16 8.16-13.952s-3.136-11.104-8.16-13.952z")
+    svg.appendChild(path)
     node.appendChild(video);
     node.appendChild(temp);
     return node
@@ -49,23 +71,26 @@ CustomVideo.className = "ql-prevideo";
 CustomVideo.tagName = "DIV";
 
 Quill.register('formats/video', CustomVideo);
-
 class Editor extends Component {
     constructor(props) {
       super(props)
       this.state = {
         contents: __ISMSIE__ ? "<p>&nbsp;</p>" : "",
+        thumbnailFile : null,
       };
     }
     quillRef = null;
     dropzone = null;
     onKeyEvent = false;
+
+
     submit = () => (e) =>{
       e.preventDefault();
       var title = document.querySelector(".editor_title").value
       document.querySelectorAll(".ql-prevideo").forEach(function(elem){
         elem.removeChild(elem.lastChild)
         elem.removeAttribute("src")
+        elem.removeAttribute("style")
         elem.firstElementChild.removeAttribute("class")
       });
       var content = document.querySelector(".ql-editor").innerHTML
@@ -96,7 +121,6 @@ class Editor extends Component {
     saveFile = (file) => {
       const formData = new FormData();
       formData.append('file',file)
-      console.log("bbbbbbbbb")
       return this.props.request("post","/file/upload",formData,{
         headers:{
           'Content-Type':'multipart/form-data',
@@ -106,7 +130,8 @@ class Editor extends Component {
         (res)=>{
           console.log(res)
           //반환 데이터에는 public/images 이후의 경로를 반환
-          return Promise.resolve(res.data);
+          if (res.data.success) return Promise.resolve(res.data);
+          else this.props.history.push("login")
         },
         (error)=>{
           console.error("saveFile error:", error);
@@ -124,7 +149,11 @@ class Editor extends Component {
               .then((res)=>{
                 const quill = this.quillRef.getEditor();
                 const range = quill.getSelection();
-                console.log("video");
+                if(this.state.thumbnailFile==null){
+                  this.setState({
+                    thumbnailFile:res.data.replace("/temp","")
+                  })
+                }
                 quill.insertEmbed(range.index, "video", [res.data,_file.name]);
                 quill.setSelection(range.index + 1);
                 quill.focus();
@@ -137,7 +166,11 @@ class Editor extends Component {
               .then((res)=>{
                 const quill = this.quillRef.getEditor();
                 const range = quill.getSelection();
-                console.log("image");
+                if(this.state.thumbnailFile==null){
+                  this.setState({
+                    thumbnailFile:res.data.replace("/temp","")
+                  })
+                }
                 quill.insertEmbed(range.index, "image", res.data);
                 quill.setSelection(range.index + 1);
                 quill.focus();

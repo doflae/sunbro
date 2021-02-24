@@ -18,15 +18,10 @@ display: none;
     position: relative;
     height: 300px;
     width: 300px;
-    background-color: #e8eae6;
     cursor: pointer;
     margin: 5px;
 }
-.ql-editor .ql-prevideo:hover{
-    background-color: #cdd0cb;
-}
 .ql-editor .video_preview_tempData{
-    content: 'test';
     position: absolute;
     left: 0;
     right: 0;

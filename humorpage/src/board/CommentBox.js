@@ -24,7 +24,7 @@ class CommentBox extends Component{
 	}
 	getData = () => {
         const {commentList, last_id, keyList} = this.state
-		const id = this.props.content_id
+		const id = this.props.board_id
         var resturl = `/comment/list?board_id=${id}`
         if (last_id){
             resturl+=`&comment_id=${last_id}`
@@ -181,14 +181,14 @@ class CommentBox extends Component{
         const commentList_cnt = commentList.length
         const comment_cnt = this.state.comment_cnt
         return <div className="comment-box">
-            <Comment commentList={commentList} board_id = {this.props.content_id}/>
+            <Comment commentList={commentList} board_id = {this.props.board_id}/>
             {
                 comment_cnt>commentList_cnt
                 ?<div><button onClick={this.seeMore()}>더보기</button></div>
                 : null
             }
             <CommentUploader imageHandler={this.imageHandler} imageDelete={this.imageDelete}
-            submitComment={this.submitComment} board_id={this.props.content_id} comment_id={0}/>
+            submitComment={this.submitComment} board_id={this.props.board_id} comment_id={0}/>
         
                 <Dropzone
                     ref = {(el)=>(this.dropzone = el)}

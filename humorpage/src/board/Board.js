@@ -1,7 +1,7 @@
 import React,{Component} from "react";
 import {CommentBox} from "./CommentBox";
 
-export class Context extends Component{
+export class Board extends Component{
 	render(){
 		//왜 이부분이 필요함?
 		if (this.props.contexts == null || this.props.contexts.length === 0){

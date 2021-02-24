@@ -1,18 +1,15 @@
 package com.humorpage.sunbro.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Formula;
 import org.springframework.format.annotation.DateTimeFormat;
 
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Data
@@ -44,7 +41,11 @@ public class BoardThumbnail implements Serializable {
 //    @OneToMany(mappedBy = "boardThumbnail", fetch = FetchType.LAZY)
 //    private List<Boardlikes> boardlikes = new ArrayList<>();
 
+    @Column(name = "thumbnail")
     private String thumbnail;
+
+    @Column(name = "thumbnailImg")
+    private String thumbnailImg;
 
     @Formula("(select count(*) from boardlikes bl where bl.board_id=id)")
     private int likes;

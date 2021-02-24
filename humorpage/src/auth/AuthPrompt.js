@@ -21,7 +21,7 @@ export const AuthPrompt = withRouter(authWrapper(class extends Component{
 		this.props.authenticate(credentials)
 		.then((res)=>{
 			console.log(res)
-			this.props.history.push("/contexts")
+			this.props.history.push("/boards")
 		})
 		.catch(err => this.setState({errorMessage:err.message}));//로그인 성공시 이동경로
 	}
@@ -38,7 +38,7 @@ export const AuthPrompt = withRouter(authWrapper(class extends Component{
 				defaultAttrs={this.defaultAttrs}
 				submitCallback={this.authenticate}
 				submitText="Login"
-				cancelCallback={()=> this.props.history.push("/contexts")}//로그인 실패시 이동 경로
+				cancelCallback={()=> this.props.history.push("/boards")}//로그인 실패시 이동 경로
 				cancelText="Cancel"
 				/>
 			</div>

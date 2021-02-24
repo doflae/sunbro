@@ -63,7 +63,7 @@ public class BoardController {
 
     @ApiOperation(value = "업로드", notes="html코드를 받아 저장소 옮기고 최종적으로 업로드한다.")
     @PostMapping(value = "/upload")
-    public CommonResult postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
+    CommonResult postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             boardVaildator.validate(board, bindingResult);
@@ -80,7 +80,7 @@ public class BoardController {
     }
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")
     @GetMapping(value = "/likeon")
-    public CommonResult likeBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
+    CommonResult likeBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
         UserSimple userSimple;
         try{
             userSimple = (UserSimple)authentication.getPrincipal();
@@ -92,7 +92,7 @@ public class BoardController {
     }
     @ApiOperation(value="좋아요 취소",notes = "board_id를 받아 좋아요 off")
     @GetMapping(value = "likeoff")
-    public CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
+    CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
         UserSimple userSimple;
         try{
             userSimple = (UserSimple) authentication.getPrincipal();

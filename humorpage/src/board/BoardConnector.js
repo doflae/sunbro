@@ -12,13 +12,13 @@ const mapDispatchToProps = {
     loadData
 }
 
-export const ContextConnector = authWrapper(connect(mapStateToProps, mapDispatchToProps)(
+export const BoardConnector = authWrapper(connect(mapStateToProps, mapDispatchToProps)(
     class extends Component{
         constructor(){
             super()
 
             this.state = {
-                contextList : [],
+                boardList : [],
                 last_board:0,
                 user:null,
             };
@@ -34,16 +34,20 @@ export const ContextConnector = authWrapper(connect(mapStateToProps, mapDispatch
         }
 
         getData = () => {
-            const {last_board,contextList} = this.state;
+            const {last_board,boardList} = this.state;
             var resturl = '/board/recently?'
             if(last_board!==0){
                 resturl+=`board_id=${last_board}`
             }
             this.props.request('get',resturl).then(res=>{
-                this.setState({
-                    contextList:[...contextList, ...res.data.list],
-                    last_board:res.data.list[res.data.list.length-1]['id']
-                })
+                if(res.data.list.length>0){
+                    this.setState({
+                        boardList:[...boardList, ...res.data.list],
+                        last_board:res.data.list[res.data.list.length-1]['id']
+                    })
+                }else{
+                    window.removeEventListener('scroll', this.infiniteScroll);
+                }
             })
         }
 
@@ -55,20 +59,17 @@ export const ContextConnector = authWrapper(connect(mapStateToProps, mapDispatch
             const clientHeight = documentElement.clientHeight;
 
             if (scrollTop + clientHeight >= scrollHeight) {
-                this.setState({
-                    preItems: 10,
-                });
                 this.getData();
             }
         }
         render(){
-            const contextList = this.state.contextList;
+            const boardList = this.state.boardList;
             return <Switch>
-                <Route path="/contexts"
+                <Route path="/boards"
                 render={(routeProps)=>
                 <Thumbnail {...this.props}{...routeProps}
-                contexts={contextList}/>}/>
-                <Redirect to="/contexts"/>
+                boards={boardList}/>}/>
+                <Redirect to="/boards"/>
             </Switch>
         }
 

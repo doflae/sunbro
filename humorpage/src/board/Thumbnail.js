@@ -13,7 +13,6 @@ class Thumbnail extends Component{
             commentboxOn:b
         })
     }
-    clean = (dirty) => null;
 
     getCommentBox = (cid) => (e) =>{
         if(this.state.commentboxOn.has(cid)){
@@ -61,13 +60,13 @@ class Thumbnail extends Component{
         }
     }
     render(){
-        if(this.props.contexts == null || this.props.contexts.length ===0){
-            return <h5 className="p-2">No Contents</h5>
+        if(this.props.boards == null || this.props.boards.length ===0){
+            return <h5 className="p-2">No boards</h5>
         }
-        return this.props.contexts.map(c =>
-            <div className="content" key={c.id}>
-                <div className="content_top">
-                    <div className="content_top_left">
+        return this.props.boards.map(c =>
+            <div className="board" key={c.id}>
+                <div className="board_top">
+                    <div className="board_top_left">
                         {c.author.img==null?(
                             <img className="author_img" src="/images/user_default.jpg"/>
                         )
@@ -75,30 +74,30 @@ class Thumbnail extends Component{
                             <img className="author_img" src={c.author.img}/>
                         )}
                     </div>
-                    <div className="content_top_center">
+                    <div className="board_top_center">
                         <div className="author_name">{c.author.uid}</div>
                         <div className="created">3 시간전</div>
                     </div>
-                    <div className="content_top_right"></div>
+                    <div className="board_top_right"></div>
                 </div>
-                <div className="content_title">
+                <div className="board_title">
                     {c.title}
                 </div>
-                <div className="context_thumbnail_text" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.content)}}></div>
-                <div className="context_thumbnail_img" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.thumbnail)}}></div>
-                <div className="conext_bottom">
+                <div className="board_thumbnail_text" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.content)}}></div>
+                <div className="board_thumbnail_img" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.thumbnail)}}></div>
+                <div className="board_bottom">
                     <button className="see_detail">펼치기</button>
                     <div className="buttons">
-                        <button className="content_btn" onClick={this.getCommentBox(c.id)}><span>댓글</span><span>{c.total_comments_num}</span></button>
-                        <button className={c.like?("like_btn content_btn like_on"):
-                    ("like_btn content_btn like_off")}
+                        <button className="board_btn" onClick={this.getCommentBox(c.id)}><span>댓글</span><span>{c.total_comments_num}</span></button>
+                        <button className={c.like?("like_btn board_btn like_on"):
+                    ("like_btn board_btn like_off")}
                     onClick={this.like(c)}><span>좋아요</span><span>{c.likes}</span></button>
                         
-                        <button className="scrap_btn content_btn">공유하기</button>    
+                        <button className="scrap_btn board_btn">공유하기</button>    
                     </div>
                 </div>
                 {this.state.commentboxOn.has(c.id)?(
-                    <CommentBox content_id={c.id} comment_cnt = {c.comments_num}/>
+                    <CommentBox board_id={c.id} comment_cnt = {c.comments_num}/>
                 ):(
                     <></>
                 )}
