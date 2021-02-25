@@ -18,7 +18,6 @@ display: none;
     position: relative;
     height: 300px;
     width: 300px;
-    cursor: pointer;
     margin: 5px;
 }
 .ql-editor .video_preview_tempData{
@@ -34,6 +33,16 @@ display: none;
     overflow: hidden;
     color: #1e212d;
     font-size: 1em;
+}
+.video_preview_tempData_url{
+    text-overflow: ellipsis;
+    text-align:center;
+    user-select: none;
+    -webkit-user-select: none; /* Chrome/Safari */ 
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+ */
+    -webkit-user-modify: read-only;
+    -moz-user-modify: read-only;
 }
 @media screen{
     .edit-focus .quill {
@@ -54,7 +63,7 @@ display: none;
     }
     .edit-focus .ql-editor {
         box-sizing: border-box;
-        height: 250px;
+        height: 500px;
     }
     .edit-focus .navbar {
         display: none;

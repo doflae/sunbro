@@ -22,6 +22,8 @@ public class FileMoveService {
 
     private final String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/";
 
+    private final Pattern thumbNailPattern = Pattern.compile("<(img|video)[^>]*src=[\"']?([^>\"']+)[\"']?[^>]*>");
+
     private final Pattern imgPattern = Pattern.compile("<img[^>]*src=[\"']?([^>\"']+)[\"']?[^>]*>");
 
     //에디터에서 미리 보여줄때는 div태그로 감싸 video를 불러들이지 못하게 하고 작성완료시 video태그로 변환
@@ -36,6 +38,7 @@ public class FileMoveService {
     public String moveContents(String content){
         Matcher matcher = imgPattern.matcher(content);
         StringBuffer sb = new StringBuffer();
+
         while (matcher.find()){
             String target = matcher.group(1);
             String newPath = target.replace("/temp","");
@@ -54,6 +57,8 @@ public class FileMoveService {
         }
         return matcher.appendTail(sb).toString();
     }
+
+
 
     private void moveImg(String src, String target){
         Path file = Paths.get(baseDir+src);

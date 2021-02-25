@@ -83,8 +83,8 @@ class Thumbnail extends Component{
                 <div className="board_title">
                     {c.title}
                 </div>
-                <div className="board_thumbnail_text" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.content)}}></div>
-                <div className="board_thumbnail_img" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.thumbnail)}}></div>
+                <img className="board_thumbnail_img" src={c.thumbnailImg}/>
+                <div className="board_thumbnail_text" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.thumbnail)}}></div>
                 <div className="board_bottom">
                     <button className="see_detail">펼치기</button>
                     <div className="buttons">

@@ -1,5 +1,6 @@
 package com.humorpage.sunbro.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Formula;
@@ -26,6 +27,7 @@ public class BoardThumbnail implements Serializable {
 
     @NotBlank
     @Column(name="content")
+    @JsonIgnore
     private String content;
 
     @ManyToOne(fetch = FetchType.EAGER)

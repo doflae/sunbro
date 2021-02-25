@@ -30,6 +30,12 @@ public class Board implements Serializable {
     @Column(name="content")
     private String content;
 
+    @Column(name = "thumbnail")
+    private String thumbnail;
+
+    @Column(name = "thumbnailImg")
+    private String thumbnailImg;
+
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created")
     @CreationTimestamp

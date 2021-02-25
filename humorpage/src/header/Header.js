@@ -16,6 +16,7 @@ export const Header = withRouter(authWrapper(class extends Component{
   imageClick = () => (e) =>{
     console.log(this.props)
     this.props.history.push("/boards")
+    this.props.history.go();
   }
 
   render = () =>

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
@@ -60,22 +61,33 @@ public class BoardController {
     @Autowired
     private FileMoveService fileMoveService;
 
+    @Autowired
+    private ThumbNailService thumbNailService;
 
     @ApiOperation(value = "업로드", notes="html코드를 받아 저장소 옮기고 최종적으로 업로드한다.")
     @PostMapping(value = "/upload")
     CommonResult postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
+        UserSimple userSimple;
         try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            userSimple = (UserSimple) authentication.getPrincipal();
+
+        }catch (NullPointerException e){
+            return responseService.setDetailResult(false,-1,"Need to Login");
+        }
+        try{
             boardVaildator.validate(board, bindingResult);
             if (bindingResult.hasErrors()){
                 //bindingResult에 오류 내역있으니 뽑아서 응답에 넣고 프론트에서 처리하는 걸로
                 return responseService.getFailResult();
             }
             board.setContent(fileMoveService.moveContents(board.getContent()));
+            board.setThumbnailImg(thumbNailService.getThumbnailImage(board.getContent()));
             boardService.save(userSimple,board);
             return responseService.getSuccessResult();
-        }catch (NullPointerException e){
-            return responseService.setDetailResult(false,-1,"Need to Login");
+        }
+        catch (IOException e){
+            boardService.save(userSimple,board);
+            return responseService.getSuccessResult();
         }
     }
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")

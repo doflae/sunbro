@@ -6,21 +6,34 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
-
 @Slf4j
 @Component
 public class FFMpegVideoConvert {
 
     private final FFmpeg fFmpeg;
 
+    private final String baseDir ="C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/";
+
     @Autowired
     public FFMpegVideoConvert(FFmpeg fFmpeg){
         this.fFmpeg = fFmpeg;
     }
 
+    public void extractThumbNail(String input, String ouput) throws VideoConvertException{
+        FFmpegBuilder builder = new FFmpegBuilder()
+                .setInput(baseDir+input)
+                .addOutput(baseDir+ouput)
+                .addExtraArgs("-ss","00:00:00.100")
+                .addExtraArgs("-vf","scale=-1:240")//이미지 height 240에 맞춰서 비율 재조정
+                .addExtraArgs("-vframes","1").done();
+        try{
+            fFmpeg.run(builder);
+        }catch (Exception e){
+            throw new VideoConvertException(e);
+        }
+    }
+
     public void convertVideo(String input, String output) throws VideoConvertException{
-        String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/";
         FFmpegBuilder builder = new FFmpegBuilder()
                 .setInput(baseDir +input)
                 .addOutput(baseDir +output)

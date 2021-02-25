@@ -8,26 +8,24 @@ const __ISIOS__ = navigator.userAgent.match(/iPad|iPhone|iPod/i) ? true : false;
 
 const Video = Quill.import('formats/video');
 const Link = Quill.import("formats/link");
+const Image = Quill.import('formats/image');
 
-function dataURItoSrc(dataURI) {
-  // convert base64/URLEncoded data component to raw binary data held in a string
-  var byteString;
-  if (dataURI.split(',')[0].indexOf('base64') >= 0)
-      byteString = atob(dataURI.split(',')[1]);
-  else
-      byteString = unescape(dataURI.split(',')[1]);
-
-  // separate out the mime component
-  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-
-  // write the bytes of the string to a typed array
-  var ia = new Uint8Array(byteString.length);
-  for (var i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
+class CustomImage extends Image{
+  static create(value){
+    const image = document.createElement('img')
+    image.src = this.sanitize(value)
+    image.setAttribute("style","max-height:100%;max-width:100%;")
+    return image
   }
-
-  return new Blob([ia], {type:mimeString});
+  static sanitize(url){
+    return Link.sanitize(url)
+  }
 }
+
+CustomImage.blotName = 'image';
+CustomImage.tagName = "DIV";
+
+Quill.register('formats/image',CustomImage);
 
 class CustomVideo extends Video{
   static create(value){
@@ -38,16 +36,15 @@ class CustomVideo extends Video{
     const path = document.createElementNS("http://www.w3.org/2000/svg","path")
     video.setAttribute('controls',true);
     video.setAttribute('type',"video/mp4");
-    video.setAttribute('style',"max-height:100%;max-width:100%");
+    video.setAttribute('style',"max-height:100%;max-width:100%;postion:relative;");
     video.setAttribute('class',"video_preview");
     video.setAttribute('src',this.sanitize(value[0]));
     temp.setAttribute('class',"video_preview_tempData")
     node.style.backgroundColor = "#e8eae6"
-    node.classList.toggle("impossible-preview")
     svg.setAttributeNS(null,"width","24pt")
     svg.setAttributeNS(null,"height","24pt")
     const url = document.createElement("div")
-    url.setAttribute("style","text-overflow: ellipsis; text-align:center;")
+    url.setAttribute("class","video_preview_tempData_url")
     url.innerText = this.sanitize(value[1]);
     temp.appendChild(svg)
     temp.appendChild(url);
@@ -77,6 +74,7 @@ class Editor extends Component {
       this.state = {
         contents: __ISMSIE__ ? "<p>&nbsp;</p>" : "",
         thumbnailFile : null,
+        open:"image/*",
       };
     }
     quillRef = null;
@@ -99,10 +97,11 @@ class Editor extends Component {
         let data = new FormData();
         data.append('title',title)
         data.append('content',content)
-        return this.props.request("post","/board/upload",data).then(res =>{
-          console.log(res)
+        data.append('thumbnail',real.slice(0,100))
+        this.props.request("post","/board/upload",data).then(res =>{
           if (res.status ===200){
-            this.props.history.push("/contexts");
+            this.props.history.push("/boards");
+            this.props.history.go();
           }else{
             console.log(res)
           }
@@ -126,37 +125,30 @@ class Editor extends Component {
           'Content-Type':'multipart/form-data',
         }
       })
-      .then(
-        (res)=>{
-          console.log(res)
-          //반환 데이터에는 public/images 이후의 경로를 반환
-          if (res.data.success) return Promise.resolve(res.data);
-          else this.props.history.push("login")
-        },
-        (error)=>{
-          console.error("saveFile error:", error);
-          return Promise.reject(error);
-        }
-      )
+      .then( res=> res.data)
     };
     
     onDrop = (acceptedFiles) => {
       try {
         acceptedFiles.reduce((pacc, _file) => {
+          const quill = this.quillRef.getEditor();
+          const range = quill.getSelection();
           if (_file.type.split("/")[0]==="video"){
             return pacc.then(() => {
               this.saveFile(_file)
               .then((res)=>{
-                const quill = this.quillRef.getEditor();
-                const range = quill.getSelection();
-                if(this.state.thumbnailFile==null){
-                  this.setState({
-                    thumbnailFile:res.data.replace("/temp","")
-                  })
+                if(res.success===true){
+                  if(this.state.thumbnailFile==null){
+                    this.setState({
+                      thumbnailFile:res.data.replace("/temp","")
+                    })
+                  }
+                  quill.insertEmbed(range.index, "video", [res.data,_file.name]);
+                  quill.setSelection(range.index + 1);
+                  quill.focus();
+                }else{
+                  this.props.history.push("/login")
                 }
-                quill.insertEmbed(range.index, "video", [res.data,_file.name]);
-                quill.setSelection(range.index + 1);
-                quill.focus();
               })
             }
             );
@@ -164,25 +156,38 @@ class Editor extends Component {
             return pacc.then(() => {
               this.saveFile(_file)
               .then((res)=>{
-                const quill = this.quillRef.getEditor();
-                const range = quill.getSelection();
-                if(this.state.thumbnailFile==null){
-                  this.setState({
-                    thumbnailFile:res.data.replace("/temp","")
-                  })
+                if(res.success===true){
+                  if(this.state.thumbnailFile==null){
+                    this.setState({
+                      thumbnailFile:res.data.replace("/temp","")
+                    })
+                  }
+                  quill.insertEmbed(range.index, "image", res.data);
+                  quill.setSelection(range.index + 1);
+                  quill.focus();
+                }else{
+                  this.props.history.push("/login")
                 }
-                quill.insertEmbed(range.index, "image", res.data);
-                quill.setSelection(range.index + 1);
-                quill.focus();
               });
             });
           }
         },Promise.resolve());
       } catch (error) {}
     };
+
     imageHandler = () => {
+      this.setState({
+        open:"image/*"
+      })
       if (this.dropzone) this.dropzone.open();
     };
+    videoHandler = () => {
+      this.setState({
+        open:"video/*"
+      })
+      if (this.dropzone) this.dropzone.open();
+
+    }
   
     modules = {
       toolbar: {
@@ -199,7 +204,7 @@ class Editor extends Component {
           ["link", "image", "mycustom","video"]
         ],
         handlers: { image: this.imageHandler,
-          mycustom: this.imageHandler
+          mycustom: this.videoHandler
         }
       },
       clipboard: { matchVisual: false }
@@ -297,7 +302,7 @@ class Editor extends Component {
           />
           <Dropzone
             ref = {(el)=>(this.dropzone = el)}
-            accept = "image/*,video/*"
+            accept = {this.state.open}
             onDrop = {this.onDrop}
             styles={{dropzone:{width:0,height:0}}}
           >
