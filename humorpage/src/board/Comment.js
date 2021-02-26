@@ -31,7 +31,7 @@ class Comment extends Component{
 	recommentClick = (cid) => (e) => {
 		e.preventDefault();
 		const {commentUploaderOn} = this.state
-		if (commentUploaderOn==cid){
+		if (commentUploaderOn===cid){
 			this.setState({
 				commentUploaderOn:null,
 			})
@@ -79,7 +79,7 @@ class Comment extends Component{
 			data.append("comment_id",comment_id)
 			console.log(board_id,comment_id)
             return this.props.request('post',"/comment/upload",data).then(res =>{
-                if(res.status==200 && res.data.success){
+                if(res.status===200 && res.data.success){
 					this.makeComment(res.data.data, content, comment_id)
                     keyList.add(res.data.data);
 					tmp.parentElement.previousElementSibling.firstElementChild.setAttribute('src',"");
@@ -118,7 +118,9 @@ class Comment extends Component{
                             target.lastElementChild.style.zIndex=0;
                         });
                     });
-                }
+                }else{
+					return null;
+				}
             }, Promise.resolve());
         } catch(error){}
     }
@@ -163,7 +165,7 @@ class Comment extends Component{
 
 	like = (target) => (e) => {
 		let btn = e.target
-		while(btn.className!="comment-like"){
+		while(btn.className!=="comment-like"){
 			btn = btn.parentElement
 		}
 		const {likeList} = this.state;
@@ -196,7 +198,7 @@ class Comment extends Component{
 	seeRecommment = (cid) => (e) =>{
 		e.preventDefault();
 		const {recommentList, recommentLastid} = this.state
-		if (recommentList[cid]==undefined){
+		if (recommentList[cid]===undefined){
 			recommentList[cid]=[]
 		}
 		let resturl = `/comment/list?parent_id=${cid}`
@@ -214,15 +216,15 @@ class Comment extends Component{
 	}
 
 	render(){
-		if(this.props.commentList==null || this.props.commentList.length === 0){
+		if(this.props.commentList===null || this.props.commentList.length === 0){
 			return <span>첫 댓글을 달아주세요</span>
 		}
 		return this.props.commentList.map( c =>
 			<div className="comment" key={c.id}>
-				{c.author.img==null?(
-					<img className="comment-userimg" src={userImg}/>
+				{c.author.img===null?(
+					<img className="comment-userimg" alt="" src={userImg}/>
 				):(
-				<img className="comment-userimg" src={c.author.img} />
+				<img className="comment-userimg" alt="" src={c.author.img} />
 				)}
 				
 				<div className="comment-main">
@@ -236,13 +238,13 @@ class Comment extends Component{
 							</div>
 						</div>
 						<div className="comment-right">
-							<a className="comment-like" onClick={this.like(c)}>
+							<button className="comment-like" onClick={this.like(c)}>
 								좋아요 <span>{c.likes}</span>{c.like || this.state.likeList.has(c.id)?(<FontAwesomeIcon icon={sHeart} color="red" size="lg"/>)
 								:(<FontAwesomeIcon icon={rHeart} color="red" size="lg"/>)} 
-							</a>
-							<a className="re-comment" onClick={this.recommentClick(c.id)}>
-								{this.state.commentUploaderOn==c.id?("답글 접기"):("답글 달기")}
-							</a>
+							</button>
+							<button className="re-comment" onClick={this.recommentClick(c.id)}>
+								{this.state.commentUploaderOn===c.id?("답글 접기"):("답글 달기")}
+							</button>
 						</div>
 					</div>
 					<div className="comment-context" dangerouslySetInnerHTML={{__html:this.props.sanitizeHarder(c.content)}}>
@@ -261,7 +263,7 @@ class Comment extends Component{
 			{this.state.recommentList[c.id]!==undefined&&c.children_cnt>this.state.recommentList[c.id].length?(
 				<div><button onClick={this.seeRecommment(c.id)}>더보기</button></div>
 			):null}
-            {this.state.commentUploaderOn == c.id?(<CommentUploader imageHandler={this.imageHandler} imageDelete={this.imageDelete}
+            {this.state.commentUploaderOn === c.id?(<CommentUploader imageHandler={this.imageHandler} imageDelete={this.imageDelete}
             submitComment={this.submitComment} board_id={this.props.board_id} comment_id={c.id} cname={c.author.uid}/>):null}
 					<Dropzone
                     ref = {(el)=>(this.dropzone = el)}

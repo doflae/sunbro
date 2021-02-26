@@ -66,3 +66,7 @@
 .like_on:hover{
     background-color: #f875aa;
 }
+.board_thumbnail_img{
+    max-height: 240px;
+    width: auto;
+}

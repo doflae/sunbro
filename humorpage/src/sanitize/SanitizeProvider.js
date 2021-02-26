@@ -3,8 +3,14 @@ import {SanitizeContext} from "./sanitizeContext"
 import sanitizeHtml from "sanitize-html-react";
 
 export class SanitizeProviderImpl extends Component{
-    constructor(props){
-        super(props);
+
+    sanitizeNonNull = (dirty) => {
+        const result = this.sanitize(dirty)
+        if(result==="null"){
+            return ""
+        }else{
+            return result
+        }
     }
     sanitize = (dirty) => sanitizeHtml(dirty,{
         allowedTags: [
@@ -60,7 +66,7 @@ export class SanitizeProviderImpl extends Component{
 
     render = () =>
         <SanitizeContext.Provider value = {{...this.state,
-        sanitize: this.sanitize, sanitizeHarder: this.sanitizeHarder}}>
+        sanitize: this.sanitize, sanitizeHarder: this.sanitizeHarder, sanitizeNonNull:this.sanitizeNonNull}}>
             {this.props.children}
         </SanitizeContext.Provider>
 }

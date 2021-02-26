@@ -151,14 +151,8 @@ public class BoardController {
     }
 
     @GetMapping("/detail/{board_id}")
-    SingleResult<Board> detail(@PathVariable("board_id") Long id){
-        try {
-            Board board = boardRepository.findById(id).orElseThrow(CIdSigninFailedException::new);
-            return responseService.getSingleResult(board);
-        }
-        catch (CIdSigninFailedException e){
-            return responseService.getFailSingleResult();
-        }
+    SingleResult<String> detail(@PathVariable("board_id") Long id){
+        return responseService.getSingleResult(boardRepository.findByIdOnlyContent(id));
     }
 
     @GetMapping("/search")

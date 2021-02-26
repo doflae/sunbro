@@ -56,7 +56,6 @@ class CommentBox extends Component{
     }
 
     seeMore = () => (e) =>{
-        const {preItems, items} = this.state
         this.getData();
     }
 
@@ -99,7 +98,7 @@ class CommentBox extends Component{
             tmp.parentElement.previousElementSibling.lastElementChild.style.zIndex="-1";
             tmp.parentElement.previousElementSibling.previousElementSibling.value="";
             return this.props.request('post',"/comment/upload",data).then(res =>{
-                if(res.status==200 && res.data.success){
+                if(res.status===200 && res.data.success){
                     keyList.add(res.data.data);
                     this.makeComment(res.data.data,content)
                     this.setState({
@@ -134,6 +133,8 @@ class CommentBox extends Component{
                             target.lastElementChild.style.zIndex=0;
                         });
                     });
+                }else{
+                    return null;
                 }
             }, Promise.resolve());
         } catch(error){}

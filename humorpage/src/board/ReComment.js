@@ -16,7 +16,7 @@ class ReComment extends Component{
     }
     like = (target) => (e) =>{
 		let btn = e.target
-		while(btn.className!="comment-like"){
+		while(btn.className!=="comment-like"){
 			btn = btn.parentElement
 		}
 		const {likeOn} = this.state
@@ -48,10 +48,10 @@ class ReComment extends Component{
     render(){
         return this.props.recommentList.map(c =>
             <div className="recomment" key={c.id}>
-                {c.author.img==null?(
-					<img className="comment-userimg" src={userImg}/>
+                {c.author.img===null?(
+					<img className="comment-userimg" alt="" src={userImg}/>
 				):(
-				<img className="comment-userimg" src={c.author.img} />
+				<img className="comment-userimg" alt="" src={c.author.img} />
 				)}
 				
 				<div className="comment-main">
@@ -65,18 +65,18 @@ class ReComment extends Component{
 							</div>
 						</div>
 						<div className="comment-right">
-							<a className="comment-like" onClick={this.like(c)}>
+							<button className="comment-like" onClick={this.like(c)}>
 								좋아요 <span>{c.likes}</span>{c.like || this.state.likeOn.has(c.id)?(<FontAwesomeIcon icon={sHeart} color="red" size="lg"/>)
 								:(<FontAwesomeIcon icon={rHeart} color="red" size="lg"/>)} 
-							</a>
-							<a className="re-comment" onClick={this.props.recommentClick(c.id)}>
-								{this.props.commentUploaderOn==c.id?("답글 접기"):("답글 달기")}
-							</a>
+							</button>
+							<button className="re-comment" onClick={this.props.recommentClick(c.id)}>
+								{this.props.commentUploaderOn===c.id?("답글 접기"):("답글 달기")}
+							</button>
 						</div>
 					</div>
 					<div className="comment-context" dangerouslySetInnerHTML={{__html:this.props.sanitizeHarder(c.content)}}>
 					</div>
-					{this.props.commentUploaderOn == c.id?(<CommentUploader imageHandler={this.props.imageHandler} imageDelete={this.props.imageDelete}
+					{this.props.commentUploaderOn === c.id?(<CommentUploader imageHandler={this.props.imageHandler} imageDelete={this.props.imageDelete}
             submitComment={this.props.submitComment} board_id={this.props.board_id} comment_id={this.props.id} cname={c.author.uid}/>):null}
             
 				</div>

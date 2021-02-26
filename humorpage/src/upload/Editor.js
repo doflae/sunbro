@@ -23,9 +23,8 @@ class CustomImage extends Image{
 }
 
 CustomImage.blotName = 'image';
-CustomImage.tagName = "DIV";
 
-Quill.register('formats/image',CustomImage);
+Quill.register("formats/myimage",CustomImage,false);
 
 class CustomVideo extends Video{
   static create(value){
@@ -67,7 +66,7 @@ CustomVideo.blotName = 'video';
 CustomVideo.className = "ql-prevideo";
 CustomVideo.tagName = "DIV";
 
-Quill.register('formats/video', CustomVideo);
+Quill.register('formats/myvideo', CustomVideo,false);
 class Editor extends Component {
     constructor(props) {
       super(props)
@@ -93,7 +92,7 @@ class Editor extends Component {
       });
       var content = document.querySelector(".ql-editor").innerHTML
       var real = document.querySelector(".ql-editor").innerText
-      if (title!==null && (!this.isEmpty(real) || content.search("img")!=-1 || content.search("video")!=-1)){
+      if (title!==null && (!this.isEmpty(real) || content.search("img")!==-1 || content.search("video")!==-1)){
         let data = new FormData();
         data.append('title',title)
         data.append('content',content)

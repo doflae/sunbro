@@ -1,34 +1,52 @@
 import React, {Component} from "react";
 import CommentBox from "./CommentBox";
 import {sanitizeWrapper} from "../sanitize/sanitizeWrapper"
+import userImg from "../static/img/user_default.png";
 
 class Thumbnail extends Component{
-    constructor(props){
-        super(props)
-
-    }
     componentDidMount(){
-        let b = new Set();
+        var b = new Set();
+        var c = new Set();
         this.setState({
-            commentboxOn:b
+            commentboxOn:b,
+            detailOn:c,
+            detailOnContent:[],
         })
     }
 
-    getCommentBox = (cid) => (e) =>{
-        if(this.state.commentboxOn.has(cid)){
-            const cmt = this.state.commentboxOn;
-            cmt.delete(cid) 
-            this.setState({
-                commentboxOn:cmt
+    getDetail = (c) => (e) =>{
+        e.preventDefault();
+        const {detailOn, detailOnContent} = this.state;
+        if(this.state.detailOn.has(c.id)){
+            detailOn.delete(c.id)
+        }else{
+            detailOn.add(c.id)
+        }
+        this.setState({
+            detailOn:detailOn,
+        })
+        if(c.content===undefined){
+            this.props.request("get",`/board/detail/${c.id}`).then(res=>{
+                c.content = this.props.sanitizeNonNull(res.data.data)
+                detailOnContent[c.id] = c.content
+                this.setState({
+                    detailOnContent:detailOnContent
+                })
             })
+        }
+    }
+
+    getCommentBox = (cid) => (e) =>{
+        const {commentboxOn} = this.state;
+        if(this.state.commentboxOn.has(cid)){
+            commentboxOn.delete(cid)
         }
         else{
-            const cmt = this.state.commentboxOn;
-            cmt.add(cid);
-            this.setState({
-                commentboxOn:cmt
-            })
+            commentboxOn.add(cid)
         }
+        this.setState({
+            commentboxOn:commentboxOn,
+        })
     }
     like = (target) => (e) =>{
         let btn;
@@ -59,6 +77,7 @@ class Thumbnail extends Component{
             target.likes+=1
         }
     }
+
     render(){
         if(this.props.boards == null || this.props.boards.length ===0){
             return <h5 className="p-2">No boards</h5>
@@ -68,10 +87,10 @@ class Thumbnail extends Component{
                 <div className="board_top">
                     <div className="board_top_left">
                         {c.author.img==null?(
-                            <img className="author_img" src="/images/user_default.jpg"/>
+                            <img className="author_img" alt="" src={userImg}/>
                         )
                         :(
-                            <img className="author_img" src={c.author.img}/>
+                            <img className="author_img" alt="" src={c.author.img}/>
                         )}
                     </div>
                     <div className="board_top_center">
@@ -83,10 +102,16 @@ class Thumbnail extends Component{
                 <div className="board_title">
                     {c.title}
                 </div>
-                <img className="board_thumbnail_img" src={c.thumbnailImg}/>
-                <div className="board_thumbnail_text" dangerouslySetInnerHTML={{__html:this.props.sanitize(c.thumbnail)}}></div>
+                {this.state.detailOn.has(c.id)?(
+                    <div className="board_detail" dangerouslySetInnerHTML={{__html:this.state.detailOnContent[c.id]}}></div>
+                ):(<div className="board_thumbnail">
+                        <img className="board_thumbnail_img" alt="" src={c.thumbnailImg}/>
+                        <div className="board_thumbnail_text" dangerouslySetInnerHTML={{__html:this.props.sanitizeNonNull(c.thumbnail)}}></div>
+                    </div>
+                )}
                 <div className="board_bottom">
-                    <button className="see_detail">펼치기</button>
+                    <button className="see_detail" onClick={this.getDetail(c)}>
+                        {this.state.detailOn.has(c.id)?("접기"):("펼치기")}</button>
                     <div className="buttons">
                         <button className="board_btn" onClick={this.getCommentBox(c.id)}><span>댓글</span><span>{c.total_comments_num}</span></button>
                         <button className={c.like?("like_btn board_btn like_on"):
