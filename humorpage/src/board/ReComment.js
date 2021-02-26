@@ -1,12 +1,12 @@
 import React, {Component} from "react"
 import userImg from "../static/img/user_default.png";
-import {sanitizeWrapper} from "../sanitize/sanitizeWrapper"
 import {faHeart as rHeart} from "@fortawesome/free-regular-svg-icons"
 import {faHeart as sHeart} from "@fortawesome/free-solid-svg-icons"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {withRouter} from 'react-router-dom'
 import {authWrapper} from "../auth/AuthWrapper"
 import CommentUploader from "./CommentUploader"
+import {sanitizeHarder,getTime,convertUnitOfNum} from "../utils/Utils"
 class ReComment extends Component{
     constructor(props){
         super(props);
@@ -61,12 +61,12 @@ class ReComment extends Component{
 								{c.author.uid}
 							</div>
 							<div className="comment-others">
-								{c.created}
+								{getTime(c.created)}
 							</div>
 						</div>
 						<div className="comment-right">
 							<button className="comment-like" onClick={this.like(c)}>
-								좋아요 <span>{c.likes}</span>{c.like || this.state.likeOn.has(c.id)?(<FontAwesomeIcon icon={sHeart} color="red" size="lg"/>)
+								좋아요 <span>{convertUnitOfNum(c.likes)}</span>{c.like || this.state.likeOn.has(c.id)?(<FontAwesomeIcon icon={sHeart} color="red" size="lg"/>)
 								:(<FontAwesomeIcon icon={rHeart} color="red" size="lg"/>)} 
 							</button>
 							<button className="re-comment" onClick={this.props.recommentClick(c.id)}>
@@ -74,7 +74,7 @@ class ReComment extends Component{
 							</button>
 						</div>
 					</div>
-					<div className="comment-context" dangerouslySetInnerHTML={{__html:this.props.sanitizeHarder(c.content)}}>
+					<div className="comment-context" dangerouslySetInnerHTML={{__html:sanitizeHarder(c.content)}}>
 					</div>
 					{this.props.commentUploaderOn === c.id?(<CommentUploader imageHandler={this.props.imageHandler} imageDelete={this.props.imageDelete}
             submitComment={this.props.submitComment} board_id={this.props.board_id} comment_id={this.props.id} cname={c.author.uid}/>):null}
@@ -85,4 +85,4 @@ class ReComment extends Component{
     }
 }
 
-export default withRouter(authWrapper(sanitizeWrapper(ReComment)));
+export default withRouter(authWrapper(ReComment));

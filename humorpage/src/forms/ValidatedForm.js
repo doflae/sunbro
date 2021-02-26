@@ -18,6 +18,7 @@ export class ValidatedForm extends Component{
 			Object.values(this.formElements).forEach(elem =>{
 				if (!elem.checkValidity()){
 					newState.validationErrors[elem.name] = GetMessages(elem);
+					this.props.submitErrorCallback();
 				}
 			})
 			return newState;
@@ -41,15 +42,18 @@ export class ValidatedForm extends Component{
 		const name = modelItem.name || modelItem.label.toLowerCase();
 		return <div className="form-group" key={modelItem.label}>
 			<label>{modelItem.label}</label>
-			<ValidationError errors={this.state.validationErrors[name]}/>
 			<input className="form-control" name={name} ref={this.registerRef}
 			{...this.props.defaultAttrs}{...modelItem.attrs}/>
+			<ValidationError errors={this.state.validationErrors[name]}/>
 		</div>
 	}
 
 	render(){
 		return <React.Fragment>
 			{this.props.formModel.map(m=> this.renderElement(m))}
+			{this.props.errorMessage!= null &&
+				<p>{this.props.errorMessage}</p>
+			}
 			<div className="text-center">
 				<button className="btn btn-secondary m-1"
 				onClick={this.props.cancelCallback}>

@@ -5,17 +5,14 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from "./serviceWorker";
 import {AuthProviderImpl} from "./auth/AuthProviderImpl"
-import {SanitizeProviderImpl} from "./sanitize/SanitizeProvider"
 
 ReactDOM.render(
   <React.StrictMode>
-    <SanitizeProviderImpl>
     <AuthProviderImpl>
     <Router>
       <App />
     </Router>
   </AuthProviderImpl>
-  </SanitizeProviderImpl>
   </React.StrictMode>,
   document.getElementById('root')
 );

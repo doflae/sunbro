@@ -1,38 +1,80 @@
 import React, {Component} from "react";
 import CommentBox from "./CommentBox";
-import {sanitizeWrapper} from "../sanitize/sanitizeWrapper"
 import userImg from "../static/img/user_default.png";
-
+import {sanitizeNonNull, getTime, convertUnitOfNum} from "../utils/Utils"
 class Thumbnail extends Component{
     componentDidMount(){
+        var foot = document.querySelector(".footer")
+        var godownbtn = document.createElement("p")
+        godownbtn.className = "goNext"
+        godownbtn.innerText = "다음글"
+        godownbtn.addEventListener('click',this.gotoNext())
+        foot.appendChild(godownbtn)
         var b = new Set();
         var c = new Set();
         this.setState({
             commentboxOn:b,
             detailOn:c,
             detailOnContent:[],
+            lastElementid:0,
+            erazeTarget:godownbtn
         })
+    }
+
+    componentWillUnmount(){
+        document.querySelector(".footer").removeChild(this.state.erazeTarget)
     }
 
     getDetail = (c) => (e) =>{
         e.preventDefault();
         const {detailOn, detailOnContent} = this.state;
+        let target = e.target
         if(this.state.detailOn.has(c.id)){
             detailOn.delete(c.id)
+            //접기 -> 다음글로 scroll 이동해야힘
+            this.setState({
+                detailOn:detailOn,
+            },()=>{
+                //접은 다음 스크롤 높이 계산(동기화)
+                let next = target.parentElement.parentElement.nextElementSibling
+                window.scrollTo({top:next.offsetTop,behavior:'smooth'})
+            })
         }else{
             detailOn.add(c.id)
+            //펼치기 -> 현재글을 탑으로
+            this.setState({
+                detailOn:detailOn,
+            })
+            let now = target.parentElement.parentElement
+            window.scrollTo({top:now.offsetTop,behavior:'smooth'})
         }
-        this.setState({
-            detailOn:detailOn,
-        })
         if(c.content===undefined){
             this.props.request("get",`/board/detail/${c.id}`).then(res=>{
-                c.content = this.props.sanitizeNonNull(res.data.data)
+                c.content = sanitizeNonNull(res.data.data)
                 detailOnContent[c.id] = c.content
                 this.setState({
                     detailOnContent:detailOnContent
                 })
             })
+        }
+    }
+    gotoNext = () =>(e)=> {
+        e.preventDefault();
+        const {documentElement, body} = document;
+        let {lastElementid} = this.state
+        const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
+        const scrollBottom = scrollTop+documentElement.clientHeight
+        const boards = documentElement.querySelectorAll(".board")
+        for(let i = lastElementid+1; i<boards.length;i++){
+            const b = boards[i]
+            const offsetTop = b.offsetTop
+            if(offsetTop+b.offsetHeight<scrollBottom) continue
+            this.setState({
+                lastElementid:i,
+            })
+            window.scrollTo({top:offsetTop, behavior:'smooth'})
+            break;
+            
         }
     }
 
@@ -78,12 +120,14 @@ class Thumbnail extends Component{
         }
     }
 
+        
     render(){
         if(this.props.boards == null || this.props.boards.length ===0){
             return <h5 className="p-2">No boards</h5>
         }
-        return this.props.boards.map(c =>
-            <div className="board" key={c.id}>
+        return <div className="board_main">
+            {this.props.boards.map(c =>{
+            return <div className="board" key={c.id}>
                 <div className="board_top">
                     <div className="board_top_left">
                         {c.author.img==null?(
@@ -95,7 +139,7 @@ class Thumbnail extends Component{
                     </div>
                     <div className="board_top_center">
                         <div className="author_name">{c.author.uid}</div>
-                        <div className="created">3 시간전</div>
+                        <div className="created">{getTime(c.created)}</div>
                     </div>
                     <div className="board_top_right"></div>
                 </div>
@@ -106,17 +150,17 @@ class Thumbnail extends Component{
                     <div className="board_detail" dangerouslySetInnerHTML={{__html:this.state.detailOnContent[c.id]}}></div>
                 ):(<div className="board_thumbnail">
                         <img className="board_thumbnail_img" alt="" src={c.thumbnailImg}/>
-                        <div className="board_thumbnail_text" dangerouslySetInnerHTML={{__html:this.props.sanitizeNonNull(c.thumbnail)}}></div>
+                        <div className="board_thumbnail_text" dangerouslySetInnerHTML={{__html:sanitizeNonNull(c.thumbnail)}}></div>
                     </div>
                 )}
                 <div className="board_bottom">
                     <button className="see_detail" onClick={this.getDetail(c)}>
                         {this.state.detailOn.has(c.id)?("접기"):("펼치기")}</button>
                     <div className="buttons">
-                        <button className="board_btn" onClick={this.getCommentBox(c.id)}><span>댓글</span><span>{c.total_comments_num}</span></button>
+                        <button className="board_btn" onClick={this.getCommentBox(c.id)}><span>댓글</span><span>{convertUnitOfNum(c.total_comments_num)}</span></button>
                         <button className={c.like?("like_btn board_btn like_on"):
                     ("like_btn board_btn like_off")}
-                    onClick={this.like(c)}><span>좋아요</span><span>{c.likes}</span></button>
+                    onClick={this.like(c)}><span>좋아요</span><span>{convertUnitOfNum(c.likes)}</span></button>
                         
                         <button className="scrap_btn board_btn">공유하기</button>    
                     </div>
@@ -127,8 +171,10 @@ class Thumbnail extends Component{
                     <></>
                 )}
             </div>
-            )
+    
+        })}
+        </div>
     }
 }
 
-export default sanitizeWrapper(Thumbnail)
+export default Thumbnail

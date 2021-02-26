@@ -1,6 +1,5 @@
 import React, {Component} from "react";
 import userImg from "../static/img/user_default.png";
-import {sanitizeWrapper} from "../sanitize/sanitizeWrapper"
 import {faHeart as rHeart} from "@fortawesome/free-regular-svg-icons"
 import {faHeart as sHeart} from "@fortawesome/free-solid-svg-icons"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
@@ -9,6 +8,7 @@ import {withRouter} from "react-router-dom"
 import CommentUploader from "./CommentUploader"
 import Dropzone from "react-dropzone"
 import ReComment from "./ReComment"
+import {sanitizeHarder, getTime,convertUnitOfNum} from "../utils/Utils"
 class Comment extends Component{
 	constructor(props){
 		super(props);
@@ -234,12 +234,12 @@ class Comment extends Component{
 								{c.author.uid}
 							</div>
 							<div className="comment-others">
-								{c.created}
+								{getTime(c.created)}
 							</div>
 						</div>
 						<div className="comment-right">
 							<button className="comment-like" onClick={this.like(c)}>
-								좋아요 <span>{c.likes}</span>{c.like || this.state.likeList.has(c.id)?(<FontAwesomeIcon icon={sHeart} color="red" size="lg"/>)
+								좋아요 <span>{convertUnitOfNum(c.likes)}</span>{c.like || this.state.likeList.has(c.id)?(<FontAwesomeIcon icon={sHeart} color="red" size="lg"/>)
 								:(<FontAwesomeIcon icon={rHeart} color="red" size="lg"/>)} 
 							</button>
 							<button className="re-comment" onClick={this.recommentClick(c.id)}>
@@ -247,10 +247,10 @@ class Comment extends Component{
 							</button>
 						</div>
 					</div>
-					<div className="comment-context" dangerouslySetInnerHTML={{__html:this.props.sanitizeHarder(c.content)}}>
+					<div className="comment-context" dangerouslySetInnerHTML={{__html:sanitizeHarder(c.content)}}>
 					</div>
 			{c.children_cnt>0 && (this.state.recommentList[c.id]===undefined || c.children_cnt>this.state.recommentList[c.id].length)?
-			(<button onClick={this.seeRecommment(c.id)}> 답글 {c.children_cnt} 개</button>):null}
+			(<button onClick={this.seeRecommment(c.id)}> 답글 {convertUnitOfNum(c.children_cnt)}</button>):null}
 				
 
 			{/* 대댓글 다는 박스를 답글위에 위치할건지
@@ -286,4 +286,4 @@ class Comment extends Component{
 	}
 }
 
-export default withRouter(authWrapper(sanitizeWrapper(Comment)));
+export default withRouter(authWrapper(Comment));

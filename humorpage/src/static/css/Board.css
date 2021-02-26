@@ -66,6 +66,13 @@
 .like_on:hover{
     background-color: #f875aa;
 }
+.board_thumbnail{
+    display: flex;
+}
+.board_thumbnail_text{
+    font-size: 1.2em;
+    padding: 10px;
+}
 .board_thumbnail_img{
     max-height: 240px;
     width: auto;

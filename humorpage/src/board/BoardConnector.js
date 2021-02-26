@@ -33,6 +33,7 @@ export const BoardConnector = authWrapper(connect(mapStateToProps, mapDispatchTo
             window.removeEventListener('scroll', this.infiniteScroll);
         }
 
+
         getData = () => {
             const {last_board,boardList} = this.state;
             var resturl = '/board/recently?'

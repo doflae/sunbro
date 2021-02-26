@@ -12,32 +12,37 @@ export const AuthPrompt = withRouter(authWrapper(class extends Component{
 		}
 		this.defaultAttrs = {required:true};
 		this.formModel = [
-			{label: "ID", attrs:{name:"uid"}},
+			{label: "ID", attrs:{type:"text"}},
 			{label: "Password", attrs: {type: "password"}},
 		];
 	}
 
 	authenticate = (credentials) => {
+		console.log('hi')
 		this.props.authenticate(credentials)
 		.then((res)=>{
-			console.log(res)
-			this.props.history.push("/boards")
+			this.props.history.push("/boards")//로그인 성공시 이동경로
 		})
-		.catch(err => this.setState({errorMessage:err.message}));//로그인 성공시 이동경로
+		.catch(err => {
+			this.setState({errorMessage:err.message})
+		});
+	}
+
+	submitError = () =>{
+		this.setState({
+			errorMessage:null,
+		})
 	}
 
 	render = () =>
 		<div className="row">
 			<div className="col m-2">
-				{this.state.errorMessage != null &&
-				<h4 className="bg-danger text-center text-white m-1 p-2">
-					{this.state.errorMessage}	
-				</h4>
-				}
 				<ValidatedForm formModel={this.formModel}
 				defaultAttrs={this.defaultAttrs}
+				submitErrorCallback={this.submitError}
 				submitCallback={this.authenticate}
 				submitText="Login"
+				errorMessage={this.state.errorMessage}
 				cancelCallback={()=> this.props.history.push("/boards")}//로그인 실패시 이동 경로
 				cancelText="Cancel"
 				/>
