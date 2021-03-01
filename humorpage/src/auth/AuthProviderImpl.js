@@ -1,7 +1,6 @@
 import React, {Component} from "react"
 import Axios from "axios"
 import {AuthContext} from "./AuthContext"
-
 export class AuthProviderImpl extends Component{
     constructor(props){
         super(props);
@@ -42,12 +41,13 @@ export class AuthProviderImpl extends Component{
     }
 
     signout = () =>{
-        Axios.get('/account/logout').then(res=>{
+        return Axios.get('/account/logout').then(res=>{
             if(res.data.success){
                 this.setState({
                     user:null,
                 })
             }
+            return res
         })
     }
 

@@ -23,8 +23,16 @@ public class UserSimple implements UserDetails {
     @JsonIgnore
     @Column(name = "usernum")
     private Long usernum;
+
     @Column(nullable = false, unique = true, length = 30)
+    @JsonIgnore
     private String uid;
+
+    @Column(name="name")
+    private String name;
+
+    @Column(name="profileImg")
+    private String userImg;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false, length = 100)

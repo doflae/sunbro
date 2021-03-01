@@ -6,7 +6,8 @@ export default class CommentUploader extends Component{
                 {this.props.cname?(<span className="recomment_target_preview">@{this.props.cname}</span>):null}
                 <textarea className="comment_textarea"></textarea>
                 <div className="comment_preimgzone">
-                    <img className="comment_preimg" src="" alt="" onError="this.style.display:none"/>
+                    <img className="comment_preimg" src="" alt="" onError={(e)=>{
+                        e.target.onerror=null; e.target.style.display="none"}}/>
                     <button className="comment_preimg_delete" onClick={this.props.imageDelete()}></button>
                 </div>
                 <div className="comment_bottom">

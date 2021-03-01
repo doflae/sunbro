@@ -51,7 +51,7 @@ public class ResponseService {
         setSuccessResult(result);
         return result;
     }
-    public <T> ListResult<T> getNullListResult(){
+    public <T> ListResult<T> getFailedListResult(){
         ListResult<T> result = null;
         setFailedResult(result);
         return result;

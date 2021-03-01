@@ -38,7 +38,6 @@ button:focus{
 	display: flex;
 	flex-direction: row;
 }
-
 .head_logo{
 	display: flex;
 	margin-right: auto;
@@ -50,6 +49,14 @@ button:focus{
 }
 .head_logo_text{
 	cursor: pointer;
+}
+.head_user_img{
+	cursor: pointer;
+	max-height: 40px;
+	max-width: 40px;
+	border-radius: 20px;
+	position: relative;
+	top:6px;
 }
 .head_logo_img{
 	cursor: pointer;

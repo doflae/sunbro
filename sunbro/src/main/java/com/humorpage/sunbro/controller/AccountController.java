@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/account")
-public class SignController {
+public class AccountController {
 
     @Autowired
     private UserRepository repository;
@@ -55,6 +55,22 @@ public class SignController {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @ApiOperation(value = "유저정보")
+    @GetMapping(value="/check")
+    public CommonResult check(Authentication authentication,
+                              HttpServletResponse res){
+        UserSimple userSimple;
+        try{
+            userSimple = (UserSimple) authentication.getPrincipal();
+            if(res.getHeader("user")==null){
+                res.addHeader("user",objectMapper.writeValueAsString(userSimple));
+            }
+            return responseService.getSuccessResult();
+        }catch (Exception e){
+            return responseService.getFailResult();
+        }
+    }
 
     @ApiOperation(value = "로그인", notes = "UserSimple 엔티티로 로그인 이후 access/refresh token 생성")
     @PostMapping(value = "/login")

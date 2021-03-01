@@ -231,7 +231,7 @@ class Comment extends Component{
 					<div className="comment-subscript">
 						<div className="comment-left">
 							<div className="comment-author">
-								{c.author.uid}
+								{c.author.name}
 							</div>
 							<div className="comment-others">
 								{getTime(c.created)}
@@ -264,7 +264,7 @@ class Comment extends Component{
 				<div><button onClick={this.seeRecommment(c.id)}>더보기</button></div>
 			):null}
             {this.state.commentUploaderOn === c.id?(<CommentUploader imageHandler={this.imageHandler} imageDelete={this.imageDelete}
-            submitComment={this.submitComment} board_id={this.props.board_id} comment_id={c.id} cname={c.author.uid}/>):null}
+            submitComment={this.submitComment} board_id={this.props.board_id} comment_id={c.id} cname={c.author.name}/>):null}
 					<Dropzone
                     ref = {(el)=>(this.dropzone = el)}
                     accept = "image/*"

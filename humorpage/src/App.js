@@ -5,15 +5,17 @@ import './static/css/Board.css'
 import './static/css/Comment.css'
 import "react-quill/dist/quill.snow.css"
 import './static/css/Editor.css'
+import './static/css/Mypage.css'
 import {Route, Switch,withRouter} from "react-router-dom"
 import {BoardConnector} from "./board/BoardConnector"
 import Footer from "./footer/Footer"
 import Editor from "./upload/Editor"
-import {Header} from "./header/Header"
+import Header from "./header/Header"
 import {AuthPrompt} from "./auth/AuthPrompt"
 import {Provider} from "react-redux"
 import {authWrapper} from "./auth/AuthWrapper";
 import {HumorDataStore} from "./data/DataStore"
+import UserPage from "./userpage/UserPage";
 
 class App extends Component{
   render(){
@@ -26,6 +28,7 @@ class App extends Component{
                 <Route path="/upload" component={Editor}/>
                 <Route path="/login" component={AuthPrompt}/>
                 <Route path="/boards" component={BoardConnector}/>
+                <Route path="/mypage" component={UserPage}/>
               </React.Fragment>
             </Switch>
             <Footer/>

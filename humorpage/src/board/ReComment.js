@@ -58,7 +58,7 @@ class ReComment extends Component{
 					<div className="comment-subscript">
 						<div className="comment-left">
 							<div className="comment-author">
-								{c.author.uid}
+								{c.author.name}
 							</div>
 							<div className="comment-others">
 								{getTime(c.created)}
@@ -77,7 +77,7 @@ class ReComment extends Component{
 					<div className="comment-context" dangerouslySetInnerHTML={{__html:sanitizeHarder(c.content)}}>
 					</div>
 					{this.props.commentUploaderOn === c.id?(<CommentUploader imageHandler={this.props.imageHandler} imageDelete={this.props.imageDelete}
-            submitComment={this.props.submitComment} board_id={this.props.board_id} comment_id={this.props.id} cname={c.author.uid}/>):null}
+            submitComment={this.props.submitComment} board_id={this.props.board_id} comment_id={this.props.id} cname={c.author.name}/>):null}
             
 				</div>
             </div>

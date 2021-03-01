@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import CommentBox from "./CommentBox";
 import userImg from "../static/img/user_default.png";
 import {sanitizeNonNull, getTime, convertUnitOfNum} from "../utils/Utils"
-class Thumbnail extends Component{
+class Board extends Component{
     componentDidMount(){
         var foot = document.querySelector(".footer")
         var godownbtn = document.createElement("p")
@@ -177,4 +177,4 @@ class Thumbnail extends Component{
     }
 }
 
-export default Thumbnail
+export default Board

@@ -3,7 +3,7 @@ import {Switch, Route, Redirect} from "react-router-dom"
 import {connect} from "react-redux"
 import {loadData} from "../data/ActionCreators"
 import {authWrapper} from "../auth/AuthWrapper"
-import Thumbnail from "./Thumbnail"
+import Board from "./Board"
 const mapStateToProps = (dataStore) => ({
     ...dataStore
 })
@@ -20,7 +20,6 @@ export const BoardConnector = authWrapper(connect(mapStateToProps, mapDispatchTo
             this.state = {
                 boardList : [],
                 last_board:0,
-                user:null,
             };
         }
 
@@ -41,10 +40,11 @@ export const BoardConnector = authWrapper(connect(mapStateToProps, mapDispatchTo
                 resturl+=`board_id=${last_board}`
             }
             this.props.request('get',resturl).then(res=>{
-                if(res.data.list.length>0){
+                const resData = res.data.list
+                if(resData.length>0){
                     this.setState({
-                        boardList:[...boardList, ...res.data.list],
-                        last_board:res.data.list[res.data.list.length-1]['id']
+                        boardList:[...boardList, ...resData],
+                        last_board:resData[resData.length-1]['id']
                     })
                 }else{
                     window.removeEventListener('scroll', this.infiniteScroll);
@@ -68,7 +68,7 @@ export const BoardConnector = authWrapper(connect(mapStateToProps, mapDispatchTo
             return <Switch>
                 <Route path="/boards"
                 render={(routeProps)=>
-                <Thumbnail {...this.props}{...routeProps}
+                <Board {...this.props}{...routeProps}
                 boards={boardList}/>}/>
                 <Redirect to="/boards"/>
             </Switch>

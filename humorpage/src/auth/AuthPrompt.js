@@ -18,10 +18,10 @@ export const AuthPrompt = withRouter(authWrapper(class extends Component{
 	}
 
 	authenticate = (credentials) => {
-		console.log('hi')
 		this.props.authenticate(credentials)
 		.then((res)=>{
-			this.props.history.push("/boards")//로그인 성공시 이동경로
+			console.log(this.props.history)
+			this.props.history.goBack();
 		})
 		.catch(err => {
 			this.setState({errorMessage:err.message})
