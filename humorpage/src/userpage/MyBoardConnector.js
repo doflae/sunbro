@@ -1,69 +1,54 @@
-import React, {Component} from "react"
-import {authWrapper} from "../auth/AuthWrapper"
-import {withRouter} from "react-router-dom"
-import MyBoard from "./MyBoard";
+import React, { useState } from "react";
+import MyBoard from "./MyBoard"
 
-class MyBoardConnector extends Component{
-    constructor(props){
-        super(props);
+function MyBoardConnector({
+    boards
+}){
+    const [checkedBox, setCheckedBox] = useState([]);
 
-        this.state = {
-            boardList : [],
-            last_board,
+    const selectSingleHandler = (checked, id) => {
+        if(checked){
+            setCheckedBox([...checkedBox,id]);
+        }else{
+            setCheckedBox(checkedBox.filter((el)=>el!==id));
         }
     }
-
-    componentDidMount(){
-        this.getData();
-        window.addEventListener('scroll', this.infiniteScroll);
-    }
-        
-    componentWillUnmount(){
-        window.removeEventListener('scroll', this.infiniteScroll);
-    }
-
-
-    getData = () => {
-        const {last_board,boardList} = this.state;
-        var resturl = '/mypage/board'
-        if(last_board!==0){
-            resturl+=`?board_id=${last_board}`
-        }
-        this.props.request("get", resturl).then(res=>{
-            const resData = res.data.list
-            if(res.data.success===true){
-                if(resData.length>0){
-                    this.setState({
-                        boardList:[...boardList,...resData],
-                        last_board:resData[resData.length-1]['id']
-                    })
-                }else{
-                    window.removeEventListener('scroll',this.infiniteScroll)
-                }
-            }else{
-                this.props.history.push("/login");
-            }
-        })
-    }
-
-    infiniteScroll = () =>{
-        const { documentElement, body } = document;
-
-        const scrollHeight = Math.max(documentElement.scrollHeight, body.scrollHeight);
-        const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
-        const clientHeight = documentElement.clientHeight;
-
-        if (scrollTop + clientHeight >= scrollHeight) {
-            this.getData();
+    const selectAllHandler = (checked) =>{
+        if(checked){
+            const allArray = [];
+            boards.forEach(element => {
+                allArray.push(element.id);
+            });
+            setCheckedBox(allArray)
+        }else{
+            setCheckedBox([]);
         }
     }
-
-    render(){
-        const boardList = this.state.boardList
-        return <table>
-            <MyBoard BoardList = {boardList}/>
+    if(boards==null||boards.length===0){
+        return <h5 className="p-2">No boards</h5>
+    }
+    return<div>
+            <input type="checkbox" 
+                checked={checkedBox.length === boards.length?true:false} 
+                onChange={(e)=> selectAllHandler(e.target.checked)}></input>
+            <table className="MyBoard_table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>글번호</th>
+                    <th>제목</th>
+                    <th>작성일</th>
+                    <th>좋아요</th>
+                </tr>
+            </thead>
+            <tbody>
+            {boards.map(board=>{
+            return <MyBoard board={board} key={board.id}
+            checkedBox={checkedBox} setCheckedBox={setCheckedBox}
+            selectSingleHandler={selectSingleHandler}/>
+        })}
+        </tbody>
         </table>
-    }
+        </div>
 }
-
-export default authWrapper(withRouter(MyBoardConnector))
+export default React.memo(MyBoardConnector);

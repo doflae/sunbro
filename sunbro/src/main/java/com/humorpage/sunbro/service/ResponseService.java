@@ -52,7 +52,7 @@ public class ResponseService {
         return result;
     }
     public <T> ListResult<T> getFailedListResult(){
-        ListResult<T> result = null;
+        ListResult<T> result = new ListResult<>();
         setFailedResult(result);
         return result;
     }

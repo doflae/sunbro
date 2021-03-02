@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import {withRouter} from "react-router-dom";
 import {authWrapper} from "./AuthWrapper";
-import {ValidatedForm} from "../forms/ValidatedForm";
+import {LoginForm} from "../forms/LoginForm";
 
 export const AuthPrompt = withRouter(authWrapper(class extends Component{
 
@@ -20,7 +20,6 @@ export const AuthPrompt = withRouter(authWrapper(class extends Component{
 	authenticate = (credentials) => {
 		this.props.authenticate(credentials)
 		.then((res)=>{
-			console.log(this.props.history)
 			this.props.history.goBack();
 		})
 		.catch(err => {
@@ -37,7 +36,7 @@ export const AuthPrompt = withRouter(authWrapper(class extends Component{
 	render = () =>
 		<div className="row">
 			<div className="col m-2">
-				<ValidatedForm formModel={this.formModel}
+				<LoginForm formModel={this.formModel}
 				defaultAttrs={this.defaultAttrs}
 				submitErrorCallback={this.submitError}
 				submitCallback={this.authenticate}

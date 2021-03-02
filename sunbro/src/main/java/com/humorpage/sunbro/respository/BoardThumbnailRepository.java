@@ -1,6 +1,7 @@
 package com.humorpage.sunbro.respository;
 
 import com.humorpage.sunbro.model.BoardThumbnail;
+import com.humorpage.sunbro.model.UserSimple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,5 +29,5 @@ public interface BoardThumbnailRepository extends JpaRepository<BoardThumbnail, 
 
     List<BoardThumbnail> findAllByAuthor(Long author_num);
 
-    List<BoardThumbnail> findByAuthorAndIdGreaterThan(Long author_num, Long board_id, Pageable pageable);
+    List<BoardThumbnail> findByAuthorAndIdGreaterThanOrderByIdDesc(UserSimple author, Long board_id, Pageable pageable);
 }

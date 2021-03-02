@@ -2,7 +2,7 @@ import React, {Component} from "react"
 import {ValidationError} from "./ValidationError"
 import {GetMessages} from "./ValidationMessages"
 
-export class ValidatedForm extends Component{
+export class LoginForm extends Component{
 
 	constructor(props){
 		super(props)
@@ -50,6 +50,7 @@ export class ValidatedForm extends Component{
 
 	render(){
 		return <React.Fragment>
+			
 			{this.props.formModel.map(m=> this.renderElement(m))}
 			{this.props.errorMessage!= null &&
 				<p>{this.props.errorMessage}</p>

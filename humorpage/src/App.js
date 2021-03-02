@@ -7,7 +7,7 @@ import "react-quill/dist/quill.snow.css"
 import './static/css/Editor.css'
 import './static/css/Mypage.css'
 import {Route, Switch,withRouter} from "react-router-dom"
-import {BoardConnector} from "./board/BoardConnector"
+import BoardConnector from "./board/BoardConnector"
 import Footer from "./footer/Footer"
 import Editor from "./upload/Editor"
 import Header from "./header/Header"

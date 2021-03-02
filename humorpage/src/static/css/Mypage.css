@@ -6,10 +6,18 @@
     margin:30px;
 }
 .mypage_header{
+    position: relative;
     display: flex;
 }
 .mypage_user_name{
     font-size: 1.3em;
     margin: 20px;
     font-weight: 700;
+}
+.mypage_update_btn{
+    position: absolute;
+    right:20px;
+    top:20px;
+    border: 0px;
+    background-color: #ffffff;
 }

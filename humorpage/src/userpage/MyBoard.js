@@ -1,34 +1,29 @@
-import React,{Component} from "react";
-import {withRouter} from "react-router-dom"
-import {authWrapper} from "../auth/AuthWrapper"
+import React from "react"
+import {sanitizeNonNull, getTime, convertUnitOfNum} from "../utils/Utils"
 
-class MyBoard extends Component{
-    render(){
-        if(this.props.boards === null || this.props.boards.length === 0){
-            return <h5>작성한 글이 없습니다.</h5>
-        }
-        return this.props.boards.map(b =>
-            <tr className="myboard" key={b.id}>
-                <td>
-                    글 선택
-                </td>
-                <td className="myboard_main">
-                    <div className="myboard_title">
-                        {b.title}
-                    </div>
-                    {this.props.contextOn?(
-                        <div className="myboard_context">{b.context}</div>
-                    ):null}
-                </td>
-                <td>
-                    {b.created}
-                </td>
-                <td>
-                    {b.likes}
-                </td>
-            </tr>
-            )
-    }
+function MyBoard({
+    board,
+    checkedBox,
+    selectSingleHandler
+}){
+    const id = board.id
+    const comments_num = board.comments_num
+    return<><tr>
+        <td align="center">
+            <input type="checkbox" checked={checkedBox.includes(id)?true:false} onChange={(e) => selectSingleHandler(e.target.checked, id)}/>
+        </td>
+        <td align="center">{id}</td>
+        <td align="left">{board.title} <span>{comments_num}</span></td>
+        <td align="center">{getTime(board.created,"date").split(" ")[0]}</td>
+        <td align="center">{convertUnitOfNum(board.likes)}</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td colSpan="4">
+            <div dangerouslySetInnerHTML={{__html:sanitizeNonNull(board.thumbnail)}}></div>
+        </td>
+    </tr>
+    </>
+    
 }
-
-export default withRouter(authWrapper(MyBoard))
+export default React.memo(MyBoard);

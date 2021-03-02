@@ -61,7 +61,7 @@ public class MyPageController {
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
-            List<BoardThumbnail> boardThumbnailList = boardThumbnailRepository.findByAuthorAndIdGreaterThan(userSimple.getUsernum(), board_id, PageRequest.of(0,10));
+            List<BoardThumbnail> boardThumbnailList = boardThumbnailRepository.findByAuthorAndIdGreaterThanOrderByIdDesc(userSimple, board_id, PageRequest.of(0,10));
             boardThumbnailList.forEach(boardThumbnail -> {
                 boardThumbnail.setLike((boardlikesList.contains(boardThumbnail.getId())));
             });
