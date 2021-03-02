@@ -29,5 +29,7 @@ public interface BoardThumbnailRepository extends JpaRepository<BoardThumbnail, 
 
     List<BoardThumbnail> findAllByAuthor(Long author_num);
 
-    List<BoardThumbnail> findByAuthorAndIdGreaterThanOrderByIdDesc(UserSimple author, Long board_id, Pageable pageable);
+    List<BoardThumbnail> findByAuthorOrderByIdDesc(UserSimple author, Pageable pageable);
+
+    List<BoardThumbnail> findByIdInOrderByIdDesc(List<Long> ids,Pageable pageable);
 }

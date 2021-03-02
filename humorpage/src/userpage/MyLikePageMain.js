@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import MyBoardConnector from  "./MyBoardConnector"
-class MyPageMain extends Component{
+class MyLikePageMain extends Component{
     constructor(props){
         super(props);
 
@@ -18,7 +18,7 @@ class MyPageMain extends Component{
 
     getData = () => {
         const {boardList} = this.state;
-        const resturl = `/mypage/board?num=${this.state.pagenum}&size=${this.props.pagesize}`
+        const resturl = `/mypage/likes?num=${this.state.pagenum}&size=${this.props.pagesize}`
         this.props.request("get", resturl).then(res=>{
             const resData = res.data.list
             if(res.data.success===true){
@@ -41,4 +41,4 @@ class MyPageMain extends Component{
     }
 }
 
-export default withRouter(authWrapper(MyPageMain))
+export default withRouter(authWrapper(MyLikePageMain))

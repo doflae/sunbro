@@ -56,15 +56,30 @@ public class MyPageController {
             notes = "token에 저장되어있는 로그인 정보를 사용"
     )
     @GetMapping("/board")
-    ListResult<BoardThumbnail> myboard(@RequestParam(required = false, defaultValue = "0") Long board_id,
+    ListResult<BoardThumbnail> myboard(@RequestParam(required = false, defaultValue = "10") int size,
+                                       @RequestParam int num,
                                        Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
-            List<BoardThumbnail> boardThumbnailList = boardThumbnailRepository.findByAuthorAndIdGreaterThanOrderByIdDesc(userSimple, board_id, PageRequest.of(0,10));
-            boardThumbnailList.forEach(boardThumbnail -> {
-                boardThumbnail.setLike((boardlikesList.contains(boardThumbnail.getId())));
-            });
+            List<BoardThumbnail> boardThumbnailList = boardThumbnailRepository.findByAuthorOrderByIdDesc(userSimple, PageRequest.of(num,size));
+            return responseService.getListResult(boardThumbnailList);
+        }catch (NullPointerException e){
+            return responseService.getFailedListResult();
+        }
+    }
+
+    @ApiOperation(
+            value = "유저가 좋아요 누른 글",
+            notes = "token에 저장되어있는 로그인 정보를 사용"
+    )
+    @GetMapping("/likes")
+    ListResult<BoardThumbnail> myLikes(@RequestParam(required = false, defaultValue = "10") int size,
+                                       @RequestParam int num,
+                                       Authentication authentication){
+        try{
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            List<Long> boardlikesList = boardLikesRepository.findAllByUsercustom(userSimple.getUsernum());
+            List<BoardThumbnail> boardThumbnailList = boardThumbnailRepository.findByIdInOrderByIdDesc(boardlikesList,PageRequest.of(num,size));
             return responseService.getListResult(boardThumbnailList);
         }catch (NullPointerException e){
             return responseService.getFailedListResult();

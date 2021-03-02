@@ -16,7 +16,6 @@ import {Provider} from "react-redux"
 import {authWrapper} from "./auth/AuthWrapper";
 import {HumorDataStore} from "./data/DataStore"
 import UserPage from "./userpage/UserPage";
-
 class App extends Component{
   render(){
     return<Provider store = {HumorDataStore}>

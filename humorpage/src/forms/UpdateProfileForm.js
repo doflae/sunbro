@@ -3,7 +3,7 @@ import {ValidationError} from "./ValidationError"
 import {GetMessages} from "./ValidationMessages"
 import userDefaultImg from "../static/img/user_default.png";
 
-export class ValidatedForm extends Component{
+export class UpdateProfileForm extends Component{
 
 	constructor(props){
 		super(props)

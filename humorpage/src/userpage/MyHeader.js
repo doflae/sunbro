@@ -5,6 +5,7 @@ import {withRouter} from 'react-router-dom'
 import {ReactComponent as Cogwheel} from "../static/svg/cogwheel.svg"
 
 class MyHeader extends Component{
+
     render(){
         const user = this.props.userDetail;
         if(user===null){
@@ -19,7 +20,9 @@ class MyHeader extends Component{
                 게시물 {user.total_board_num} 개  댓글 {user.total_comment_num} 개
             </div>    
         </span>
-        <button className="mypage_update_btn">
+        <button className="mypage_update_btn" onClick={(e)=>{
+            this.props.history.push("/profile")
+        }}>
             <Cogwheel width="40" height="40"/>
         </button>
 
