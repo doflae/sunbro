@@ -20,9 +20,7 @@ class MyHeader extends Component{
                 게시물 {user.total_board_num} 개  댓글 {user.total_comment_num} 개
             </div>    
         </span>
-        <button className="mypage_update_btn" onClick={(e)=>{
-            this.props.history.push("/profile")
-        }}>
+        <button className="mypage_update_btn" onClick={this.props.gotoupdate()}>
             <Cogwheel width="40" height="40"/>
         </button>
 

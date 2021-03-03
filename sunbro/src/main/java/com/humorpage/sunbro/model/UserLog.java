@@ -31,4 +31,7 @@ public class UserLog {
 
     @Formula("(select count(*) from comment c where c.author_num=usernum)")
     private int total_comment_num;
+
+    @Formula("(select count(*) from boardlikes bl where bl.user_num=usernum)")
+    private int total_board_likes;
 }

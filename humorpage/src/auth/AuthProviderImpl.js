@@ -9,12 +9,15 @@ export class AuthProviderImpl extends Component{
         }
     }
     request = (method, url, data=null, params=null) =>{
+        const{user} = this.state
         return Axios({method,url,data,params,withCredentials:true})
         .then((res)=>{
             if("user" in res.headers){
-                this.setState({
-                    user:JSON.parse(res.headers['user']),
-                })
+                if(user===null){
+                    this.setState({
+                        user:JSON.parse(res.headers['user']),
+                    })
+                }
             }else{
                 this.setState({
                     user:null,

@@ -57,15 +57,11 @@ public class AccountController {
     private ObjectMapper objectMapper;
 
     @ApiOperation(value = "유저정보")
-    @GetMapping(value="/check")
-    public CommonResult check(Authentication authentication,
-                              HttpServletResponse res){
+    @GetMapping(value="/profile")
+    public CommonResult check(Authentication authentication){
         UserSimple userSimple;
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
-            if(res.getHeader("user")==null){
-                res.addHeader("user",objectMapper.writeValueAsString(userSimple));
-            }
             return responseService.getSuccessResult();
         }catch (Exception e){
             return responseService.getFailResult();
