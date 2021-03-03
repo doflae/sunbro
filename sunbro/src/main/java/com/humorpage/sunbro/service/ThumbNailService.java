@@ -32,7 +32,6 @@ public class ThumbNailService {
         Matcher matcher = thumbNailPattern.matcher(content);
         if (matcher.find()){
             String src = matcher.group(2);
-            System.out.println("hi");
             if(src.startsWith("videos")){
                 Pattern tempPattern = Pattern.compile("^(videos)/(.+)/([^/]+)\\..+");
                 Matcher tempMatcher = tempPattern.matcher(src);

@@ -3,13 +3,11 @@ package com.humorpage.sunbro.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,6 +16,10 @@ import java.util.List;
 @Table(name="user")
 @Data
 public class UserSimple implements UserDetails {
+    enum Sex{
+        Male,Female
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
@@ -31,12 +33,23 @@ public class UserSimple implements UserDetails {
     @Column(name="name")
     private String name;
 
-    @Column(name="profileImg")
+    @Column(name="profileImg",nullable = false)
     private String userImg;
+
+    public void setUserImg(String userImg){
+        userImg = userImg==null?"":userImg;
+        this.userImg=userImg;
+    }
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false, length = 100)
     private String password;
+
+    @Column(name="sex")
+    private Sex sex;
+
+    @Column(name="birth")
+    private int birth;
 
     private String role;
     @Override

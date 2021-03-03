@@ -1,4 +1,5 @@
 import sanitizeHtml from "sanitize-html-react"
+import React from "react"
 
 export const sanitizeNonNull = (dirty) =>{
     const content = sanitize(dirty)
@@ -75,4 +76,17 @@ export const convertUnitOfNum = (num) =>{
     else if(num<10000) return `${(num/1000).toFixed(1)} 천`
     else if(num<1000000) return `${(num/10000).toFixed(1)} 만`
     else return `${(num/1000000).toFixed(2)} M`
+}
+
+export const YearsSelector = (selected) =>{
+    const currentYear = new Date().getFullYear()
+    const years = []
+    for(let t = 0;t<100;t++){
+        years.push(currentYear-t)
+    }
+    
+    return years.map((year,index)=>{
+            if (year===selected) return <option key={index} value={year} selected>{year}</option>
+            else return <option key={index} value={year}>{year}</option>
+        })
 }

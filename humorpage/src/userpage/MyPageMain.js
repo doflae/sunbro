@@ -28,7 +28,7 @@ class MyPageMain extends Component{
                 pagenum:pagenum,
             })
         }else{
-            const resturl = `/mypage/board?num=${pagenum-1}&size=${this.props.pagesize}`
+            const resturl = `/user/board?num=${pagenum-1}&size=${this.props.pagesize}`
             this.props.request("get", resturl).then(res=>{
                 const resData = res.data.list
                 if(res.data.success===true){

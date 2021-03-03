@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Formula;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,7 +24,9 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name="user")
 public class User implements UserDetails {
-
+    enum Sex{
+        Male,Female
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
@@ -40,22 +43,23 @@ public class User implements UserDetails {
 
     private String role;
 
+    @Column(name="profileImg")
+    private String userImg;
 
-    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<BoardThumbnail> boards = new ArrayList<>();
+    @Column(name="sex")
+    private Sex sex;
 
-    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Comment> comments = new ArrayList<>();
+    @Column(name="birth")
+    private int birth;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Boardlikes> boardlikes = new ArrayList<>();
+    @Formula("(select count(*) from board b where b.author_num=usernum)")
+    private int total_board_num;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Commentlikes> commentlikes = new ArrayList<>();
+    @Formula("(select count(*) from comment c where c.author_num=usernum)")
+    private int total_comment_num;
+
+    @Formula("(select count(*) from boardlikes bl where bl.user_num=usernum)")
+    private int total_board_likes;
 
     @Override
     @JsonIgnore
@@ -65,9 +69,6 @@ public class User implements UserDetails {
         return list;
     }
 
-    public List<BoardThumbnail> getBoards(){
-        return this.boards;
-    }
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Override

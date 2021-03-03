@@ -169,7 +169,7 @@ class CommentBox extends Component{
     }
     imageDelete = () => (e) => {
         let target = e.target;
-        this.props.request("get", `/file/comment/delete?src=${target.previousElementSibling.getAttribute("src")}`)
+        this.props.request("get", `/file/delete?src=${target.previousElementSibling.getAttribute("src")}`)
         .then(res=>{
             if (res.data.success){
                 target.style.zIndex=-1;

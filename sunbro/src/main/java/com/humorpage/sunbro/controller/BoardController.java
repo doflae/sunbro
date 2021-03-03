@@ -3,19 +3,16 @@ package com.humorpage.sunbro.controller;
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.model.BoardThumbnail;
-import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.*;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.*;
-import com.humorpage.sunbro.vaildator.BoardVaildator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
@@ -36,12 +33,6 @@ public class BoardController {
 
     @Autowired
     private BoardThumbnailRepository boardThumbnailRepository;
-
-    @Autowired
-    private BoardService boardService;
-
-    @Autowired
-    private BoardVaildator boardVaildator;
 
     @Autowired
     private ResponseService responseService;
@@ -66,7 +57,7 @@ public class BoardController {
 
     @ApiOperation(value = "업로드", notes="html코드를 받아 저장소 옮기고 최종적으로 업로드한다.")
     @PostMapping(value = "/upload")
-    CommonResult postForm(@Valid Board board, BindingResult bindingResult, Authentication authentication){
+    CommonResult postForm(@Valid Board board, Authentication authentication){
         UserSimple userSimple;
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
@@ -75,18 +66,15 @@ public class BoardController {
             return responseService.setDetailResult(false,-1,"Need to Login");
         }
         try{
-            boardVaildator.validate(board, bindingResult);
-            if (bindingResult.hasErrors()){
-                //bindingResult에 오류 내역있으니 뽑아서 응답에 넣고 프론트에서 처리하는 걸로
-                return responseService.getFailResult();
-            }
             board.setContent(fileMoveService.moveContents(board.getContent()));
             board.setThumbnailImg(thumbNailService.getThumbnailImage(board.getContent()));
-            boardService.save(userSimple,board);
+            board.setAuthor(userSimple);
+            boardRepository.save(board);
             return responseService.getSuccessResult();
         }
         catch (IOException e){
-            boardService.save(userSimple,board);
+            board.setAuthor(userSimple);
+            boardRepository.save(board);
             return responseService.getSuccessResult();
         }
     }

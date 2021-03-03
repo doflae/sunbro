@@ -18,7 +18,7 @@ class MyLikePageMain extends Component{
 
     getData = () => {
         const {boardList} = this.state;
-        const resturl = `/mypage/likes?num=${this.state.pagenum}&size=${this.props.pagesize}`
+        const resturl = `/user/likes?num=${this.state.pagenum}&size=${this.props.pagesize}`
         this.props.request("get", resturl).then(res=>{
             const resData = res.data.list
             if(res.data.success===true){

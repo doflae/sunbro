@@ -33,6 +33,30 @@ public class FileMoveService {
         this.temporaryFileStore = temporaryFileStore;
         this.ffMpegVideoConvert = ffMpegVideoConvert;
     }
+    //input = image src 또는 null 만
+    public String moveProfileImage(String prevImage, String newImage, Long usernum){
+        if(newImage==null) return "";//front에서 null이면 onerror로 이어지지않는다
+        String[] temp = newImage.split("/");
+        String newPath = "/images/profile/"+usernum+temp[temp.length-1];
+        if(moveImg(newImage,newPath)) {
+            deleteImage(prevImage);
+            return newPath;
+        }else{
+            return prevImage;
+        }
+    }
+    public String moveOnlyImage(String content){
+        Matcher matcher = imgPattern.matcher(content);
+        StringBuffer sb = new StringBuffer();
+
+        while (matcher.find()){
+            String target = matcher.group(1);
+            String newPath = target.replace("/temp","");
+            moveImg(target,newPath);
+            matcher.appendReplacement(sb,content.substring(matcher.start(),matcher.start(1))+newPath+content.substring(matcher.end(1),matcher.end()));
+        }
+        return matcher.appendTail(sb).toString();
+    }
 
     //게시글 html 코드 받고 내부 img, video 태그의 src 추출 후 해당 path에서 영구 저장소로 파일 이동
     public String moveContents(String content){
@@ -58,9 +82,19 @@ public class FileMoveService {
         return matcher.appendTail(sb).toString();
     }
 
+    private boolean deleteImage(String src){
+        Path file = Paths.get(baseDir+src);
+        if(file.toFile().exists()){
+            try{
+                Files.delete(file);
+            }catch(IOException e){
+                return false;
+            }
+        }
+        return true;
+    }
 
-
-    private void moveImg(String src, String target){
+    private boolean moveImg(String src, String target){
         Path file = Paths.get(baseDir+src);
         Path newPath = Paths.get(baseDir+target);
         File newDir = new File(newPath.getParent().toString());
@@ -70,13 +104,14 @@ public class FileMoveService {
         if(file.toFile().exists()){
             try{
                 Files.move(file,newPath,REPLACE_EXISTING);
-            }catch (IOException ignored){
-
+            }catch (IOException e){
+                return false;
             }
         }
+        return true;
     }
 
-    private void moveVideo(String src, String target){
+    private boolean moveVideo(String src, String target){
         Path file = Paths.get(baseDir+src);
         Path newPath = Paths.get(baseDir+target);
         File newDir = new File(newPath.getParent().toString());
@@ -87,9 +122,10 @@ public class FileMoveService {
             try{
                 ffMpegVideoConvert.convertVideo(src,target);
                 temporaryFileStore.delete(file);
-            }catch (FFMpegVideoConvert.VideoConvertException | IOException ignored){
-
+            }catch (FFMpegVideoConvert.VideoConvertException | IOException e){
+                return false;
             }
         }
+        return true;
     }
 }

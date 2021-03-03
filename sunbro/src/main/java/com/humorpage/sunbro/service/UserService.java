@@ -23,17 +23,8 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User save(User user){
 
-        String encodedpassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedpassword);
-        user.setEnabled(true);
-
-        return userRepository.save(user);
-
-    }
-
-    public Optional<UserSimple> loadUserSimpleByUsernum(Long usernum){
+    public UserSimple loadUserSimpleByUsernum(Long usernum){
         return userSimpleRepository.findByUsernum(usernum);
     }
 

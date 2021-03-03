@@ -18,7 +18,7 @@ class UserPage extends Component{
         this.gotoupdate = this.gotoupdate.bind(this)
     }
     componentDidMount(){
-        this.props.request("get","/mypage/log").then(res=>{
+        this.props.request("get","/user/log").then(res=>{
             if(res.data.success===true){
                 this.setState({
                     userDetail:res.data.data,
@@ -41,7 +41,7 @@ class UserPage extends Component{
     render(){
         if(this.state.loading) return <span>Loading...</span>
         if(this.state.option===2){
-            return <UpdateProfile user={this.state.userDetail}/>
+            return <UpdateProfile userDetail={this.state.userDetail}/>
         }
         return <span className="mypage">
                 <MyHeader gotoupdate={this.gotoupdate}

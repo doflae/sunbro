@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface UserSimpleRepository extends JpaRepository<UserSimple, Long> {
 
-    Optional<UserSimple> findByUsernum(Long usernum);
+    UserSimple findByUsernum(Long usernum);
     Optional<UserSimple> findByUid(String uid);
 
 }

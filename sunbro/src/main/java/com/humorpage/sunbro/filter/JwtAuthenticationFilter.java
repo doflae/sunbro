@@ -69,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 usernum = jwtTokenService.getUsernum(jwt);
             }
             if(usernum!=null){
-                UserSimple userSimple = userService.loadUserSimpleByUsernum(usernum).orElseThrow(CIdSigninFailedException::new);
+                UserSimple userSimple = userService.loadUserSimpleByUsernum(usernum);
                 if(httpServletResponse.getHeader("user")==null){
                     httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
                 }
@@ -91,7 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (refreshJwt != null) {
                 refreshUnum = Long.parseLong(redisTokenService.getData(refreshJwt));
                 if (refreshUnum.equals(jwtTokenService.getUsernum(refreshJwt))) {
-                    UserSimple userSimple = userService.loadUserSimpleByUsernum(refreshUnum).orElseThrow(CIdSigninFailedException::new);
+                    UserSimple userSimple = userService.loadUserSimpleByUsernum(refreshUnum);
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple, null, userSimple.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);

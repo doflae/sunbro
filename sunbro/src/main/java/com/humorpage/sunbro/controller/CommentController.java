@@ -3,7 +3,6 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Comment;
-import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.CommentLikesRepository;
 import com.humorpage.sunbro.respository.CommentRepository;
@@ -14,11 +13,9 @@ import com.humorpage.sunbro.service.CommentService;
 import com.humorpage.sunbro.service.FileMoveService;
 import com.humorpage.sunbro.service.LikesService;
 import com.humorpage.sunbro.service.ResponseService;
-import com.humorpage.sunbro.vaildator.CommentValidator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +28,6 @@ import java.util.List;
 @RestController
 public class CommentController {
 
-    @Autowired
-    private CommentValidator commentValidator;
 
     @Autowired
     private ResponseService responseService;
@@ -92,21 +87,15 @@ public class CommentController {
     public SingleResult<Long> uploadComment(@Valid Comment comment,
                                             @RequestParam Long board_id,
                                             @RequestParam(required = false,defaultValue = "0") Long comment_id,
-                                            BindingResult bindingResult,
                                             Authentication authentication) {
-        commentValidator.validate(comment,bindingResult);
-        UserSimple userSimple = null;
+        UserSimple userSimple;
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
         }catch (NullPointerException ignored){
             return responseService.getFailSingleResult();
         }
-        if(bindingResult.hasErrors()){
-            //bindingResult에 오류 내역잇으니 뽑아서 응답에 넣고 프론트에서 처리하는 걸로
-            return responseService.getSingleResult(null);
-        }
         try{
-            comment.setContent(fileMoveService.moveContents(comment.getContent()));
+            comment.setContent(fileMoveService.moveOnlyImage(comment.getContent()));
             commentService.save(userSimple,board_id, comment_id,comment);
             return responseService.getSingleResult(comment.getId());
         }

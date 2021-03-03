@@ -3,7 +3,7 @@ package com.humorpage.sunbro.controller;
 import com.humorpage.sunbro.model.*;
 import com.humorpage.sunbro.respository.BoardLikesRepository;
 import com.humorpage.sunbro.respository.BoardThumbnailRepository;
-import com.humorpage.sunbro.respository.UserLogRepository;
+import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.ResponseService;
@@ -16,12 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
 import java.util.List;
 
 @RestController
-@RequestMapping("/mypage")
-public class MyPageController {
+@RequestMapping("/user")
+public class UserController {
 
     @Autowired
     private ResponseService responseService;
@@ -33,18 +32,18 @@ public class MyPageController {
     private BoardThumbnailRepository boardThumbnailRepository;
 
     @Autowired
-    private UserLogRepository userLogRepository;
+    private UserRepository userRepository;
 
     @ApiOperation(
             value = "유저 정보",
-            notes = "유저 활동 로그"
+            notes = "유저 활동 로그 및 프로필"
     )
     @GetMapping("/log")
-    SingleResult<UserLog> myLog(Authentication authentication){
+    SingleResult<User> myUser(Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            UserLog userLog = userLogRepository.findByUsernum(userSimple.getUsernum());
-            return responseService.getSingleResult(userLog);
+            User user = userRepository.findByUsernum(userSimple.getUsernum());
+            return responseService.getSingleResult(user);
         }catch (Exception e){
             return responseService.getFailSingleResult();
         }

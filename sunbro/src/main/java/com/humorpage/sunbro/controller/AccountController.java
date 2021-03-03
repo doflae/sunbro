@@ -7,10 +7,7 @@ import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.respository.UserSimpleRepository;
 import com.humorpage.sunbro.result.CommonResult;
-import com.humorpage.sunbro.service.CookieService;
-import com.humorpage.sunbro.service.JwtTokenService;
-import com.humorpage.sunbro.service.RedisTokenService;
-import com.humorpage.sunbro.service.ResponseService;
+import com.humorpage.sunbro.service.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -20,20 +17,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.ExpressionException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
-@Api(tags = {"1. Sign"})
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/account")
 public class AccountController {
 
     @Autowired
-    private UserRepository repository;
+    private UserRepository userrepository;
 
     @Autowired
     private UserSimpleRepository userSimpleRepository;
@@ -56,12 +54,26 @@ public class AccountController {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @ApiOperation(value = "유저정보")
-    @GetMapping(value="/profile")
-    public CommonResult check(Authentication authentication){
+    @Autowired
+    private FileMoveService fileMoveService;
+
+    @ApiOperation(value = "회원 정보 수정")
+    @PostMapping(value="/update")
+    CommonResult update(@Valid @ModelAttribute UserSimple user, Authentication authentication){
         UserSimple userSimple;
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
+        }catch (Exception e){
+            return responseService.setDetailResult(false,-1,"Need to Login");
+        }
+        try{
+            Long userNum = userSimple.getUsernum();
+            UserSimple userBefore = userSimpleRepository.findByUsernum(userNum);
+            userBefore.setBirth(user.getBirth());
+            userBefore.setSex(user.getSex());
+            userBefore.setName(user.getName());
+            userBefore.setUserImg(fileMoveService.moveProfileImage(userBefore.getUserImg(),user.getUserImg(),userNum));
+            userSimpleRepository.save(userBefore);
             return responseService.getSuccessResult();
         }catch (Exception e){
             return responseService.getFailResult();
@@ -121,16 +133,10 @@ public class AccountController {
 
     @ApiOperation(value = "가입", notes = "회원가입을 한다.")
     @PostMapping(value = "/signup")
-    public CommonResult signup(@ApiParam(value = "회원ID ", required = true) @RequestParam String uid,
-                               @ApiParam(value = "비밀번호", required = true) @RequestParam String password,
-                               @ApiParam(value = "이름") @RequestParam String name) {
-
-        repository.save(User.builder()
-                .uid(uid)
-                .password(passwordEncoder.encode(password))
-                .role("USER")
-                .name(name)
-                .build());
+    public CommonResult signup(@Valid @ModelAttribute User user) {
+        user.setRole("USER");
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userrepository.save(user);
         return responseService.getSuccessResult();
     }
 

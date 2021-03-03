@@ -71,3 +71,19 @@
 .MyBoard_table{
     width: 100%;
 }
+.myprofile_img{
+    width: 150px;
+    height: 150px;
+    border: 1px solid #dddddd;
+    border-radius: 75px;
+}
+.myprofile_imgzone{
+    position: relative;
+    cursor: pointer;
+    width: min-content;
+}
+.myprofile_pencil{
+    position: absolute;
+    right: 0;
+    top: 0;
+}
