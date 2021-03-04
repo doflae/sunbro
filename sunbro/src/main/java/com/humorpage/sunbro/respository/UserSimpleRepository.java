@@ -9,5 +9,6 @@ public interface UserSimpleRepository extends JpaRepository<UserSimple, Long> {
 
     UserSimple findByUsernum(Long usernum);
     Optional<UserSimple> findByUid(String uid);
+    Optional<UserSimple> findByName(String name);
 
 }

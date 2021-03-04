@@ -11,11 +11,12 @@ import BoardConnector from "./board/BoardConnector"
 import Footer from "./footer/Footer"
 import Editor from "./upload/Editor"
 import Header from "./header/Header"
-import {AuthPrompt} from "./auth/AuthPrompt"
+import {Login} from "./auth/Login"
 import {Provider} from "react-redux"
 import {authWrapper} from "./auth/AuthWrapper";
 import {HumorDataStore} from "./data/DataStore"
 import UserPage from "./userpage/UserPage";
+import {Signup} from "./auth/Signup"
 class App extends Component{
   render(){
     return<Provider store = {HumorDataStore}>
@@ -25,9 +26,10 @@ class App extends Component{
               <React.Fragment>
                 <Route exact path="/" component={BoardConnector}/>
                 <Route path="/upload" component={Editor}/>
-                <Route path="/login" component={AuthPrompt}/>
+                <Route path="/login" component={Login}/>
                 <Route path="/boards" component={BoardConnector}/>
                 <Route path="/mypage" component={UserPage}/>
+                <Route path="/signup" component={Signup}/>
               </React.Fragment>
             </Switch>
             <Footer/>

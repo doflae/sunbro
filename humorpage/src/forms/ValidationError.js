@@ -4,11 +4,13 @@ export class ValidationError extends Component{
 
 	render(){
 		if(this.props.errors){
-			return this.props.errors.map(err=>
-				<span className="text-danger" key={err}>
+			return <div>
+			{ this.props.errors.map(err=>
+				<p className="text-danger" key={err}>
 					{err}
-				</span>
-			)
+				</p>
+			)}
+			</div>
 		}
 		return null;
 	}

@@ -6,18 +6,29 @@ import {ReactComponent as Pencil} from '../static/svg/pencil.svg'
 import {authWrapper} from "../auth/AuthWrapper"
 import {YearsSelector} from "../utils/Utils"
 import Axios from "axios";
+import { ValidationSuccess } from "../forms/ValidationSuccess";
 function UpdateProfile({userDetail,...props}){
     const [userImg,setUserImg] = useState(userDetail.userImg)
     const [name,setName] = useState(userDetail.name)
     const [sex, setSex] = useState(userDetail.sex)
     const [birth, setBirth] = useState(userDetail.birth)
     const [candelete,setCandelete] = useState(null)
+    const [canSubmit, setCanSubmit] = useState(null)
+    const prevName = userDetail.name
     let history = useHistory();
     const dropzoneRef = createRef()
 
     const imageHandler = () => (e) =>{
         e.preventDefault();
         if(dropzoneRef) dropzoneRef.current.open();
+    }
+    const checkDuplicate = () => (e) => {
+        let target = e.target
+        const value = target.previousElementSibling.value
+        Axios.get(`/account/checknamedup?name=${value}`).then(res=>{
+            if(res.data.success===false) setCanSubmit("사용 가능한 NAME입니다.");
+            else setCanSubmit("중복된 NAME 입니다.")
+        })
     }
     const onDrop = async(acceptFile) =>{
         try{
@@ -64,20 +75,23 @@ function UpdateProfile({userDetail,...props}){
         }
     }
     const submit = () => (e) =>{
-        let form = new FormData();
-        form.append('userImg',userImg)
-        form.append('name',name)
-        form.append('sex',sex)
-        form.append('birth',birth)
-        console.log(userImg,name,sex,birth)
-        Axios.post("/account/update",form).then(
-            res=>{
-                if(res.data.success){
-                    history.push("/mypage");
-                    history.go();
+        if(prevName===name||(canSubmit!==null&&canSubmit.startsWith("사"))){
+            let form = new FormData();
+            form.append('userImg',userImg)
+            form.append('name',name)
+            form.append('sex',sex)
+            form.append('birth',birth)
+            Axios.post("/account/update",form).then(
+                res=>{
+                    if(res.data.success){
+                        history.push("/mypage");
+                        history.go();
+                    }
                 }
-            }
-        )
+            )
+        }else{
+            setCanSubmit("중복 확인이 필요합니다.");
+        }
     }
     return <div>
         <div className="myprofile">
@@ -86,7 +100,8 @@ function UpdateProfile({userDetail,...props}){
                 <Pencil width="20" height="20" className="myprofile_pencil"/>
             </div>
         </div>
-        <input type="text" value={name} onChange={e=>{e.preventDefault();setName(e.target.value)}}></input><br/>
+        <input type="text" value={name} onChange={e=>{e.preventDefault();setName(e.target.value)}}></input><button onClick={checkDuplicate()}>중복확인</button><br/>
+        <ValidationSuccess success={canSubmit}/>
         <label><input type="checkbox" name="sex" value="Male"
         checked={sex==="Male"?true:false}
         onChange={sexHandler()}></input>남성</label>

@@ -3,7 +3,7 @@ import {withRouter} from "react-router-dom";
 import {authWrapper} from "./AuthWrapper";
 import {LoginForm} from "../forms/LoginForm";
 
-export const AuthPrompt = withRouter(authWrapper(class extends Component{
+export const Login = withRouter(authWrapper(class extends Component{
 
 	constructor(props){
 		super(props);
@@ -46,5 +46,6 @@ export const AuthPrompt = withRouter(authWrapper(class extends Component{
 				cancelText="Cancel"
 				/>
 			</div>
+			<button onClick={()=>this.props.history.push("/signup")}>회원가입</button>
 		</div>
 }))

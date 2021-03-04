@@ -6,5 +6,8 @@ export const GetMessages = (elem) => {
 	if(elem.validity.typeMismatch){
 		messages.push(`Invalid ${elem.type}`);
 	}
+	if(elem.validity.patternMismatch){
+		messages.push(`내용을 확인해주세요`);
+	}
 	return messages;
 }

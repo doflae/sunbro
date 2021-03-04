@@ -37,20 +37,18 @@ export class LoginForm extends Component{
 		}
 	}
 
-
 	renderElement = (modelItem) => {
 		const name = modelItem.name || modelItem.label.toLowerCase();
 		return <div className="form-group" key={modelItem.label}>
 			<label>{modelItem.label}</label>
 			<input className="form-control" name={name} ref={this.registerRef}
-			{...this.props.defaultAttrs}{...modelItem.attrs}/>
+			{...this.props.defaultAttrs}{...modelItem.attrs} />
 			<ValidationError errors={this.state.validationErrors[name]}/>
 		</div>
 	}
 
 	render(){
 		return <React.Fragment>
-			
 			{this.props.formModel.map(m=> this.renderElement(m))}
 			{this.props.errorMessage!= null &&
 				<p>{this.props.errorMessage}</p>

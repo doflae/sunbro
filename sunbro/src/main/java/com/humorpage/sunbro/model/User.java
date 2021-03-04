@@ -44,10 +44,10 @@ public class User implements UserDetails {
     private String role;
 
     @Column(name="profileImg")
-    private String userImg;
+    private String userImg="";
 
     @Column(name="sex")
-    private Sex sex;
+    private Sex sex = Sex.Male;
 
     @Column(name="birth")
     private int birth;

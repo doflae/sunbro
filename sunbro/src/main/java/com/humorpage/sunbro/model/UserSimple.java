@@ -30,7 +30,7 @@ public class UserSimple implements UserDetails {
     @JsonIgnore
     private String uid;
 
-    @Column(name="name")
+    @Column(name="name", unique = true)
     private String name;
 
     @Column(name="profileImg",nullable = false)

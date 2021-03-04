@@ -57,6 +57,28 @@ public class AccountController {
     @Autowired
     private FileMoveService fileMoveService;
 
+    @ApiOperation(value ="id중복 체크")
+    @GetMapping(value="/checkiddup")
+    CommonResult checkiddup(String id){
+        try{
+            userSimpleRepository.findByUid(id).orElseThrow(CIdSigninFailedException::new);
+            return responseService.getSuccessResult();
+        }catch (CIdSigninFailedException e){
+            return responseService.getFailResult();
+        }
+    }
+
+    @ApiOperation(value = "name중복 체크")
+    @GetMapping(value="/checknamedup")
+    CommonResult checknamedup(String name){
+        try{
+            userSimpleRepository.findByName(name).orElseThrow(CIdSigninFailedException::new);
+            return responseService.getSuccessResult();
+        }catch (CIdSigninFailedException e){
+            return responseService.getFailResult();
+        }
+    }
+
     @ApiOperation(value = "회원 정보 수정")
     @PostMapping(value="/update")
     CommonResult update(@Valid @ModelAttribute UserSimple user, Authentication authentication){
