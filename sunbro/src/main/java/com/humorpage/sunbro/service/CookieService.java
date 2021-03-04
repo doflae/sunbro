@@ -7,10 +7,10 @@ import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class CookieService {
-    public Cookie createCookie(String cookieName, String value){
+    public Cookie createCookie(String cookieName, String value, long maxAge){
         Cookie token = new Cookie(cookieName,value);
         token.setHttpOnly(true);
-        token.setMaxAge((int) JwtTokenService.AccesstokenValidMilisecond);
+        token.setMaxAge((int) maxAge);
         token.setPath("/");
         return token;
     }

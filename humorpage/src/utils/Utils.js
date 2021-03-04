@@ -79,14 +79,13 @@ export const convertUnitOfNum = (num) =>{
 }
 
 export const YearsSelector = (selected) =>{
-    const currentYear = new Date().getFullYear()
     const years = []
-    for(let t = 0;t<100;t++){
-        years.push(currentYear-t)
+    for(let t = 0;t<10;t++){
+        years.push(t*10)
     }
     
     return years.map((year,index)=>{
-            if (year===selected) return <option key={index} value={year} selected>{year}</option>
-            else return <option key={index} value={year}>{year}</option>
+            if (year===selected) return <option key={index} value={year} selected>{year}~{year+9}</option>
+            else return <option key={index} value={year}>{year}~{year+9}</option>
         })
 }

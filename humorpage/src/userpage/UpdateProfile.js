@@ -11,7 +11,7 @@ function UpdateProfile({userDetail,...props}){
     const [userImg,setUserImg] = useState(userDetail.userImg)
     const [name,setName] = useState(userDetail.name)
     const [sex, setSex] = useState(userDetail.sex)
-    const [birth, setBirth] = useState(userDetail.birth)
+    const [age, setAge] = useState(userDetail.age)
     const [candelete,setCandelete] = useState(null)
     const [canSubmit, setCanSubmit] = useState(null)
     const prevName = userDetail.name
@@ -80,7 +80,7 @@ function UpdateProfile({userDetail,...props}){
             form.append('userImg',userImg)
             form.append('name',name)
             form.append('sex',sex)
-            form.append('birth',birth)
+            form.append('age',age)
             Axios.post("/account/update",form).then(
                 res=>{
                     if(res.data.success){
@@ -109,8 +109,8 @@ function UpdateProfile({userDetail,...props}){
         checked={sex==="Female"?true:false}
         onChange={sexHandler()}></input>여성</label><br/>
         <label>생년
-            <select name="birth" onChange={e=>{e.preventDefault();setBirth(e.target.value);}}>
-            <YearsSelector selected={birth}/>
+            <select name="age" onChange={e=>{e.preventDefault();setAge(e.target.value);}}>
+            <YearsSelector selected={age}/>
         </select></label>
         <br/>
         <button onClick={submit()}>수정 완료</button>

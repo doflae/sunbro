@@ -99,7 +99,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     if (httpServletResponse.getHeader("user")==null){
                         httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
                     }
-                    Cookie newAccessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, newToken);
+                    Cookie newAccessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, newToken, JwtTokenService.AccesstokenValidMilisecond);
                     httpServletResponse.addCookie(newAccessToken);
                 }
             }

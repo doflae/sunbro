@@ -16,9 +16,6 @@ import java.util.List;
 @Table(name="user")
 @Data
 public class UserSimple implements UserDetails {
-    enum Sex{
-        Male,Female
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,22 +31,17 @@ public class UserSimple implements UserDetails {
     private String name;
 
     @Column(name="profileImg",nullable = false)
-    private String userImg;
-
-    public void setUserImg(String userImg){
-        userImg = userImg==null?"":userImg;
-        this.userImg=userImg;
-    }
+    private String userImg="";
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false, length = 100)
     private String password;
 
     @Column(name="sex")
-    private Sex sex;
+    private Sex sex = Sex.Male;
 
-    @Column(name="birth")
-    private int birth;
+    @Column(name="age")
+    private int age;
 
     private String role;
     @Override

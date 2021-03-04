@@ -1,5 +1,6 @@
 package com.humorpage.sunbro.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.User;
@@ -9,7 +10,6 @@ import com.humorpage.sunbro.respository.UserSimpleRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.*;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.ExpressionException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
@@ -91,7 +90,7 @@ public class AccountController {
         try{
             Long userNum = userSimple.getUsernum();
             UserSimple userBefore = userSimpleRepository.findByUsernum(userNum);
-            userBefore.setBirth(user.getBirth());
+            userBefore.setAge(user.getAge());
             userBefore.setSex(user.getSex());
             userBefore.setName(user.getName());
             userBefore.setUserImg(fileMoveService.moveProfileImage(userBefore.getUserImg(),user.getUserImg(),userNum));
@@ -102,9 +101,56 @@ public class AccountController {
         }
     }
 
+    @ApiOperation(value = "타 플랫폼 로그인")
+    @PostMapping(value = "/anologin")
+    CommonResult anologin(@ApiParam(value = "user", required = true) @ModelAttribute UserSimple user,
+                          @ApiParam(value = "access token expires time", defaultValue = "0") @RequestParam long accessTime,
+                          @ApiParam(value = "refresh token expires time", defaultValue = "0") @RequestParam long refreshTime,
+                          HttpServletResponse res){
+
+        UserSimple userSimple=null;
+        try{
+            userSimple = userSimpleRepository.findByUid(user.getUid()).orElseThrow(RuntimeException::new);
+            /*
+            1. {platform}+uid값으로 조회
+            2. 조회 성공 ? => token생성
+            */
+        }catch (RuntimeException e){
+            /*
+            조회 실패
+            유저 생성
+            */
+            user.setRole("USER");
+            user.setPassword(passwordEncoder.encode(FileUploadService.RandomnameGenerate(23)));
+            userSimpleRepository.save(user);
+            userSimple = user;
+            return responseService.setDetailResult(true,38,"login again");
+        }
+        if(userSimple!=null) {
+            final String token = jwtTokenService.generateToken(userSimple);
+            final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
+            accessTime = accessTime == 0 ? JwtTokenService.AccesstokenValidMilisecond : accessTime;
+            refreshTime = refreshTime == 0 ? JwtTokenService.RefreshtokenValidMilisecond : refreshTime;
+            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token, accessTime);
+            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt, refreshTime);
+            redisTokenService.setDataExpire(refreshjwt, String.valueOf(userSimple.getUsernum()), JwtTokenService.RefreshtokenValidMilisecond);
+            if (res.getHeader("user") == null) {
+                try{
+                    res.addHeader("user", objectMapper.writeValueAsString(userSimple));
+                }catch (JsonProcessingException ignored){
+
+                }
+            }
+            res.addCookie(accessToken);
+            res.addCookie(refreshToken);
+            return responseService.getSuccessResult();
+        }
+        return responseService.getFailResult();
+    }
+
     @ApiOperation(value = "로그인", notes = "UserSimple 엔티티로 로그인 이후 access/refresh token 생성")
     @PostMapping(value = "/login")
-    public CommonResult login(@ApiParam(value = "회원ID ", required = true) @RequestParam String uid,
+    CommonResult login(@ApiParam(value = "회원ID ", required = true) @RequestParam String uid,
                                @ApiParam(value = "비밀번호", required = true) @RequestParam String password,
                                HttpServletResponse res) {
         UserSimple userSimple;
@@ -114,8 +160,8 @@ public class AccountController {
                 throw new CIdSigninFailedException();
             final String token = jwtTokenService.generateToken(userSimple);
             final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
-            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token);
-            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt);
+            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token,JwtTokenService.AccesstokenValidMilisecond);
+            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt,JwtTokenService.RefreshtokenValidMilisecond);
             redisTokenService.setDataExpire(refreshjwt,String.valueOf(userSimple.getUsernum()), JwtTokenService.RefreshtokenValidMilisecond);
             if (res.getHeader("user")==null){
                 res.addHeader("user",objectMapper.writeValueAsString(userSimple));

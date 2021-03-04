@@ -24,9 +24,6 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name="user")
 public class User implements UserDetails {
-    enum Sex{
-        Male,Female
-    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
@@ -49,8 +46,8 @@ public class User implements UserDetails {
     @Column(name="sex")
     private Sex sex = Sex.Male;
 
-    @Column(name="birth")
-    private int birth;
+    @Column(name="age")
+    private int age;
 
     @Formula("(select count(*) from board b where b.author_num=usernum)")
     private int total_board_num;

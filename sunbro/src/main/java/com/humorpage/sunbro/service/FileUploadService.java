@@ -34,9 +34,9 @@ public class FileUploadService {
     }
 
     private static final SecureRandom random = new SecureRandom();
-    private static String filenameGenerate(){
+    public static String RandomnameGenerate(int len){
         StringBuilder sb = new StringBuilder(26);
-        for(int i = 0; i<26;i++){
+        for(int i = 0; i<len;i++){
             String randChar = "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
             sb.append(randChar.charAt(random.nextInt(randChar.length())));
         }
@@ -65,7 +65,7 @@ public class FileUploadService {
             byte[] data = file.getBytes();
             Date date = new Date();
             String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
-            String filename = filenameGenerate()+last4str+"."+tmp[tmp.length-1];
+            String filename = RandomnameGenerate(26)+last4str+"."+tmp[tmp.length-1];
             String tempDir;
             if (tmp[0].equals("image")){
                 tempDir = "images/temp/"+format.format(date);
