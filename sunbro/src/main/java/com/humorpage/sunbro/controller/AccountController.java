@@ -27,6 +27,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.UnsupportedEncodingException;
 
 @RequiredArgsConstructor
 @RestController
@@ -73,7 +74,7 @@ public class AccountController {
             try{
                 String msg = emailAuthService.sendMailwithKey(id);
                 return responseService.getDetailResult(true,1,msg);
-            }catch (MessagingException mailErr){
+            }catch (Exception mailErr){
                 return responseService.getDetailResult(false,0,"메일 전송에 실패하였습니다. 다시 시도해주시기 바랍니다.");
             }
         }
