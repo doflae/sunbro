@@ -111,7 +111,7 @@ public class CommentController {
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
         }catch (NullPointerException e){
-            return responseService.setDetailResult(false, -1, "Token Expired");
+            return responseService.getDetailResult(false, -1, "Token Expired");
         }
         likesService.savelikeComment(userSimple.getUsernum(),comment_id);
         return responseService.getSuccessResult();
@@ -124,7 +124,7 @@ public class CommentController {
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
         }catch (NullPointerException e){
-            return responseService.setDetailResult(false, -1, "Token expired");
+            return responseService.getDetailResult(false, -1, "Token expired");
         }
         likesService.deletelikeComment(userSimple.getUsernum(),comment_id);
         return responseService.getSuccessResult();

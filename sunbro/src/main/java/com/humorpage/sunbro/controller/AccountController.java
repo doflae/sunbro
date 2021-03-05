@@ -15,10 +15,14 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.ExpressionException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,25 +60,33 @@ public class AccountController {
     @Autowired
     private FileMoveService fileMoveService;
 
-    @ApiOperation(value ="id중복 체크")
-    @GetMapping(value="/checkiddup")
-    CommonResult checkiddup(String id){
+    @Autowired
+    private EmailAuthService emailAuthService;
+
+    @ApiOperation(value ="id중복 체크 후 이메일 전송")
+    @GetMapping(value="/checkdup/id")
+    CommonResult checkId(String id){
         try{
             userSimpleRepository.findByUid(id).orElseThrow(CIdSigninFailedException::new);
-            return responseService.getSuccessResult();
+            return responseService.getDetailResult(false,0,"이미 사용중인 계정입니다.");
         }catch (CIdSigninFailedException e){
-            return responseService.getFailResult();
+            try{
+                String msg = emailAuthService.sendMailwithKey(id);
+                return responseService.getDetailResult(true,1,msg);
+            }catch (MessagingException mailErr){
+                return responseService.getDetailResult(false,0,"메일 전송에 실패하였습니다. 다시 시도해주시기 바랍니다.");
+            }
         }
     }
 
     @ApiOperation(value = "name중복 체크")
-    @GetMapping(value="/checknamedup")
-    CommonResult checknamedup(String name){
+    @GetMapping(value="/checkdup/name")
+    CommonResult checkName(String name){
         try{
             userSimpleRepository.findByName(name).orElseThrow(CIdSigninFailedException::new);
-            return responseService.getSuccessResult();
-        }catch (CIdSigninFailedException e){
             return responseService.getFailResult();
+        }catch (CIdSigninFailedException e){
+            return responseService.getSuccessResult();
         }
     }
 
@@ -85,7 +97,7 @@ public class AccountController {
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
         }catch (Exception e){
-            return responseService.setDetailResult(false,-1,"Need to Login");
+            return responseService.getDetailResult(false,-1,"Need to Login");
         }
         try{
             Long userNum = userSimple.getUsernum();
@@ -104,9 +116,8 @@ public class AccountController {
     @ApiOperation(value = "타 플랫폼 로그인")
     @PostMapping(value = "/anologin")
     CommonResult anologin(@ApiParam(value = "user", required = true) @ModelAttribute UserSimple user,
-                          @ApiParam(value = "access token expires time", defaultValue = "0") @RequestParam long accessTime,
-                          @ApiParam(value = "refresh token expires time", defaultValue = "0") @RequestParam long refreshTime,
-                          HttpServletResponse res){
+                          HttpServletResponse res,
+                          HttpServletRequest req){
 
         UserSimple userSimple=null;
         try{
@@ -124,15 +135,12 @@ public class AccountController {
             user.setPassword(passwordEncoder.encode(FileUploadService.RandomnameGenerate(23)));
             userSimpleRepository.save(user);
             userSimple = user;
-            return responseService.setDetailResult(true,38,"login again");
         }
         if(userSimple!=null) {
             final String token = jwtTokenService.generateToken(userSimple);
             final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
-            accessTime = accessTime == 0 ? JwtTokenService.AccesstokenValidMilisecond : accessTime;
-            refreshTime = refreshTime == 0 ? JwtTokenService.RefreshtokenValidMilisecond : refreshTime;
-            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token, accessTime);
-            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt, refreshTime);
+            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token, JwtTokenService.AccesstokenValidMilisecond);
+            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt, JwtTokenService.RefreshtokenValidMilisecond);
             redisTokenService.setDataExpire(refreshjwt, String.valueOf(userSimple.getUsernum()), JwtTokenService.RefreshtokenValidMilisecond);
             if (res.getHeader("user") == null) {
                 try{

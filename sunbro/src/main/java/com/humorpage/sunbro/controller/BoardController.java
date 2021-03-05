@@ -63,7 +63,7 @@ public class BoardController {
             userSimple = (UserSimple) authentication.getPrincipal();
 
         }catch (NullPointerException e){
-            return responseService.setDetailResult(false,-1,"Need to Login");
+            return responseService.getDetailResult(false,-1,"Need to Login");
         }
         try{
             board.setContent(fileMoveService.moveContents(board.getContent()));
@@ -85,7 +85,7 @@ public class BoardController {
         try{
             userSimple = (UserSimple)authentication.getPrincipal();
         }catch (NullPointerException e){
-            return responseService.setDetailResult(false, -1, "Token Expired");
+            return responseService.getDetailResult(false, -1, "Token Expired");
         }
         likesService.savelikeBoard(userSimple.getUsernum(),board_id);
         return responseService.getSuccessResult();
@@ -97,7 +97,7 @@ public class BoardController {
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
         }catch (NullPointerException e){
-            return responseService.setDetailResult(false, -1, "Token Expired");
+            return responseService.getDetailResult(false, -1, "Token Expired");
         }
         likesService.deletelikeBoard(userSimple.getUsernum(),board_id);
         return responseService.getSuccessResult();

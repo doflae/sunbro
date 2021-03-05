@@ -22,9 +22,9 @@ public class JwtTokenService {
     @Value("${spring.jwt.secret}")
     private String SECRET_KEY;
 
-    public final static long AccesstokenValidMilisecond = 1000L * 10; // 10초만 토큰 유효
-
-    public final static long RefreshtokenValidMilisecond = 1000L * 60 * 24 * 2; // 2일 유효
+    public final static long AccesstokenValidMilisecond = 1000L * 60 * 30; // 30분 토큰 유효
+    public final static long EmailAuthValidMilisecond = 1000L * 60 * 60 * 2; // 2시간 토큰 유효
+    public final static long RefreshtokenValidMilisecond = 1000L * 60 * 60 * 24 * 2; // 2일 유효
 
     final static public String ACCESS_TOKEN_NAME = "accessToken";
     final static public String REFRESH_TOKEN_NAME = "refreshToken";

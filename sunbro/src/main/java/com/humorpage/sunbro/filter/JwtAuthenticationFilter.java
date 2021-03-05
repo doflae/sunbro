@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenService jwtTokenService;
 
     @Autowired
-    private CookieService cookieService;
+    private final CookieService cookieService;
 
     @Autowired
     private final RedisTokenService redisTokenService;
@@ -92,15 +92,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 refreshUnum = Long.parseLong(redisTokenService.getData(refreshJwt));
                 if (refreshUnum.equals(jwtTokenService.getUsernum(refreshJwt))) {
                     UserSimple userSimple = userService.loadUserSimpleByUsernum(refreshUnum);
-                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple, null, userSimple.getAuthorities());
-                    usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
-                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-                    String newToken = jwtTokenService.generateToken(userSimple);
-                    if (httpServletResponse.getHeader("user")==null){
-                        httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
+                    if(userSimple!=null){
+                        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple, null, userSimple.getAuthorities());
+                        usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+                        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                        String newToken = jwtTokenService.generateToken(userSimple);
+                        if (httpServletResponse.getHeader("user")==null){
+                            httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
+                        }
+                        Cookie newAccessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, newToken, JwtTokenService.AccesstokenValidMilisecond);
+                        httpServletResponse.addCookie(newAccessToken);
                     }
-                    Cookie newAccessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, newToken, JwtTokenService.AccesstokenValidMilisecond);
-                    httpServletResponse.addCookie(newAccessToken);
                 }
             }
         }

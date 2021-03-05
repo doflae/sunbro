@@ -2,6 +2,14 @@ import React, {Component} from "react"
 import {ValidationError} from "./ValidationError"
 import {GetMessages} from "./ValidationMessages"
 import {ValidationSuccess} from "./ValidationSuccess"
+import Axios from "axios"
+
+const EmailcodeInput = ({...props}) =>{
+	return <React.Fragment>
+		<input type="text" placeholder="이메일 인증 코드를 입력해주세요."></input>
+		<button onClick={e=>{e.preventDefault(); props.onClick(e.target.previousElementSibling.value)}}>이메일 인증</button>
+		</React.Fragment>
+}
 
 export class SignupForm extends Component{
 
@@ -13,6 +21,7 @@ export class SignupForm extends Component{
             check:false
 		}
 		this.formElements = {};
+		this.checkCode = this.checkCode.bind(this)
 	}
 
 	handleSubmit = () => {
@@ -20,15 +29,12 @@ export class SignupForm extends Component{
 		this.setState(state=>{
             const newState = {...state, validationSuccess:{}}
             newState.check = true
-            const checklist = ["id","name"];
-            checklist.forEach(elem=>{
-                if(this.state.validationSuccess[elem]==null||!this.state.validationSuccess[elem].startsWith("사")){
-                    newState.validationSuccess[elem]="중복 확인이 필요합니다."
-                    newState.check = false
-                }else if(this.state.validationSuccess[elem].startsWith("사")){
-                    newState.validationSuccess[elem] = this.state.validationSuccess[elem]
-                }
-            })
+			if(this.state.validationSuccess["name"]==null||!this.state.validationSuccess["name"].startsWith("사")){
+				newState.validationSuccess["name"]="중복 확인이 필요합니다."
+				newState.check = false
+			}else if(this.state.validationSuccess["name"].startsWith("사")){
+				newState.validationSuccess["name"] = this.state.validationSuccess["name"]
+			}
             return newState;
         })
 		this.setState(state => {
@@ -77,12 +83,37 @@ export class SignupForm extends Component{
 		
 	}
 
-	checkDuplicate = (targetName,func) => (e)=>{
+	checkCode = (code) =>{
+		console.log(code)
+	}
+
+	checkEmail = (targetName) => (e) =>{
+		let target = e.target
+		const value = target.previousElementSibling.value
+		const {validationErrors, validationSuccess} = this.state
+		Axios.get(`/account/checkdup/id?id=${value}`).then(res=>{
+			if(res.data.success){
+                validationSuccess[targetName] = `${res.data.msg}`
+                validationErrors[targetName] = null
+				target.parentElement.appendChild(EmailcodeInput(this.checkCode))
+            }
+            else{
+                validationErrors[targetName] = [`${res.data.msg}`]
+                validationSuccess[targetName] = null
+            }
+            this.setState({
+                validationErrors:validationErrors,
+                validationSuccess:validationSuccess
+            })
+		})
+	}
+
+	checkDuplicate = (targetName) => (e)=>{
 		let target = e.target
 		const value = target.previousElementSibling.value
         const {validationErrors,validationSuccess} = this.state
-        func(value).then(res=>{
-            if(res){
+		Axios.get(`/account/checkdup/${targetName}?${targetName}=${value}`).then(res=>{
+			if(res.data.success){
                 validationSuccess[targetName] = `사용 가능한 ${targetName.toUpperCase()} 입니다.`
                 validationErrors[targetName] = null
             }
@@ -94,7 +125,7 @@ export class SignupForm extends Component{
                 validationErrors:validationErrors,
                 validationSuccess:validationSuccess
             })
-        })
+		})
 	}
 
 	renderElement = (modelItem) => {
@@ -104,7 +135,8 @@ export class SignupForm extends Component{
 			<input className="form-control" name={name} ref={this.registerRef}
 			{...this.props.defaultAttrs}{...modelItem.attrs} 
 			onChange={modelItem.onChange?this.validateOnchange(name,modelItem.onChange):null}/>
-            {modelItem.checkDuplicate?<button onClick={this.checkDuplicate(name,modelItem.checkDuplicate)}>중복 확인</button>:null}
+			{modelItem.checkEmail?<button onClick={this.checkEmail(name)}>이메일 인증</button>:null}
+            {modelItem.checkDuplicate?<button onClick={this.checkDuplicate(name)}>중복 확인</button>:null}
 			<ValidationError errors={this.state.validationErrors[name]}/>
             <ValidationSuccess success={this.state.validationSuccess[name]}/>
 		</div>

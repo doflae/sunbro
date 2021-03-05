@@ -4,7 +4,7 @@ import userDefaultImg from "../static/img/user_default.png";
 import Dropzone from "react-dropzone"
 import {ReactComponent as Pencil} from '../static/svg/pencil.svg'
 import {authWrapper} from "../auth/AuthWrapper"
-import {YearsSelector} from "../utils/Utils"
+import {AgeSelector} from "../utils/Utils"
 import Axios from "axios";
 import { ValidationSuccess } from "../forms/ValidationSuccess";
 function UpdateProfile({userDetail,...props}){
@@ -109,8 +109,8 @@ function UpdateProfile({userDetail,...props}){
         checked={sex==="Female"?true:false}
         onChange={sexHandler()}></input>여성</label><br/>
         <label>생년
-            <select name="age" onChange={e=>{e.preventDefault();setAge(e.target.value);}}>
-            <YearsSelector selected={age}/>
+            <select name="age" value={age} onChange={e=>{e.preventDefault();setAge(e.target.value);}}>
+            <AgeSelector/>
         </select></label>
         <br/>
         <button onClick={submit()}>수정 완료</button>

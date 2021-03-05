@@ -69,7 +69,7 @@ public class ResponseService {
         return result;
     }
 
-    public CommonResult setDetailResult(boolean res, int code, String msg){
+    public CommonResult getDetailResult(boolean res, int code, String msg){
         CommonResult result = new CommonResult();
         result.setSuccess(res);
         result.setCode(code);

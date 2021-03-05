@@ -78,14 +78,11 @@ export const convertUnitOfNum = (num) =>{
     else return `${(num/1000000).toFixed(2)} M`
 }
 
-export const YearsSelector = (selected) =>{
-    const years = []
+export const AgeSelector = () =>{
+    const ages = []
     for(let t = 0;t<10;t++){
-        years.push(t*10)
+        ages.push(t*10)
     }
     
-    return years.map((year,index)=>{
-            if (year===selected) return <option key={index} value={year} selected>{year}~{year+9}</option>
-            else return <option key={index} value={year}>{year}~{year+9}</option>
-        })
+    return ages.map((age,index)=><option key={index} value={age}>{age}~{age+9}</option>)
 }
