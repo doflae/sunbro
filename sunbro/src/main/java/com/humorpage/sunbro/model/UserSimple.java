@@ -3,11 +3,14 @@ package com.humorpage.sunbro.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -42,6 +45,13 @@ public class UserSimple implements UserDetails {
 
     @Column(name="age")
     private int age;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name="joined")
+    @CreationTimestamp
+    @JsonIgnore
+    private LocalDateTime created;
+
 
     private String role;
     @Override

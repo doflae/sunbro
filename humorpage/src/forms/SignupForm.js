@@ -3,13 +3,7 @@ import {ValidationError} from "./ValidationError"
 import {GetMessages} from "./ValidationMessages"
 import {ValidationSuccess} from "./ValidationSuccess"
 import Axios from "axios"
-
-const EmailcodeInput = ({...props}) =>{
-	return <React.Fragment>
-		<input type="text" placeholder="이메일 인증 코드를 입력해주세요."></input>
-		<button onClick={e=>{e.preventDefault(); props.onClick(e.target.previousElementSibling.value)}}>이메일 인증</button>
-		</React.Fragment>
-}
+import {ValidationEmail} from "./ValidationEmail";
 
 export class SignupForm extends Component{
 
@@ -18,7 +12,10 @@ export class SignupForm extends Component{
 		this.state={
 			validationErrors:{},
             validationSuccess:{},
-            check:false
+			validationEmail:null,
+            check:false,
+			email:null,
+			isChecked:null,
 		}
 		this.formElements = {};
 		this.checkCode = this.checkCode.bind(this)
@@ -26,19 +23,11 @@ export class SignupForm extends Component{
 
 	handleSubmit = () => {
         let pw;
-		this.setState(state=>{
-            const newState = {...state, validationSuccess:{}}
-            newState.check = true
-			if(this.state.validationSuccess["name"]==null||!this.state.validationSuccess["name"].startsWith("사")){
-				newState.validationSuccess["name"]="중복 확인이 필요합니다."
-				newState.check = false
-			}else if(this.state.validationSuccess["name"].startsWith("사")){
-				newState.validationSuccess["name"] = this.state.validationSuccess["name"]
-			}
-            return newState;
-        })
 		this.setState(state => {
 			const newState = { ...state, validationErrors:{}}
+			if(!this.state.isChecked){
+				newState.validationErrors["email"]=["이메일 인증이 필요합니다."]
+			}
 			Object.values(this.formElements).forEach(elem =>{
 				if(elem.name==="confirm password"){
 					if(elem.value!==pw){
@@ -54,6 +43,13 @@ export class SignupForm extends Component{
 					this.props.submitErrorCallback();
 				}
 			})
+            newState.check = true
+			if(this.state.validationSuccess["name"]==null||!this.state.validationSuccess["name"].startsWith("사")){
+				newState.validationSuccess["name"]="중복 확인이 필요합니다."
+				newState.check = false
+			}else if(this.state.validationSuccess["name"].startsWith("사")){
+				newState.validationSuccess["name"] = this.state.validationSuccess["name"]
+			}
 			return newState;
 		}, () => {
 			if(Object.keys(this.state.validationErrors).length === 0 && this.state.check===true){
@@ -84,7 +80,25 @@ export class SignupForm extends Component{
 	}
 
 	checkCode = (code) =>{
-		console.log(code)
+		const {email,validationSuccess} = this.state;
+		const formData = new FormData();
+		formData.append("email",email);
+		formData.append("code",code);
+		Axios.post("/account/checkcode",formData).then(res=>{
+			if(res.status===200 && res.data.success===true){
+				validationSuccess["email"] = null
+				this.setState({
+					isChecked:true,
+					validationSuccess:validationSuccess,
+					validationEmail:null,
+				})
+				this.formElements["email"].setAttribute("disabled","");
+			}else{
+				this.setState({
+					isChecked:false,
+				})
+			}
+		})
 	}
 
 	checkEmail = (targetName) => (e) =>{
@@ -95,16 +109,24 @@ export class SignupForm extends Component{
 			if(res.data.success){
                 validationSuccess[targetName] = `${res.data.msg}`
                 validationErrors[targetName] = null
-				target.parentElement.appendChild(EmailcodeInput(this.checkCode))
+				this.setState({
+					validationErrors:validationErrors,
+					validationSuccess:validationSuccess,
+					validationEmail:this.checkCode,
+					email:value
+				})
             }
             else{
                 validationErrors[targetName] = [`${res.data.msg}`]
                 validationSuccess[targetName] = null
+				this.setState({
+					validationErrors:validationErrors,
+					validationSuccess:validationSuccess,
+					validationEmail:null,
+					email:value
+				})
             }
-            this.setState({
-                validationErrors:validationErrors,
-                validationSuccess:validationSuccess
-            })
+            
 		})
 	}
 
@@ -130,16 +152,22 @@ export class SignupForm extends Component{
 
 	renderElement = (modelItem) => {
 		const name = modelItem.name || modelItem.label.toLowerCase();
+		const EmailValidator = name==="email"?(<React.Fragment>
+			<button onClick={this.checkEmail(name)}>이메일 인증</button>
+			<ValidationEmail onClick={this.state.validationEmail} checkClear={this.state.isChecked}/>
+			</React.Fragment>):null
+		const DuplicateChecker = name==="name"?<button onClick={this.checkDuplicate(name)}>중복 확인</button>:null
 		return <div className="form-group" key={modelItem.label}>
-			<label>{modelItem.label}</label>
-			<input className="form-control" name={name} ref={this.registerRef}
-			{...this.props.defaultAttrs}{...modelItem.attrs} 
-			onChange={modelItem.onChange?this.validateOnchange(name,modelItem.onChange):null}/>
-			{modelItem.checkEmail?<button onClick={this.checkEmail(name)}>이메일 인증</button>:null}
-            {modelItem.checkDuplicate?<button onClick={this.checkDuplicate(name)}>중복 확인</button>:null}
-			<ValidationError errors={this.state.validationErrors[name]}/>
-            <ValidationSuccess success={this.state.validationSuccess[name]}/>
-		</div>
+					<label>{modelItem.label}</label>
+					<input className="form-control" name={name} ref={this.registerRef}
+					{...this.props.defaultAttrs}{...modelItem.attrs} 
+					onChange={modelItem.onChange?this.validateOnchange(name,modelItem.onChange):null}/>
+					{EmailValidator}
+					{DuplicateChecker}
+					<ValidationError errors={this.state.validationErrors[name]}/>
+					<ValidationSuccess success={this.state.validationSuccess[name]}/>
+				</div>
+		
 	}
 
 	render(){

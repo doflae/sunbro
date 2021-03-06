@@ -11,14 +11,20 @@ export const Signup = withRouter(authWrapper(class extends Component{
 			errorMessage: null
 		}
         this.PWinValidator = this.PWinValidator.bind(this)
+		this.NameChangedAfterDuplChecked = this.NameChangeAfterDuplChecked.bind(this)
 		this.defaultAttrs = {required:true};
 		this.formModel = [
 			{label: "Email", attrs:{type:"email"},checkEmail:true},
 			{label: "Password", attrs: {name:"password", type: "password", pattern:"^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9!@#$%^&*()-_+=~`]{8,}$"},
             onChange:this.PWinValidator},
             {label: "Confirm Password", attrs: {name:"confirm password", type: "password"}},
-            {label: "name", attrs: {type:"text"},checkDuplicate:true},
+            {label: "name", attrs: {type:"text"},checkDuplicate:true,
+			onChange:this.NameChangeAfterDuplChecked},
 		];
+	}
+
+	NameChangeAfterDuplChecked(value){
+		return [];
 	}
 
     PWinValidator(value){

@@ -3,6 +3,7 @@ package com.humorpage.sunbro.service;
 import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.mail.Address;
@@ -55,25 +56,18 @@ public class EmailAuthService {
     }
 
     //redis에 expire time 정해서 보냄
-    public String sendMailwithKey(String email) throws Exception{
+    @Async
+    public void sendMailwithKey(String email) throws Exception{
         String key = FileUploadService.RandomnameGenerate(8);
-        //redis에서 해당 email을 키값으로 가진 데이터 있는지 확인
-        boolean hasEmailSend = Boolean.parseBoolean(redisTokenService.getData(email));
-        if(hasEmailSend){
-            //메일 전송 확인 메세지 반송
-            return "메일 전송이 완료되었습니다. 메일을 확인해주세요.";
-        }else{
-            try{
-                redisTokenService.setDataExpire(email,String.valueOf(true),JwtTokenService.EmailAuthValidMilisecond);
-                Date expires = new Date(System.currentTimeMillis()+3600*2*1000);
-                MimeMessage message = createAuthMessage(email,key,emailTimeFormat.format(expires));
-                emailSender.send(message);
-                return "해당 메일로 인증코드를 전송하였습니다. 메일을 확인해주세요.";
-            }catch (Exception e){
-                e.printStackTrace();
-                redisTokenService.setDataExpire(email,String.valueOf(true),0);//토큰삭제
-                throw e;
-            }
+        try{
+            redisTokenService.setDataExpire(email,key,JwtTokenService.EmailAuthValidMilisecond);
+            Date expires = new Date(System.currentTimeMillis()+3600*2*1000);
+            MimeMessage message = createAuthMessage(email,key,emailTimeFormat.format(expires));
+            emailSender.send(message);
+        }catch (Exception e){
+            e.printStackTrace();
+            redisTokenService.setDataExpire(email,String.valueOf(true),0);//토큰삭제
+            throw e;
         }
     }
 }

@@ -64,6 +64,7 @@ public class AccountController {
     @Autowired
     private EmailAuthService emailAuthService;
 
+
     @ApiOperation(value ="id중복 체크 후 이메일 전송")
     @GetMapping(value="/checkdup/id")
     CommonResult checkId(String id){
@@ -72,13 +73,32 @@ public class AccountController {
             return responseService.getDetailResult(false,0,"이미 사용중인 계정입니다.");
         }catch (CIdSigninFailedException e){
             try{
-                String msg = emailAuthService.sendMailwithKey(id);
-                return responseService.getDetailResult(true,1,msg);
+                //redis에서 해당 email을 키값으로 가진 데이터 있는지 확인
+                String hasEmailSend = redisTokenService.getData(id);
+                if(hasEmailSend!=null){
+                    return responseService.getDetailResult(true,1,"메일 전송이 완료되었습니다. 메일을 확인해주세요.");
+                }
+                //메일 전송 비동기화
+                emailAuthService.sendMailwithKey(id);
+                return responseService.getDetailResult(true,1,"해당 메일로 인증코드를 전송하였습니다. 메일을 확인해주세요.");
             }catch (Exception mailErr){
                 return responseService.getDetailResult(false,0,"메일 전송에 실패하였습니다. 다시 시도해주시기 바랍니다.");
             }
         }
     }
+
+    @ApiOperation(value = "이메일 인증 코드 확인")
+    @PostMapping(value="/checkcode")
+    CommonResult checkCode(String email, String code){
+        if(email!=null && code!=null){
+            if(code.equals(redisTokenService.getData(email))){
+                return responseService.getSuccessResult();
+            }
+        }
+        return responseService.getFailResult();
+    }
+
+
 
     @ApiOperation(value = "name중복 체크")
     @GetMapping(value="/checkdup/name")

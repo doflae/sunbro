@@ -7,12 +7,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Formula;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,6 +51,12 @@ public class User implements UserDetails {
 
     @Column(name="age")
     private int age;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name="joined")
+    @CreationTimestamp
+    @JsonIgnore
+    private LocalDateTime created;
 
     @Formula("(select count(*) from board b where b.author_num=usernum)")
     private int total_board_num;
