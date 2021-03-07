@@ -48,4 +48,7 @@ public class Board implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_num")
     private UserSimple author;
+
+    @Column(name = "more")
+    private boolean more;
 }

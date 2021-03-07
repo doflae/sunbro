@@ -13,21 +13,6 @@ import java.sql.SQLIntegrityConstraintViolationException;
 public class LikesService {
 
     @Autowired
-    private BoardLikesRepository boardLikesRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private BoardRepository boardRepository;
-
-    @Autowired
-    private CommentRepository commentRepository;
-
-    @Autowired
-    private CommentLikesRepository commentLikesRepository;
-
-    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     public void savelikeBoard(Long usernum, Long board_id){

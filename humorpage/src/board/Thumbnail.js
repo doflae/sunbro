@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import userDefaultImg from "../static/img/user_default.png";
 import CommentBox from "./CommentBox";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import {sanitizeNonNull, getTime, convertUnitOfNum} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
 import Axios from "axios"
@@ -93,7 +93,7 @@ function Thumbnail({
                 }}/>
             </div>
             <div className="board_top_center">
-                <div className="author_name">{board.author.name}</div>
+                <div className="author_name"><Link to={`/userpage/${board.author.usernum}`}>{board.author.name}</Link></div>
                 <div className="created">{getTime(board.created)}</div>
             </div>
         </div>

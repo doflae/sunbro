@@ -73,10 +73,11 @@ public class CommentController {
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             HashSet<Long> commentlikesList= new HashSet<>(commentLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
+            assert commentList != null;
             commentList.forEach(comment -> {
                 comment.setLike(commentlikesList.contains(comment.getId()));
             });
-        }catch (NullPointerException ignored){
+        }catch (NullPointerException|AssertionError ignored){
 
         }
         return responseService.getListResult(commentList);
@@ -84,7 +85,7 @@ public class CommentController {
 
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
     @PostMapping(value = "/upload")
-    public SingleResult<Long> uploadComment(@Valid Comment comment,
+    public SingleResult<Comment> uploadComment(@Valid Comment comment,
                                             @RequestParam Long board_id,
                                             @RequestParam(required = false,defaultValue = "0") Long comment_id,
                                             Authentication authentication) {
@@ -94,14 +95,10 @@ public class CommentController {
         }catch (NullPointerException ignored){
             return responseService.getFailSingleResult();
         }
-        try{
-            comment.setContent(fileMoveService.moveOnlyImage(comment.getContent()));
-            commentService.save(userSimple,board_id, comment_id,comment);
-            return responseService.getSingleResult(comment.getId());
-        }
-        catch (CIdSigninFailedException e){
-            return responseService.getSingleResult(null);
-        }
+        comment.setContent(fileMoveService.moveOnlyImage(comment.getContent()));
+        commentService.save(userSimple,board_id, comment_id,comment);
+        return responseService.getSingleResult(comment);
+
     }
 
     @ApiOperation(value = "댓글 좋아요", notes = "comment_id를 받아 좋아요 on")

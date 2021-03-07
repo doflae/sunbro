@@ -32,11 +32,11 @@ public class ThumbNailService {
         Matcher matcher = thumbNailPattern.matcher(content);
         if (matcher.find()){
             String src = matcher.group(2);
-            if(src.startsWith("videos")){
-                Pattern tempPattern = Pattern.compile("^(videos)/(.+)/([^/]+)\\..+");
+            if(src.startsWith("/videos")){
+                Pattern tempPattern = Pattern.compile("^/(videos)/(.+)/([^/]+)\\..+");
                 Matcher tempMatcher = tempPattern.matcher(src);
                 if(tempMatcher.find()){
-                    String newImagePath = "images/"+tempMatcher.group(2)+tempMatcher.group(3)+"thumbnail.jpg";
+                    String newImagePath = "/images/"+tempMatcher.group(2)+tempMatcher.group(3)+"thumbnail.jpg";
                     try{
                         ffMpegVideoConvert.extractThumbNail(src,newImagePath);
                         return newImagePath;
@@ -47,15 +47,12 @@ public class ThumbNailService {
             }else{
                 Pattern tempPattern = Pattern.compile("^(.+/[^/]+)\\.(.+)");
                 Matcher tempMatcher = tempPattern.matcher(src);
-                System.out.println(src);
                 if(tempMatcher.find()){
-                    String baseDir ="C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/";
+                    String baseDir ="C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
                     File f = new File(baseDir+src);
                     BufferedImage resizedImage = resize(f,-1,240);
-                    System.out.println(tempMatcher.group(1));
                     String newImagePath = tempMatcher.group(1)+"thumbnail."+tempMatcher.group(2);
                     ImageIO.write(resizedImage,tempMatcher.group(2),new File(baseDir+newImagePath));
-                    System.out.println(newImagePath);
                     return newImagePath;
                 }
             }

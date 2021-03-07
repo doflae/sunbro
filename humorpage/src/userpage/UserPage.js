@@ -1,59 +1,86 @@
-import React,{Component} from "react";
-import {withRouter} from 'react-router-dom'
-import {authWrapper} from "../auth/AuthWrapper"
-import MyHeader from "./MyHeader"
-import MyPageMain from "./MyPageMain"
-import MyLikePageMain from "./MyLikePageMain"
-import UpdateProfile from "./UpdateProfile"
+import React, { Component } from "react";
+import Board from "../board/Board"
+import { authWrapper } from "../auth/AuthWrapper";
 
 class UserPage extends Component{
-    constructor(props){
-        super(props)
+    constructor(){
+        super();
+
         this.state = {
-            userDetail:null,
-            option:0,
-            pagesize:10,
-            loading:true
+            boardlist : [],
+            lastId : 0,
         }
-        this.gotoupdate = this.gotoupdate.bind(this)
     }
     componentDidMount(){
-        this.props.request("get","/user/log").then(res=>{
-            if(res.data.success===true){
-                this.setState({
-                    userDetail:res.data.data,
-                    loading:false
-                })
-            }else{
-                this.props.history.push("/login")
+        this.getData();
+        var foot = document.querySelector(".footer")
+        var godownbtn = document.createElement("p")
+        godownbtn.className = "goNext"
+        godownbtn.innerText = "다음글"
+        godownbtn.addEventListener('click',this.gotoNext())
+        foot.appendChild(godownbtn)
+        this.setState({
+            lastElementid:0,
+            erazeTarget:godownbtn,
+        })
+        window.addEventListener('scroll',this.infiniteScroll);
+    }
+    componentWillUnmount(){
+        window.removeEventListener('scroll',this.infiniteScroll);
+    }
+    gotoNext = () =>(e)=> {
+        e.preventDefault();
+        const {documentElement, body} = document;
+        let {lastElementid} = this.state
+        const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
+        const scrollBottom = scrollTop+documentElement.clientHeight
+        const boards = documentElement.querySelectorAll(".board")
+        for(let i = lastElementid+1; i<boards.length;i++){
+            const b = boards[i]
+            const offsetTop = b.offsetTop
+            if(offsetTop+b.offsetHeight<scrollBottom) continue
+            this.setState({
+                lastElementid:i,
+            })
+            window.scrollTo({top:offsetTop, behavior:'smooth'})
+            break;
+            
+        }
+    }
+    infiniteScroll=()=>{
+        const { documentElement, body } = document;
+
+        const scrollHeight = Math.max(documentElement.scrollHeight, body.scrollHeight);
+        const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
+        const clientHeight = documentElement.clientHeight;
+
+        if (scrollTop + clientHeight >= scrollHeight) {
+            this.getData();
+        }
+    }
+    getData =()=>{
+        const{lastId,boardlist} = this.state
+        let resturl = `/board/user?usernum=${this.props.match.params.key}`
+        if(lastId) resturl+=`&last_id=${lastId}`
+        this.props.request("get",resturl).then(res=>{
+            if(res.status===200 && res.data.success){
+                const resData = res.data.list
+                if(resData.length>0){
+                    this.setState({
+                        boardlist:[...boardlist, ...resData],
+                        lastId:resData[resData.length-1]['id']
+                    })
+                }else{
+                    window.removeEventListener('scroll', this.infiniteScroll);
+                }
             }
         })
     }
-    gotoupdate = () => (e)=> {
-        e.preventDefault();
-        this.setState({
-            option:2,
-        })
-    }
-    //내가 쓴 글
-    //내가 쓴 댓글
-    //프로필 수정
+
     render(){
-        if(this.state.loading) return <span>Loading...</span>
-        if(this.state.option===2){
-            return <UpdateProfile userDetail={this.state.userDetail}/>
-        }
-        return <span className="mypage">
-                <MyHeader gotoupdate={this.gotoupdate}
-                 userDetail = {this.state.userDetail}/>
-            <div className="mypage_option">
-                <button className="mypage_option_btn" onClick={(e)=>{e.preventDefault();this.setState({option:0})}}>내가 쓴 글</button>
-                <button className="mypage_option_btn" onClick={(e)=>{e.preventDefault();this.setState({option:1})}}>좋아요 누른 글</button>
-            </div>
-            {this.state.option===0?<MyPageMain pagesize={this.state.pagesize} total_num={this.state.userDetail.total_board_num}/>:null}
-            {this.state.option===1?<MyLikePageMain pagesize={this.state.pagesize} total_num={this.state.userDetail.total_board_likes}/>:null}
-        </span>
+        const {boardlist} = this.state
+        return <Board boards = {boardlist}/>
     }
 }
 
-export default withRouter(authWrapper(UserPage));
+export default authWrapper(UserPage);

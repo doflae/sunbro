@@ -1,6 +1,8 @@
 package com.humorpage.sunbro.service;
 
 import com.humorpage.sunbro.model.BoardThumbnail;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -14,7 +16,6 @@ import static java.lang.String.format;
 
 @Service
 public class CacheRankingService implements RankingService{
-
     @Autowired
     private BasicRankingService rankingService;
 

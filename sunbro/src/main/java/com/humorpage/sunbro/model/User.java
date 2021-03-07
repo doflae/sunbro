@@ -46,8 +46,8 @@ public class User implements UserDetails {
     @Column(name="profileImg")
     private String userImg="";
 
-    @Column(name="sex")
-    private Sex sex = Sex.Male;
+    @Column(name="gender")
+    private Gender gender = Gender.Male;
 
     @Column(name="age")
     private int age;

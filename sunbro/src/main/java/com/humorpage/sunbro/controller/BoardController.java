@@ -1,5 +1,6 @@
 package com.humorpage.sunbro.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.model.BoardThumbnail;
@@ -53,11 +54,30 @@ public class BoardController {
     private FileMoveService fileMoveService;
 
     @Autowired
+    private FileUploadService fileUploadService;
+
+    @Autowired
     private ThumbNailService thumbNailService;
+
+    @ApiOperation(value = "임시 Directory 할당")
+    @GetMapping(value = "/assign")
+    SingleResult<String> assignDir(Authentication authentication){
+        if(authentication.isAuthenticated()){
+            try{
+                return responseService.getSingleResult(fileUploadService.createTemporaryDir());
+            }catch (IOException e){
+                e.printStackTrace();
+                return responseService.getFailSingleResult();
+            }
+        }else{
+            return responseService.getFailSingleResult();
+        }
+    }
 
     @ApiOperation(value = "업로드", notes="html코드를 받아 저장소 옮기고 최종적으로 업로드한다.")
     @PostMapping(value = "/upload")
-    CommonResult postForm(@Valid Board board, Authentication authentication){
+    CommonResult postForm(@Valid Board board,
+                          Authentication authentication){
         UserSimple userSimple;
         try{
             userSimple = (UserSimple) authentication.getPrincipal();
@@ -105,6 +125,7 @@ public class BoardController {
 
     @GetMapping("/recently")
     ListResult<BoardThumbnail> recently(@RequestParam(value = "board_id",required = false) Long board_id, Authentication authentication){
+        System.out.println(authentication.isAuthenticated());
         List<BoardThumbnail> boardThumbnailList;
         if(board_id==null){
             boardThumbnailList = boardThumbnailRepository.findByOrderByIdDesc(PageRequest.of(0,10));
@@ -120,6 +141,7 @@ public class BoardController {
         }catch (NullPointerException ignored){
 
         }
+
         return responseService.getListResult(boardThumbnailList);
     }
 
@@ -141,6 +163,17 @@ public class BoardController {
     @GetMapping("/detail/{board_id}")
     SingleResult<String> detail(@PathVariable("board_id") Long id){
         return responseService.getSingleResult(boardRepository.findByIdOnlyContent(id));
+    }
+
+    @GetMapping("/user")
+    @ApiOperation(value = "유저 key값", notes="유저 key값을 받아 조회 last_id는 가장 최근 조회 게시물")
+    ListResult<BoardThumbnail> user(Long usernum,
+                                    @RequestParam(required = false) Long last_id){
+        if(usernum>0){
+            if(last_id==null||last_id==0) return responseService.getListResult(boardThumbnailRepository.findByAuthorNumOrderByIdDesc(usernum,PageRequest.of(0,10)));
+            else return responseService.getListResult(boardThumbnailRepository.findByAuthorNumAndIdLessThanOrderByIdDesc(usernum,last_id,PageRequest.of(0,10)));
+        }
+        return responseService.getFailedListResult();
     }
 
     @GetMapping("/search")

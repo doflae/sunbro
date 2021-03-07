@@ -1,7 +1,10 @@
 package com.humorpage.sunbro.utils;
 
+import com.humorpage.sunbro.service.FileUploadService;
+import com.humorpage.sunbro.service.JwtTokenService;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -36,10 +39,16 @@ public class TemporaryFileStore implements ResourceStore {
         return false;
     }
 
+    public boolean create(File path) throws IOException{
+        if(nonNull(path)&&!path.exists()){
+            return path.mkdirs();
+        }
+        return false;
+    }
+
     private Path createTemporaryFile() throws IOException {
         Path tempFile = createTempFile("probe-", ".tmp");
         tempFile.toFile().deleteOnExit();
         return tempFile;
     }
-
 }

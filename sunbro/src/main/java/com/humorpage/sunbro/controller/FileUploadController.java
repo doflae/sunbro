@@ -34,7 +34,7 @@ public class FileUploadController {
     private FFMpegVideoConvert ffMpegVideoConvert;
 
     @GetMapping(path = "/delete")
-    public CommonResult deleteImg(@RequestParam(value = "src") String src, Authentication authentication){
+    public CommonResult deleteImg(String src, Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             fileUploadService.deleteImg(src);
@@ -48,12 +48,14 @@ public class FileUploadController {
             consumes = MULTIPART_FORM_DATA_VALUE,
             produces = APPLICATION_JSON_VALUE,
             headers = "Accept=application/json")
-    public SingleResult<String> upload(@RequestParam("file") MultipartFile file,
-                                          @RequestParam(value = "src",required = false) String src, Authentication authentication) {
+    public SingleResult<String> upload(MultipartFile file,
+                                       @RequestParam(required = false) String src,
+                                       @RequestParam(required = false,defaultValue = "images") String tempDir,
+                                       Authentication authentication) {
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             String pw = userSimple.getPassword();
-            return responseService.getSingleResult(fileUploadService.tempUpload(file,src,pw.substring(pw.length()-4)));
+            return responseService.getSingleResult(fileUploadService.tempUpload(file,tempDir,src,pw.substring(pw.length()-4)));
         }catch (NullPointerException e){
             e.printStackTrace();
             return responseService.getFailSingleResult();

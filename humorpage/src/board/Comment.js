@@ -1,10 +1,10 @@
 import React, {Component} from "react";
-import userImg from "../static/img/user_default.png";
+import userDefaultImg from "../static/img/user_default.png";
 import {faHeart as rHeart} from "@fortawesome/free-regular-svg-icons"
 import {faHeart as sHeart} from "@fortawesome/free-solid-svg-icons"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {authWrapper} from "../auth/AuthWrapper"
-import {withRouter} from "react-router-dom"
+import {withRouter, Link} from "react-router-dom"
 import CommentUploader from "./CommentUploader"
 import Dropzone from "react-dropzone"
 import ReComment from "./ReComment"
@@ -42,22 +42,15 @@ class Comment extends Component{
 		}
 	}
 
-    makeComment = (id, content, cid) =>{
-        const {recommentList} = this.state
-        const comment = [{
-            id:id,
-            like:false,
-			created:null,
-            updated:null,
-            likes:0,
-            content:content,
-            author:this.props.user
-        }]
+    appendComment = (cid,comment) =>{
+        const {recommentList, keyList} = this.state
 		if(recommentList[cid]===undefined) recommentList[cid]=[]
-		recommentList[cid]=recommentList[cid].concat(...comment)
-        console.log(comment)
+		recommentList[cid]=recommentList[cid].concat(comment)
+		keyList.add(comment.id);
         this.setState({
             recommentList:recommentList,
+			keyList:keyList,
+			commentUploaderOn:null
         })
     }
 	//대댓글용
@@ -73,22 +66,16 @@ class Comment extends Component{
         }
         if(!this.isEmpty(content)){
             let data = new FormData();
-            const {keyList} = this.state
             data.append('content',content)
             data.append('board_id',board_id)
 			data.append("comment_id",comment_id)
 			console.log(board_id,comment_id)
             return this.props.request('post',"/comment/upload",data).then(res =>{
                 if(res.status===200 && res.data.success){
-					this.makeComment(res.data.data, content, comment_id)
-                    keyList.add(res.data.data);
+					this.appendComment(comment_id,res.data.data)
 					tmp.parentElement.previousElementSibling.firstElementChild.setAttribute('src',"");
 					tmp.parentElement.previousElementSibling.lastElementChild.style.zIndex="-1";
 					tmp.parentElement.previousElementSibling.previousElementSibling.value="";
-                    this.setState({
-                        keyList:keyList,
-						commentUploaderOn:null,
-                    })
                 }else{
 					this.props.history.push("/login")
                 }
@@ -158,7 +145,7 @@ class Comment extends Component{
         .then(res=>{
             if (res.data.success){
                 target.style.zIndex=-1;
-                target.previousElementSibling.src = "";
+                target.previousElementSibling.removeAttribute('src');
             }
         })
     }
@@ -221,17 +208,15 @@ class Comment extends Component{
 		}
 		return this.props.commentList.map( c =>
 			<div className="comment" key={c.id}>
-				{c.author.img===null?(
-					<img className="comment-userimg" alt="" src={userImg}/>
-				):(
-				<img className="comment-userimg" alt="" src={c.author.img} />
-				)}
+				<img className="comment-userimg" alt="" src={c.author.userImg} onError={(e)=>{
+					e.target.onerror=null;e.target.src=userDefaultImg;
+				}}/>
 				
 				<div className="comment-main">
 					<div className="comment-subscript">
 						<div className="comment-left">
 							<div className="comment-author">
-								{c.author.name}
+								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
 							</div>
 							<div className="comment-others">
 								{getTime(c.created)}

@@ -1,5 +1,6 @@
 package com.humorpage.sunbro.service;
 
+import com.humorpage.sunbro.utils.RandomGenerator;
 import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -56,9 +57,9 @@ public class EmailAuthService {
     }
 
     //redis에 expire time 정해서 보냄
-    @Async
+    @Async("emailAuthExecutor")
     public void sendMailwithKey(String email) throws Exception{
-        String key = FileUploadService.RandomnameGenerate(8);
+        String key = RandomGenerator.RandomnameGenerate(8);
         try{
             redisTokenService.setDataExpire(email,key,JwtTokenService.EmailAuthValidMilisecond);
             Date expires = new Date(System.currentTimeMillis()+3600*2*1000);

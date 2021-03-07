@@ -99,7 +99,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		}
 		this.defaultAttrs = {required:true};
 		this.formModel = [
-			{label: "ID", attrs:{type:"email"}},
+			{label: "ID", attrs:{type:"text"}},
 			{label: "Password", attrs: {type: "password"}},
 		];
 	}
@@ -126,8 +126,8 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('name',"KPerson"+res.profile.id)
 		const account = res.profile.kakao_account
 		if(account.has_gender===true){
-			if(account.gender==="male") formData.append("sex","Male")
-			else formData.append("sex","Female")
+			if(account.gender==="male") formData.append("gender","Male")
+			else formData.append("gender","Female")
 		}
 		if(account.has_age_range===true){
 			formData.append("age",account.age_range.split("~")[0])
@@ -144,7 +144,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('uid',"Google"+id)
 		formData.append('name',"GPerson"+id)
 		formData.append("age",0)
-		formData.append("sex","Male")
+		formData.append("gender","Male")
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
 				this.props.history.push("/boards")
@@ -160,7 +160,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append("age",age)
 		if(res.gender!==undefined){
 			const gender = res.gender==="M"?"Male":"Female";
-			formData.append("sex",gender)
+			formData.append("gender",gender)
 		}
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){

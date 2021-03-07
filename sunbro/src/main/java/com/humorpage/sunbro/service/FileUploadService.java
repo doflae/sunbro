@@ -1,6 +1,7 @@
 package com.humorpage.sunbro.service;
 
 import com.humorpage.sunbro.utils.FFMpegVideoConvert;
+import com.humorpage.sunbro.utils.RandomGenerator;
 import com.humorpage.sunbro.utils.TemporaryFileStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,8 @@ public class FileUploadService {
     private final FFMpegVideoConvert ffMpegVideoConvert;
     private final TemporaryFileStore temporaryFileStore;
 
-    private final SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd/");
-    private final String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/";
+    private final SimpleDateFormat format = new SimpleDateFormat("/yyyy/MM/dd/");
+    private final String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
 
     @Autowired
     public FileUploadService(TemporaryFileStore temporaryFileStore, FFMpegVideoConvert ffMpegVideoConvert){
@@ -33,14 +34,14 @@ public class FileUploadService {
         this.ffMpegVideoConvert = ffMpegVideoConvert;
     }
 
-    private static final SecureRandom random = new SecureRandom();
-    public static String RandomnameGenerate(int len){
-        StringBuilder sb = new StringBuilder(26);
-        for(int i = 0; i<len;i++){
-            String randChar = "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
-            sb.append(randChar.charAt(random.nextInt(randChar.length())));
+
+    public String createTemporaryDir() throws IOException{
+        Date date = new Date();
+        String tempDir = "temp"+RandomGenerator.RandomnameGenerate(8);
+        while(!temporaryFileStore.create(new File(baseDir+format.format(date)+tempDir))){
+            tempDir = "temp"+RandomGenerator.RandomnameGenerate(8);
         }
-        return sb.toString();
+        return tempDir;
     }
 
     public void deleteImg(String path){
@@ -52,7 +53,7 @@ public class FileUploadService {
         }
     }
 
-    public String tempUpload(MultipartFile file, String beforePath, String last4str){
+    public String tempUpload(MultipartFile file, String tempDir, String beforePath, String last4str){
         try{
             String filename = beforePath.replaceFirst("[.][^.]+$", "");
             if(!beforePath.equals("") && filename.substring(filename.length()-4).equals(last4str)){
@@ -65,13 +66,8 @@ public class FileUploadService {
             byte[] data = file.getBytes();
             Date date = new Date();
             String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
-            String filename = RandomnameGenerate(26)+last4str+"."+tmp[tmp.length-1];
-            String tempDir;
-            if (tmp[0].equals("image")){
-                tempDir = "images/temp/"+format.format(date);
-            }else{
-                tempDir = "videos/temp/"+format.format(date);
-            }
+            String filename = RandomGenerator.RandomnameGenerate(26)+last4str+"."+tmp[tmp.length-1];
+            tempDir = format.format(date)+tempDir+"/";
             File dir = new File(baseDir+tempDir);
             if(!dir.exists()){
                 if(dir.mkdirs()){
@@ -91,36 +87,4 @@ public class FileUploadService {
             return null;
         }
     }
-    public static boolean isImageFile(String path) {
-        String mimeType = URLConnection.guessContentTypeFromName(path);
-        return mimeType != null && mimeType.startsWith("image");
-    }
-
-    public String completeUpload(String tempDir, String targetDir){
-        try(Stream<Path> paths = Files.walk(Paths.get(tempDir))){
-            paths.filter(Files::isRegularFile)
-                    .forEach(path -> {
-                        String filename = path.getFileName().toString();
-                        if(isImageFile(path.toString())){
-                            try {
-                                Files.move(path,Path.of(targetDir+filename),REPLACE_EXISTING);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }else{
-                            try{
-                                ffMpegVideoConvert.convertVideo(path.toString(),targetDir+filename);
-                            } catch (FFMpegVideoConvert.VideoConvertException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-            Files.delete(Path.of(tempDir));
-            return targetDir;
-        }catch (IOException ignored){
-
-        }
-        return null;
-    }
-
 }

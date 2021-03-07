@@ -15,7 +15,8 @@ import {Login} from "./auth/Login"
 import {Provider} from "react-redux"
 import {authWrapper} from "./auth/AuthWrapper";
 import {HumorDataStore} from "./data/DataStore"
-import UserPage from "./userpage/UserPage";
+import MyPage from "./mypage/MyPage";
+import UserPage from "./userpage/UserPage"
 import {Signup} from "./auth/Signup"
 class App extends Component{
   render(){
@@ -28,8 +29,9 @@ class App extends Component{
                 <Route path="/upload" component={Editor}/>
                 <Route path="/login" component={Login}/>
                 <Route path="/boards" component={BoardConnector}/>
-                <Route path="/mypage" component={UserPage}/>
+                <Route path="/mypage" component={MyPage}/>
                 <Route path="/signup" component={Signup}/>
+                <Route path="/userpage/:key" component={UserPage}/>
               </React.Fragment>
             </Switch>
             <Footer/>

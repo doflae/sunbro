@@ -1,6 +1,8 @@
 package com.humorpage.sunbro.model;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Formula;
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Table(name="board")
 public class BoardThumbnail implements Serializable {
     @Id
@@ -21,13 +24,16 @@ public class BoardThumbnail implements Serializable {
     @Column(name="id")
     private Long id;
 
+    @JsonIgnore
+    @Column(name="author_num",insertable = false,updatable = false)
+    private Long authorNum;
+
     @NotBlank
     @Column(name="title")
     private String title;
 
     @NotBlank
     @Column(name="content")
-    @JsonIgnore
     private String content;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -38,10 +44,6 @@ public class BoardThumbnail implements Serializable {
     @Column(name = "created")
     @CreationTimestamp
     private LocalDateTime created;
-
-//    @JsonManagedReference
-//    @OneToMany(mappedBy = "boardThumbnail", fetch = FetchType.LAZY)
-//    private List<Boardlikes> boardlikes = new ArrayList<>();
 
     @Column(name = "thumbnail")
     private String thumbnail;
@@ -62,4 +64,24 @@ public class BoardThumbnail implements Serializable {
 
     @Transient
     private boolean like;
+
+    //thumbnail내용이 전부라면 false
+    //else true
+    @Column(name = "more")
+    private boolean more;
+
+    public String getContent() {
+        if(this.isMore()) return content;
+        return null;
+    }
+
+    public String getThumbnail() {
+        if(this.isMore()) return null;
+        return thumbnail;
+    }
+
+    public String getThumbnailImg() {
+        if(this.isMore()) return null;
+        return thumbnailImg;
+    }
 }

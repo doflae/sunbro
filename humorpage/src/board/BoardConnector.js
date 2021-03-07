@@ -59,7 +59,7 @@ class BoardConnector extends Component{
         }
         this.props.request('get',resturl).then(res=>{
             const resData = res.data.list
-            if(resData.length>0){
+            if(0<resData.length<11){
                 this.setState({
                     boardList:[...boardList, ...resData],
                     last_board:resData[resData.length-1]['id']

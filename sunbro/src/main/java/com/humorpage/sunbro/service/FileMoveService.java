@@ -20,9 +20,7 @@ public class FileMoveService {
     private final FFMpegVideoConvert ffMpegVideoConvert;
     private final TemporaryFileStore temporaryFileStore;
 
-    private final String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/";
-
-    private final Pattern thumbNailPattern = Pattern.compile("<(img|video)[^>]*src=[\"']?([^>\"']+)[\"']?[^>]*>");
+    private final String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
 
     private final Pattern imgPattern = Pattern.compile("<img[^>]*src=[\"']?([^>\"']+)[\"']?[^>]*>");
 
@@ -82,16 +80,14 @@ public class FileMoveService {
         return matcher.appendTail(sb).toString();
     }
 
-    private boolean deleteImage(String src){
+    private void deleteImage(String src){
         Path file = Paths.get(baseDir+src);
         if(file.toFile().exists()){
             try{
                 Files.delete(file);
-            }catch(IOException e){
-                return false;
+            }catch(IOException ignored){
             }
         }
-        return true;
     }
 
     private boolean moveImg(String src, String target){
@@ -111,7 +107,7 @@ public class FileMoveService {
         return true;
     }
 
-    private boolean moveVideo(String src, String target){
+    private void moveVideo(String src, String target){
         Path file = Paths.get(baseDir+src);
         Path newPath = Paths.get(baseDir+target);
         File newDir = new File(newPath.getParent().toString());
@@ -122,10 +118,8 @@ public class FileMoveService {
             try{
                 ffMpegVideoConvert.convertVideo(src,target);
                 temporaryFileStore.delete(file);
-            }catch (FFMpegVideoConvert.VideoConvertException | IOException e){
-                return false;
+            }catch (FFMpegVideoConvert.VideoConvertException | IOException ignored){
             }
         }
-        return true;
     }
 }

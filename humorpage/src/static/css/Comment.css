@@ -8,8 +8,8 @@
 }
 .recomment{
 	padding-top: 10px;
-	padding-bottom: 10px;
-	border-bottom: solid gainsboro 1px;
+	margin-top: 10px;
+	border-top: solid gainsboro 1px;
 	display: flex;
 }
 .comment-main{
@@ -19,6 +19,7 @@
 
 .comment-subscript{
 	font-size: 0.8em;
+	padding-top: 2px;
 }
 .comment-left{
 	display: flex;
@@ -48,7 +49,8 @@
 .comment-userimg{
 	width: 32px;
 	height: 32px;
-	margin: 5px 20px auto 5px;
+	border-radius: 16px;
+	margin: 0px 10px 10px 5px;
 }
 .comment-context{
 	padding-top: 5px;	
@@ -158,9 +160,8 @@
 }
 
 .recomment_target{
-	font-size: 1em;
+	font-size: 0.8em;
 	font-weight: 700;
 	margin-right: 5px;
-	color:#262daf;
-	text-decoration: underline;
+	opacity: 0.7;
 }

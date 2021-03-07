@@ -4,7 +4,6 @@ import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
-const __ISIOS__ = navigator.userAgent.match(/iPad|iPhone|iPod/i) ? true : false;
 
 const Video = Quill.import('formats/video');
 const Link = Quill.import("formats/link");
@@ -72,13 +71,36 @@ class Editor extends Component {
       super(props)
       this.state = {
         contents: __ISMSIE__ ? "<p>&nbsp;</p>" : "",
-        thumbnailFile : null,
         open:"image/*",
       };
     }
     quillRef = null;
     dropzone = null;
-    onKeyEvent = false;
+    tempDir = null;
+
+
+    //editor 임시 dir 할당 받아야함
+    componentDidMount(){
+      this.props.request("get","/board/assign").then(res=>{
+        if(res.status===200 && res.data.success){
+          this.tempDir = res.data.data;
+          console.log(this.tempDir)
+        }
+        else{
+          this.props.history.push("/login")
+        }
+      })
+      document.querySelector(".ql-mycustom").innerHTML='<svg viewBox="0 0 18 18"> <rect class="ql-stroke" height="12" width="12" x="3" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="5" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="12" y="3"></rect> <rect class="ql-fill" height="2" width="8" x="5" y="8"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="12"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="12"></rect> </svg>'
+      document.querySelector(".ql-video").innerHTML='<svg height="18pt" viewBox="-21 -117 682.66672 682" width="18pt" xmlns="http://www.w3.org/2000/svg"><path d="m626.8125 64.035156c-7.375-27.417968-28.992188-49.03125-56.40625-56.414062-50.082031-13.703125-250.414062-13.703125-250.414062-13.703125s-200.324219 0-250.40625 13.183593c-26.886719 7.375-49.03125 29.519532-56.40625 56.933594-13.179688 50.078125-13.179688 153.933594-13.179688 153.933594s0 104.378906 13.179688 153.933594c7.382812 27.414062 28.992187 49.027344 56.410156 56.410156 50.605468 13.707031 250.410156 13.707031 250.410156 13.707031s200.324219 0 250.40625-13.183593c27.417969-7.378907 49.03125-28.992188 56.414062-56.40625 13.175782-50.082032 13.175782-153.933594 13.175782-153.933594s.527344-104.382813-13.183594-154.460938zm-370.601562 249.878906v-191.890624l166.585937 95.945312zm0 0"/></svg>'
+    }
+
+    checkIsmore = (content) =>{
+      //1. src체크 -> image든 video든 여러개면 x
+      var checkSrcreg = /<(img|video)[^>]*src=["']?([^>"']+)["']?[^>]*>/g;
+
+      //2. text체크 -> 에디터 스크롤 height 이용?
+      //document.querySelector(".ql-editor").scrollHeight;
+    }
 
 
     submit = () => (e) =>{
@@ -100,7 +122,6 @@ class Editor extends Component {
         this.props.request("post","/board/upload",data).then(res =>{
           if (res.status ===200){
             this.props.history.push("/boards");
-            this.props.history.go();
           }else{
             console.log(res)
           }
@@ -110,15 +131,12 @@ class Editor extends Component {
     isEmpty = (st) => {
       return st.length === 0 || !st.trim();
     }
-    componentDidMount(){
-      document.querySelector(".ql-mycustom").innerHTML='<svg viewBox="0 0 18 18"> <rect class="ql-stroke" height="12" width="12" x="3" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="5" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="12" y="3"></rect> <rect class="ql-fill" height="2" width="8" x="5" y="8"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="12"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="12"></rect> </svg>'
-      document.querySelector(".ql-video").innerHTML='<svg height="18pt" viewBox="-21 -117 682.66672 682" width="18pt" xmlns="http://www.w3.org/2000/svg"><path d="m626.8125 64.035156c-7.375-27.417968-28.992188-49.03125-56.40625-56.414062-50.082031-13.703125-250.414062-13.703125-250.414062-13.703125s-200.324219 0-250.40625 13.183593c-26.886719 7.375-49.03125 29.519532-56.40625 56.933594-13.179688 50.078125-13.179688 153.933594-13.179688 153.933594s0 104.378906 13.179688 153.933594c7.382812 27.414062 28.992187 49.027344 56.410156 56.410156 50.605468 13.707031 250.410156 13.707031 250.410156 13.707031s200.324219 0 250.40625-13.183593c27.417969-7.378907 49.03125-28.992188 56.414062-56.40625 13.175782-50.082032 13.175782-153.933594 13.175782-153.933594s.527344-104.382813-13.183594-154.460938zm-370.601562 249.878906v-191.890624l166.585937 95.945312zm0 0"/></svg>'
-    }
 
 
     saveFile = (file) => {
       const formData = new FormData();
       formData.append('file',file)
+      formData.append('tempDir',this.tempDir);
       return this.props.request("post","/file/upload",formData,{
         headers:{
           'Content-Type':'multipart/form-data',
@@ -132,16 +150,12 @@ class Editor extends Component {
         acceptedFiles.reduce((pacc, _file) => {
           const quill = this.quillRef.getEditor();
           const range = quill.getSelection();
+          console.log(range)
           if (_file.type.split("/")[0]==="video"){
             return pacc.then(() => {
               this.saveFile(_file)
               .then((res)=>{
                 if(res.success===true){
-                  if(this.state.thumbnailFile==null){
-                    this.setState({
-                      thumbnailFile:res.data.replace("/temp","")
-                    })
-                  }
                   quill.insertEmbed(range.index, "video", [res.data,_file.name]);
                   quill.setSelection(range.index + 1);
                   quill.focus();
@@ -156,12 +170,8 @@ class Editor extends Component {
               this.saveFile(_file)
               .then((res)=>{
                 if(res.success===true){
-                  if(this.state.thumbnailFile==null){
-                    this.setState({
-                      thumbnailFile:res.data.replace("/temp","")
-                    })
-                  }
-                  quill.insertEmbed(range.index, "image", res.data);
+                  var x = quill.insertEmbed(range.index, "image", res.data);
+                  console.log(x);
                   quill.setSelection(range.index + 1);
                   quill.focus();
                 }else{
@@ -226,49 +236,6 @@ class Editor extends Component {
       "video",
       "align"
     ];
-    //IOS ISSUE, IE ISSUE
-
-    onKeyUp = (e) =>{
-      if(!__ISIOS__) return;
-
-      if(e.keyCode===13){
-        this.onKeyEvent = true;
-        this.quillRef.blur();
-        this.quillRef.focus();
-        if(document.querySelector(".main-content").className.indexOf("edit-focus")===-1){
-          document.querySelector(".main-content").classList.toggle("edit-focus");
-        }
-        this.onKeyEvent = false;
-      }
-    };
-
-    onFocus = () => {
-      if (
-        !this.onKeyEvent &&
-        document.querySelector(".main-content").className.indexOf("edit-focus")=== -1
-      ){
-        document.querySelector(".main-content").classList.toggle("edit-focus");
-        window.scrollTo(0,0);
-      }
-    };
-
-    onBlur = () => {
-      if (
-        !this.onKeyEvent &&
-        document.querySelector(".main-content").className.indexOf("edit-focus") !== -1
-      ) {
-        document.querySelector(".main-content").classList.toggle("edit-focus");
-      }
-    };
-
-  doBlur = () => {
-    this.onKeyEvent = false;
-    this.quillRef.blur();
-    // force clean
-    if (document.querySelector(".main-content").className.indexOf("edit-focus") !== -1) {
-      document.querySelector(".main-content").classList.toggle("edit-focus");
-    }
-  };
 
   onChangeContents = (contents) => {
     let _contents = null;
@@ -279,11 +246,17 @@ class Editor extends Component {
     }
     this.setState({ contents: _contents || contents });
   };
+
+  test = ()=>(e)=>{
+    const quill = this.quillRef.getEditor();
+    console.log(quill.getSelection());
+  }
   
     render() {
       
       return (
         <div className="main-panel">
+          <button onClick={this.test()}>test</button>
           <div className="editor_navbar">
             <input type="text" className="editor_title"></input>
           </div>
@@ -292,9 +265,6 @@ class Editor extends Component {
             ref={(el)=>(this.quillRef = el)}
             value={this.state.contents}
             onChange={this.onChangeContents}
-            onKeyUp={this.onKeyUp}
-            onFocus={this.onFocus}
-            onBlur={this.onBlur}
             theme="snow"
             modules={this.modules}
             formats={this.formats}

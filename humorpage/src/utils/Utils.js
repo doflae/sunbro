@@ -19,15 +19,10 @@ export const sanitize = (dirty) => sanitizeHtml(dirty,{
       disallowedTagsMode: 'discard',
       allowedAttributes: {
         a: [ 'href', 'name', 'target', 'class' ],
-        // We don't currently allow img itself by default, but this
-        // would make sense if we did. You could add srcset here,
-        // and if you do the URL is checked for safety
         img: ['src','class','style'],
         video:['src','controls','type','style','class']
       },
-      // Lots of these won't come up by default because we don't allow them
       selfClosing: [ 'img', 'br', 'hr', 'area', 'base', 'basefont', 'input', 'link', 'meta' ],
-      // URL schemes we permit
       allowedSchemes: [ 'http', 'https', 'ftp', 'mailto', 'tel' ],
       allowedSchemesByTag: {},
       allowedSchemesAppliedToAttributes: [ 'href', 'src', 'cite' ],

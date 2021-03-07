@@ -1,9 +1,9 @@
 import React, {Component} from "react"
-import userImg from "../static/img/user_default.png";
+import userDefaultImg from "../static/img/user_default.png";
 import {faHeart as rHeart} from "@fortawesome/free-regular-svg-icons"
 import {faHeart as sHeart} from "@fortawesome/free-solid-svg-icons"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
-import {withRouter} from 'react-router-dom'
+import {withRouter, Link} from 'react-router-dom'
 import {authWrapper} from "../auth/AuthWrapper"
 import CommentUploader from "./CommentUploader"
 import {sanitizeHarder,getTime,convertUnitOfNum} from "../utils/Utils"
@@ -48,17 +48,15 @@ class ReComment extends Component{
     render(){
         return this.props.recommentList.map(c =>
             <div className="recomment" key={c.id}>
-                {c.author.img===null?(
-					<img className="comment-userimg" alt="" src={userImg}/>
-				):(
-				<img className="comment-userimg" alt="" src={c.author.img} />
-				)}
+                <img className="comment-userimg" alt="" src={c.author.userImg} onError={(e)=>{
+					e.target.onerror=null;e.target.src=userDefaultImg;
+				}}/>
 				
 				<div className="comment-main">
 					<div className="comment-subscript">
 						<div className="comment-left">
 							<div className="comment-author">
-								{c.author.name}
+								<Link to={`/mypage/${c.author.usernum}`}>{c.author.name}</Link>
 							</div>
 							<div className="comment-others">
 								{getTime(c.created)}

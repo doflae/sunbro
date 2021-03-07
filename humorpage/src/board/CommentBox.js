@@ -63,22 +63,17 @@ class CommentBox extends Component{
         return (st.length === 0 || !st.trim());
     }
 
-    makeComment = (id, content) =>{
-        const {commentList} = this.state
-        const comment = [{
-            id:id,
-            like:false,
-            updated:null,
-            likes:0,
-            content:content,
-            author:this.props.user
-        }]
+    appendComment = (comment) =>{
+        console.log(comment)
+        const {commentList,keyList} = this.state
+        keyList.add(comment.id)
         this.setState({
-            commentList:commentList.concat([...comment]),
+            commentList:commentList.concat(comment),
+            keyList:keyList
         })
     }
 
-    submitComment = (board_id,comment_id) => (e) =>{
+    submitComment = (board_id) => (e) =>{
         let tmp = e.target;
         let image_src = tmp.parentElement.previousElementSibling.firstElementChild.getAttribute('src');
         let content = tmp.parentElement.previousElementSibling.previousElementSibling.value
@@ -91,7 +86,6 @@ class CommentBox extends Component{
         }
         if(!this.isEmpty(content)){
             let data = new FormData();
-            const {keyList} = this.state
             data.append('content',content)
             data.append('board_id',board_id)
             tmp.parentElement.previousElementSibling.firstElementChild.setAttribute('src',"");
@@ -99,11 +93,7 @@ class CommentBox extends Component{
             tmp.parentElement.previousElementSibling.previousElementSibling.value="";
             return this.props.request('post',"/comment/upload",data).then(res =>{
                 if(res.status===200 && res.data.success){
-                    keyList.add(res.data.data);
-                    this.makeComment(res.data.data,content)
-                    this.setState({
-                        keyList:keyList,
-                    })
+                    this.appendComment(res.data.data)
                 }else{
                     this.props.history.push("/login")
                 }
@@ -114,15 +104,16 @@ class CommentBox extends Component{
     }
 
     imageHandler = () => (e) =>{
-        let target = e.target.parentElement.previousElementSibling;
+        let target = e.target;
         this.setState({
-            target:target,
+            target:target.parentElement.previousElementSibling,
         })
         if (this.dropzone) this.dropzone.open();
         else console.log("test")
     }
 
     onDrop = async(acceptFile) =>{
+        console.log(acceptFile)
         try{
             await acceptFile.reduce((pacc, _file) =>{
                 if(_file.type.split("/")[0] ==="image"){
@@ -137,7 +128,9 @@ class CommentBox extends Component{
                     return null;
                 }
             }, Promise.resolve());
-        } catch(error){}
+        } catch(error){
+            console.log(error)
+        }
     }
 
     savefile = (file) =>{
@@ -173,7 +166,7 @@ class CommentBox extends Component{
         .then(res=>{
             if (res.data.success){
                 target.style.zIndex=-1;
-                target.previousElementSibling.src = "";
+                target.previousElementSibling.removeAttribute('src');
             }
         })
     }

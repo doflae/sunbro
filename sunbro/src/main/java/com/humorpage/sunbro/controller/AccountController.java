@@ -9,30 +9,28 @@ import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.respository.UserSimpleRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.*;
+import com.humorpage.sunbro.utils.RandomGenerator;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.ExpressionException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.UnsupportedEncodingException;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/account")
 public class AccountController {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private UserRepository userrepository;
@@ -55,8 +53,6 @@ public class AccountController {
     @Autowired
     private RedisTokenService redisTokenService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private FileMoveService fileMoveService;
@@ -124,7 +120,7 @@ public class AccountController {
             Long userNum = userSimple.getUsernum();
             UserSimple userBefore = userSimpleRepository.findByUsernum(userNum);
             userBefore.setAge(user.getAge());
-            userBefore.setSex(user.getSex());
+            userBefore.setGender(user.getGender());
             userBefore.setName(user.getName());
             userBefore.setUserImg(fileMoveService.moveProfileImage(userBefore.getUserImg(),user.getUserImg(),userNum));
             userSimpleRepository.save(userBefore);
@@ -153,7 +149,7 @@ public class AccountController {
             유저 생성
             */
             user.setRole("USER");
-            user.setPassword(passwordEncoder.encode(FileUploadService.RandomnameGenerate(23)));
+            user.setPassword(passwordEncoder.encode(RandomGenerator.RandomnameGenerate(23)));
             userSimpleRepository.save(user);
             userSimple = user;
         }

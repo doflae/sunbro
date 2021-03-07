@@ -22,7 +22,6 @@ public class UserSimple implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
     @Column(name = "usernum")
     private Long usernum;
 
@@ -40,8 +39,8 @@ public class UserSimple implements UserDetails {
     @Column(nullable = false, length = 100)
     private String password;
 
-    @Column(name="sex")
-    private Sex sex = Sex.Male;
+    @Column(name="gender")
+    private Gender gender = Gender.Male;
 
     @Column(name="age")
     private int age;

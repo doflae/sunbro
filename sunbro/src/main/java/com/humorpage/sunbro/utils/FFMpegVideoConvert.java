@@ -12,7 +12,7 @@ public class FFMpegVideoConvert {
 
     private final FFmpeg fFmpeg;
 
-    private final String baseDir ="C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public/";
+    private final String baseDir ="C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
 
     @Autowired
     public FFMpegVideoConvert(FFmpeg fFmpeg){
@@ -20,6 +20,7 @@ public class FFMpegVideoConvert {
     }
 
     public void extractThumbNail(String input, String ouput) throws VideoConvertException{
+
         FFmpegBuilder builder = new FFmpegBuilder()
                 .setInput(baseDir+input)
                 .addOutput(baseDir+ouput)
