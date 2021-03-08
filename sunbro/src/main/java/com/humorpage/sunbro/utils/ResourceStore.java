@@ -9,11 +9,11 @@ import java.nio.file.Path;
  */
 public interface ResourceStore {
     /**
-     * @param inputStream
+     * @param data
      * @return path to stored resource
      * @throws IOException
      */
-    Path store(InputStream inputStream) throws IOException;
+    Path store(byte[] data) throws IOException;
 
     /**
      * Deletes resource with given path.

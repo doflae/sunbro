@@ -1,6 +1,5 @@
 package com.humorpage.sunbro.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.model.BoardThumbnail;
@@ -17,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -59,24 +57,16 @@ public class BoardController {
     @Autowired
     private ThumbNailService thumbNailService;
 
-    @ApiOperation(value = "임시 Directory 할당")
-    @GetMapping(value = "/assign")
-    SingleResult<String> assignDir(Authentication authentication){
-        if(authentication!=null && authentication.isAuthenticated()){
-            try{
-                return responseService.getSingleResult(fileUploadService.createTemporaryDir());
-            }catch (IOException e){
-                e.printStackTrace();
-                return responseService.getFailSingleResult();
-            }
-        }else{
-            return responseService.getFailSingleResult();
-        }
-    }
 
-    @ApiOperation(value = "업로드", notes="html코드를 받아 저장소 옮기고 최종적으로 업로드한다.")
+
+    /**
+     * @param board
+     *                title 제목
+     *                content 내용
+     *                thumbnail 썸네일에 들어갈 텍스트
+     */
     @PostMapping(value = "/upload")
-    CommonResult postForm(@Valid Board board,
+    CommonResult postForm(@ModelAttribute Board board,
                           Authentication authentication){
         UserSimple userSimple;
         try{

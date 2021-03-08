@@ -81,3 +81,20 @@ export const AgeSelector = () =>{
     
     return ages.map((age,index)=><option key={index} value={age}>{age}~{age+9}</option>)
 }
+
+export const getToday = () =>{
+    let today = new Date();   
+
+    let year = today.getFullYear(); // 년도
+    let month = today.getMonth() + 1;  // 월
+    let date = today.getDate();  // 날짜
+    return year + '/' + month + '/' + date
+}
+const sampleString = "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
+export const getRandomGenerator = (length) =>{
+    let ret = ""
+    for(let i = 0; i<length;i++){
+        ret+=sampleString[Math.floor(Math.random()*sampleString.length)]
+    }
+    return ret
+}

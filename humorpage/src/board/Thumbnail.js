@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, {useState } from "react"
 import userDefaultImg from "../static/img/user_default.png";
 import CommentBox from "./CommentBox";
 import { useHistory, Link } from "react-router-dom";
@@ -15,9 +15,6 @@ function Thumbnail({
     const [commentboxOn, setCommentboxOn] = useState(false);
     let on = false
     let history = useHistory();
-    useEffect(()=>{
-        console.log(board)
-    })
     const getDetail = () => (e) =>{
         let target = e.target
         let mainTarget = target.parentElement.previousElementSibling

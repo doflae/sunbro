@@ -57,68 +57,31 @@ public class FileUploadService {
         }
     }
 
-    public String tempUpload(MultipartFile file, String tempDir, String beforePath){
-        try{
-            if(!beforePath.equals("")){
-                temporaryFileStore.delete(Path.of(beforePath));
-            }
-        }catch (IOException |NullPointerException ignored){
-
-        }
+    public void fileUpload(MultipartFile file, String path, boolean needConvert){
         try{
             byte[] data = file.getBytes();
-            Date date = new Date();
-            String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
-            String filename = RandomGenerator.RandomnameGenerate(26)+"."+tmp[tmp.length-1];
-            tempDir = format.format(date)+tempDir+"/";
-            File dir = new File(baseDir+tempDir);
-            if(!dir.exists()){
-                if(dir.mkdirs()){
-                    Path tempPath = Paths.get(baseDir+tempDir+filename);
-                    Files.write(tempPath, data);
-                    return tempDir+filename;
+            File dir = new File(baseDir+path);
+            dir.getParentFile().mkdirs();
+            Path tempPath = Paths.get(baseDir+path);
+            if(needConvert){
+                Path tempFile = temporaryFileStore.store(data);
+                if(ffMpegVideoConvert.checkVideoCodec(tempFile.toString())){
+                    try{
+                        ffMpegVideoConvert.convertVideo(tempFile.toString(),tempPath.toString());
+                    }catch (FFMpegVideoConvert.VideoConvertException ignored){
+
+                    }
                 }else{
-                    return null;
+                    Files.write(tempPath, data);
                 }
+                temporaryFileStore.delete(tempFile);
             }else{
-                Path tempPath = Paths.get(baseDir+tempDir+filename);
+                System.out.println(tempPath);
                 Files.write(tempPath, data);
-                return tempDir+filename;
             }
         }catch (IOException e){
             e.printStackTrace();
-            return null;
         }
     }
 
-//    public String tempUpload(MultipartFile file, String tempDir, String beforePath){
-//        try{
-//            if(!beforePath.equals("")){
-//                temporaryFileStore.delete(Path.of(beforePath));
-//            }
-//        }catch (IOException |NullPointerException ignored){
-//
-//        }
-//        try{
-//            byte[] data = file.getBytes();
-//            Date date = new Date();
-//            String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
-//            String filename = RandomGenerator.RandomnameGenerate(26)+"."+tmp[tmp.length-1];
-//            tempDir = format.format(date)+tempDir+"/";
-//            File dir = new File(baseDir+tempDir);
-//            File newFile = new File(baseDir+tempDir+filename);
-//            dir.mkdirs();
-//            try{
-//                InputStream inputStream = file.getInputStream();
-//                FileUtils.copyInputStreamToFile(inputStream,newFile);
-//            }catch (IOException e){
-//                FileUtils.deleteQuietly(newFile);
-//                e.printStackTrace();
-//            }
-//            return tempDir+filename;
-//        }catch (IOException e){
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
 }

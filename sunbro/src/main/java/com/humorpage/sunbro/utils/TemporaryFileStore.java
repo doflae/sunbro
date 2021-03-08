@@ -20,10 +20,10 @@ public class TemporaryFileStore implements ResourceStore {
 
 
     @Override
-    public Path store(InputStream inputStream) throws IOException{
-        File file = createTemporaryFile().toFile();
-        FileUtils.copyInputStreamToFile(inputStream,file);
-        return file.toPath();
+    public Path store(byte[] data) throws IOException{
+        Path path = createTemporaryFile();
+        write(path,data);
+        return path;
     }
 
     @Override

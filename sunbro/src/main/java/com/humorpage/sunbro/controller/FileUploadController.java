@@ -48,14 +48,15 @@ public class FileUploadController {
             consumes = MULTIPART_FORM_DATA_VALUE,
             produces = APPLICATION_JSON_VALUE,
             headers = "Accept=application/json")
-    public SingleResult<String> upload(MultipartFile file,
-                                       @RequestParam(required = false) String src,
-                                       @RequestParam(required = false,defaultValue = "images") String tempDir,
-                                       Authentication authentication) {
+    public CommonResult upload(MultipartFile file,
+                               @RequestParam(required = false) String path,
+                               @RequestParam(required = false, defaultValue = "false") boolean needConvert,
+                               Authentication authentication) {
         if(authentication!=null && authentication.isAuthenticated()){
-            return responseService.getSingleResult(fileUploadService.tempUpload(file,tempDir,src));
+            fileUploadService.fileUpload(file,path,needConvert);
+            return responseService.getSuccessResult();
         }else{
-            return responseService.getFailSingleResult();
+            return responseService.getFailResult();
         }
     }
 }
