@@ -3,16 +3,13 @@ package com.humorpage.sunbro.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.advice.exception.JwtRefreshTokenExpiredException;
-import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.service.CookieService;
 import com.humorpage.sunbro.service.JwtTokenService;
 import com.humorpage.sunbro.service.RedisTokenService;
 import com.humorpage.sunbro.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -99,7 +96,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         if (httpServletResponse.getHeader("user")==null){
                             httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
                         }
-                        Cookie newAccessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, newToken, JwtTokenService.AccesstokenValidMilisecond);
+                        Cookie newAccessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, newToken, JwtTokenService.AccessTokenValidSecond);
                         httpServletResponse.addCookie(newAccessToken);
                     }
                 }

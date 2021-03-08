@@ -156,9 +156,9 @@ public class AccountController {
         if(userSimple!=null) {
             final String token = jwtTokenService.generateToken(userSimple);
             final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
-            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token, JwtTokenService.AccesstokenValidMilisecond);
-            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt, JwtTokenService.RefreshtokenValidMilisecond);
-            redisTokenService.setDataExpire(refreshjwt, String.valueOf(userSimple.getUsernum()), JwtTokenService.RefreshtokenValidMilisecond);
+            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token, JwtTokenService.AccessTokenValidSecond);
+            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt, JwtTokenService.RefreshTokenValidSecond);
+            redisTokenService.setDataExpire(refreshjwt, String.valueOf(userSimple.getUsernum()), JwtTokenService.RefreshTokenValidSecond);
             if (res.getHeader("user") == null) {
                 try{
                     res.addHeader("user", objectMapper.writeValueAsString(userSimple));
@@ -185,9 +185,9 @@ public class AccountController {
                 throw new CIdSigninFailedException();
             final String token = jwtTokenService.generateToken(userSimple);
             final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
-            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token,JwtTokenService.AccesstokenValidMilisecond);
-            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt,JwtTokenService.RefreshtokenValidMilisecond);
-            redisTokenService.setDataExpire(refreshjwt,String.valueOf(userSimple.getUsernum()), JwtTokenService.RefreshtokenValidMilisecond);
+            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token,JwtTokenService.AccessTokenValidSecond);
+            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt,JwtTokenService.RefreshTokenValidSecond);
+            redisTokenService.setDataExpire(refreshjwt,String.valueOf(userSimple.getUsernum()), JwtTokenService.RefreshTokenValidSecond);
             if (res.getHeader("user")==null){
                 res.addHeader("user",objectMapper.writeValueAsString(userSimple));
             }

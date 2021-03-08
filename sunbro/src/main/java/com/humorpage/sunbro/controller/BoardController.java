@@ -62,7 +62,7 @@ public class BoardController {
     @ApiOperation(value = "임시 Directory 할당")
     @GetMapping(value = "/assign")
     SingleResult<String> assignDir(Authentication authentication){
-        if(authentication.isAuthenticated()){
+        if(authentication!=null && authentication.isAuthenticated()){
             try{
                 return responseService.getSingleResult(fileUploadService.createTemporaryDir());
             }catch (IOException e){
@@ -125,7 +125,6 @@ public class BoardController {
 
     @GetMapping("/recently")
     ListResult<BoardThumbnail> recently(@RequestParam(value = "board_id",required = false) Long board_id, Authentication authentication){
-        System.out.println(authentication.isAuthenticated());
         List<BoardThumbnail> boardThumbnailList;
         if(board_id==null){
             boardThumbnailList = boardThumbnailRepository.findByOrderByIdDesc(PageRequest.of(0,10));

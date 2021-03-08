@@ -3,6 +3,7 @@ import React,{Component} from "react"
 import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
+import Axios from "axios"
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 
 const Video = Quill.import('formats/video');
@@ -17,7 +18,7 @@ class CustomImage extends Image{
     return image
   }
   static sanitize(url){
-    return Link.sanitize(url)
+    return URL.createObjectURL(url);
   }
 }
 
@@ -137,25 +138,24 @@ class Editor extends Component {
       const formData = new FormData();
       formData.append('file',file)
       formData.append('tempDir',this.tempDir);
-      return this.props.request("post","/file/upload",formData,{
+      return Axios.post("/file/upload",formData,{
         headers:{
           'Content-Type':'multipart/form-data',
         }
       })
-      .then( res=> res.data)
+      .then(res=> res.data)
     };
+
     
     onDrop = (acceptedFiles) => {
       try {
         acceptedFiles.reduce((pacc, _file) => {
-          const quill = this.quillRef.getEditor();
-          const range = quill.getSelection();
-          console.log(range)
           if (_file.type.split("/")[0]==="video"){
-            return pacc.then(() => {
-              this.saveFile(_file)
-              .then((res)=>{
+            return pacc.then(()=>{
+              this.saveFile(_file).then(res=>{
                 if(res.success===true){
+                  const quill = this.quillRef.getEditor();
+                  const range = quill.getSelection();
                   quill.insertEmbed(range.index, "video", [res.data,_file.name]);
                   quill.setSelection(range.index + 1);
                   quill.focus();
@@ -163,22 +163,29 @@ class Editor extends Component {
                   this.props.history.push("/login")
                 }
               })
-            }
-            );
+            })
           }else{
-            return pacc.then(() => {
-              this.saveFile(_file)
-              .then((res)=>{
-                if(res.success===true){
-                  var x = quill.insertEmbed(range.index, "image", res.data);
-                  console.log(x);
-                  quill.setSelection(range.index + 1);
-                  quill.focus();
-                }else{
-                  this.props.history.push("/login")
-                }
-              });
-            });
+            const reader =  new FileReader();
+            const quill = this.quillRef.getEditor();
+            const range = quill.getSelection();
+            reader.onload = (e) =>{
+              const dataURL = e.target.result;
+              var byteString = atob(dataURL.split(',')[1]);
+
+              var mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0]
+
+              var ab = new ArrayBuffer(byteString.length);
+              var ia = new Uint8Array(ab);
+              for (var i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+              }
+
+              var blob = new Blob([ab], {type: mimeString});
+              quill.insertEmbed(range.index,"image",blob);
+              quill.setSelection(range.index + 1);
+              quill.focus();
+            }
+            return reader.readAsDataURL(_file);
           }
         },Promise.resolve());
       } catch (error) {}

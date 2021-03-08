@@ -52,12 +52,9 @@ public class FileUploadController {
                                        @RequestParam(required = false) String src,
                                        @RequestParam(required = false,defaultValue = "images") String tempDir,
                                        Authentication authentication) {
-        try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            String pw = userSimple.getPassword();
-            return responseService.getSingleResult(fileUploadService.tempUpload(file,tempDir,src,pw.substring(pw.length()-4)));
-        }catch (NullPointerException e){
-            e.printStackTrace();
+        if(authentication!=null && authentication.isAuthenticated()){
+            return responseService.getSingleResult(fileUploadService.tempUpload(file,tempDir,src));
+        }else{
             return responseService.getFailSingleResult();
         }
     }

@@ -3,7 +3,10 @@ package com.humorpage.sunbro.service;
 import com.humorpage.sunbro.utils.FFMpegVideoConvert;
 import com.humorpage.sunbro.utils.RandomGenerator;
 import com.humorpage.sunbro.utils.TemporaryFileStore;
+import org.apache.commons.io.FileUtils;
+import org.apache.tools.ant.taskdefs.Sleep;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -53,10 +57,9 @@ public class FileUploadService {
         }
     }
 
-    public String tempUpload(MultipartFile file, String tempDir, String beforePath, String last4str){
+    public String tempUpload(MultipartFile file, String tempDir, String beforePath){
         try{
-            String filename = beforePath.replaceFirst("[.][^.]+$", "");
-            if(!beforePath.equals("") && filename.substring(filename.length()-4).equals(last4str)){
+            if(!beforePath.equals("")){
                 temporaryFileStore.delete(Path.of(beforePath));
             }
         }catch (IOException |NullPointerException ignored){
@@ -66,7 +69,7 @@ public class FileUploadService {
             byte[] data = file.getBytes();
             Date date = new Date();
             String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
-            String filename = RandomGenerator.RandomnameGenerate(26)+last4str+"."+tmp[tmp.length-1];
+            String filename = RandomGenerator.RandomnameGenerate(26)+"."+tmp[tmp.length-1];
             tempDir = format.format(date)+tempDir+"/";
             File dir = new File(baseDir+tempDir);
             if(!dir.exists()){
@@ -87,4 +90,35 @@ public class FileUploadService {
             return null;
         }
     }
+
+//    public String tempUpload(MultipartFile file, String tempDir, String beforePath){
+//        try{
+//            if(!beforePath.equals("")){
+//                temporaryFileStore.delete(Path.of(beforePath));
+//            }
+//        }catch (IOException |NullPointerException ignored){
+//
+//        }
+//        try{
+//            byte[] data = file.getBytes();
+//            Date date = new Date();
+//            String[] tmp = Objects.requireNonNull(file.getContentType()).split("/");
+//            String filename = RandomGenerator.RandomnameGenerate(26)+"."+tmp[tmp.length-1];
+//            tempDir = format.format(date)+tempDir+"/";
+//            File dir = new File(baseDir+tempDir);
+//            File newFile = new File(baseDir+tempDir+filename);
+//            dir.mkdirs();
+//            try{
+//                InputStream inputStream = file.getInputStream();
+//                FileUtils.copyInputStreamToFile(inputStream,newFile);
+//            }catch (IOException e){
+//                FileUtils.deleteQuietly(newFile);
+//                e.printStackTrace();
+//            }
+//            return tempDir+filename;
+//        }catch (IOException e){
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
 }

@@ -1,23 +1,16 @@
 package com.humorpage.sunbro.service;
 
 import com.humorpage.sunbro.utils.RandomGenerator;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import javax.mail.Address;
 import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Properties;
 
 @Service
 public class EmailAuthService {
@@ -61,8 +54,8 @@ public class EmailAuthService {
     public void sendMailwithKey(String email) throws Exception{
         String key = RandomGenerator.RandomnameGenerate(8);
         try{
-            redisTokenService.setDataExpire(email,key,JwtTokenService.EmailAuthValidMilisecond);
-            Date expires = new Date(System.currentTimeMillis()+3600*2*1000);
+            redisTokenService.setDataExpire(email,key,JwtTokenService.EmailAuthValidSecond);
+            Date expires = new Date(System.currentTimeMillis()+JwtTokenService.EmailAuthValidMilisecond);
             MimeMessage message = createAuthMessage(email,key,emailTimeFormat.format(expires));
             emailSender.send(message);
         }catch (Exception e){

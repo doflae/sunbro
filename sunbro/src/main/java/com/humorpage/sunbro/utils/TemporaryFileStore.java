@@ -1,7 +1,6 @@
 package com.humorpage.sunbro.utils;
 
-import com.humorpage.sunbro.service.FileUploadService;
-import com.humorpage.sunbro.service.JwtTokenService;
+import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -9,11 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Set;
 
 import static java.nio.file.Files.*;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Objects.nonNull;
 
 /**
@@ -24,10 +20,10 @@ public class TemporaryFileStore implements ResourceStore {
 
 
     @Override
-    public Path store(InputStream inputStream) throws IOException {
-        Path filePath = createTemporaryFile();
-        copy(inputStream, filePath, REPLACE_EXISTING);
-        return filePath;
+    public Path store(InputStream inputStream) throws IOException{
+        File file = createTemporaryFile().toFile();
+        FileUtils.copyInputStreamToFile(inputStream,file);
+        return file.toPath();
     }
 
     @Override
@@ -39,7 +35,7 @@ public class TemporaryFileStore implements ResourceStore {
         return false;
     }
 
-    public boolean create(File path) throws IOException{
+    public boolean create(File path){
         if(nonNull(path)&&!path.exists()){
             return path.mkdirs();
         }
