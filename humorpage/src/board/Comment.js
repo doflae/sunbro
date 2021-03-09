@@ -8,7 +8,13 @@ import {withRouter, Link} from "react-router-dom"
 import CommentUploader from "./CommentUploader"
 import Dropzone from "react-dropzone"
 import ReComment from "./ReComment"
-import {sanitizeHarder, getTime,convertUnitOfNum} from "../utils/Utils"
+import {sanitizeHarder, 
+		getTime, 
+		convertUnitOfNum, 
+		getToday, 
+		getRandomGenerator,
+		isEmpty} from "../utils/Utils"
+import Axios from "axios";
 class Comment extends Component{
 	constructor(props){
 		super(props);
@@ -24,9 +30,6 @@ class Comment extends Component{
 			commentUploaderOn:null,
 		}
 	}
-	isEmpty = (st) => {
-        return (st.length === 0 || !st.trim());
-    }
 
 	recommentClick = (cid) => (e) => {
 		e.preventDefault();
@@ -54,28 +57,37 @@ class Comment extends Component{
         })
     }
 	//대댓글용
-    submitComment = (board_id, comment_id, cname) => (e) =>{
+    submitComment = (board_id, comment_id, cname) => async (e) =>{
         let tmp = e.target;
-        let image_src = tmp.parentElement.previousElementSibling.firstElementChild.getAttribute('src');
+        let data = new FormData();
+        let media = tmp.parentElement.previousElementSibling.firstElementChild.getAttribute('src');
         let content = tmp.parentElement.previousElementSibling.previousElementSibling.value
-        if (!this.isEmpty(content)){
-            content = `<p><span class="recomment_target">@${cname}</span>${content}</p>`
+        if (!isEmpty(content)){
+            content = `<span class="recomment_target">@${cname}</span>${content}`
         }
-        if(!this.isEmpty(image_src)){
-            content+=`<img src="${image_src}" class="comment_context_img" height="100px" width="auto"/>`;
+        if(!isEmpty(media)){
+            await fetch(media).then(r=> r.blob()
+            ).then(
+                blob=>{
+                    const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+'.'+blob.type.split("/")[1];
+                    data.append('media',filePath)
+                    this.saveFile(blob,filePath,false);
+                }
+            )
         }
-        if(!this.isEmpty(content)){
+        if(!isEmpty(content)){
             let data = new FormData();
             data.append('content',content)
             data.append('board_id',board_id)
 			data.append("comment_id",comment_id)
-			console.log(board_id,comment_id)
             return this.props.request('post',"/comment/upload",data).then(res =>{
                 if(res.status===200 && res.data.success){
-					this.appendComment(comment_id,res.data.data)
 					tmp.parentElement.previousElementSibling.firstElementChild.setAttribute('src',"");
 					tmp.parentElement.previousElementSibling.lastElementChild.style.zIndex="-1";
 					tmp.parentElement.previousElementSibling.previousElementSibling.value="";
+					const comment = res.data.data
+                    comment.media = media // replace to blob data
+                    this.appendComment(comment_id,comment)
                 }else{
 					this.props.history.push("/login")
                 }
@@ -86,68 +98,54 @@ class Comment extends Component{
     }
 
     imageHandler = () => (e) =>{
-        let target = e.target.parentElement.previousElementSibling;
+        let target = e.target;
+        while(target.className!=="comment_bottom"){
+            target = target.parentElement
+        }
         this.setState({
-            target:target,
+            target:target.previousElementSibling,
         })
         if (this.dropzone) this.dropzone.open();
-        else console.log("test")
     }
 
     onDrop = async(acceptFile) =>{
-        try{
-            await acceptFile.reduce((pacc, _file) =>{
-                if(_file.type.split("/")[0] ==="image"){
-                    return pacc.then(async()=>{
-                        await this.savefile(_file).then((res)=>{
-                            let target = this.state.target
-                            target.firstElementChild.src=res.data;
-                            target.lastElementChild.style.zIndex=0;
-                        });
-                    });
-                }else{
-					return null;
-				}
-            }, Promise.resolve());
-        } catch(error){}
+        var reader = new FileReader();
+        reader.onload = (e) =>{
+            const dataURL = e.target.result;
+            var byteString = atob(dataURL.split(',')[1]);
+
+            var mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0]
+
+            var ab = new ArrayBuffer(byteString.length);
+            var ia = new Uint8Array(ab);
+            for (var i = 0; i < byteString.length; i++) {
+              ia[i] = byteString.charCodeAt(i);
+            }
+
+            var blob = new Blob([ab], {type: mimeString});
+            const{target}=this.state
+            target.firstElementChild.src=URL.createObjectURL(blob);
+            target.lastElementChild.style.zIndex=0;
+        }
+        if(acceptFile[0]) reader.readAsDataURL(acceptFile[0]);
     }
 
-    savefile = (file) =>{
+    saveFile = (file,path,needConvert) => {
         const formData = new FormData();
-        formData.append('file',file)
-        if (this.state.target.firstElementChild.src){
-            formData.append('src',this.state.target.firstElementChild.getAttribute("src"))
-        }
-        const nowDate = new Date().getTime();
-        const workings = {...this.state.workings, [nowDate]:true};
-        this.setState({workings});
-        return this.props.request("post","/file/upload",formData,{
-            headers:{
-            'Content-Type':'multipart/form-data'
-            }
-        }).then(
-            (res)=>{
-                console.log(res)
-            //반환 데이터에는 public/images 이후의 경로를 반환
-            return res.data
-            },
-            (error)=>{
-            console.error("saveFile error:", error);
-            workings[nowDate] = false;
-            this.setState({workings});
-            return Promise.reject(error);
-            }
-        );
-    }
+        formData.append('file',file);
+        formData.append('path',path);
+        formData.append('needConvert',needConvert)
+        Axios.post("/file/upload",formData,{
+          headers:{
+            'Content-Type':'multipart/form-data',
+          }
+        })
+    };
+
     imageDelete = () => (e) => {
         let target = e.target;
-        this.props.request("get", `/file/comment/delete?src=${target.previousElementSibling.getAttribute("src")}`)
-        .then(res=>{
-            if (res.data.success){
-                target.style.zIndex=-1;
-                target.previousElementSibling.removeAttribute('src');
-            }
-        })
+		target.style.zIndex=-1;
+		target.previousElementSibling.removeAttribute('src');
     }
 
 	like = (target) => (e) => {
@@ -181,6 +179,7 @@ class Comment extends Component{
 			likeList:likeList
 		})
 	}
+
 
 	seeRecommment = (cid) => (e) =>{
 		e.preventDefault();
@@ -232,7 +231,9 @@ class Comment extends Component{
 							</button>
 						</div>
 					</div>
-					<div className="comment-context" dangerouslySetInnerHTML={{__html:sanitizeHarder(c.content)}}>
+					<div className="comment-context">
+						{isEmpty(c.content)?null:<p dangerouslySetInnerHTML={{__html:sanitizeHarder(c.content)}}></p>}
+						{isEmpty(c.media)?null:<img src={c.media} alt="" className="comment_context_img" height="100px" width="auto"/>}
 					</div>
 			{c.children_cnt>0 && (this.state.recommentList[c.id]===undefined || c.children_cnt>this.state.recommentList[c.id].length)?
 			(<button onClick={this.seeRecommment(c.id)}> 답글 {convertUnitOfNum(c.children_cnt)}</button>):null}
@@ -254,6 +255,7 @@ class Comment extends Component{
                     ref = {(el)=>(this.dropzone = el)}
                     accept = "image/*"
                     onDrop = {this.onDrop}
+					multiple = {false}
                     styles={{dropzone:{width:0,height:0}}}
                 	>
                     {({getRootProps, getInputProps}) =>(

@@ -1,5 +1,5 @@
 import React from "react"
-import {sanitizeNonNull, getTime, convertUnitOfNum} from "../utils/Utils"
+import {sanitizeNonNull, getDate, convertUnitOfNum} from "../utils/Utils"
 
 function MyBoard({
     board,
@@ -14,7 +14,7 @@ function MyBoard({
         </td>
         <td align="center">{id}</td>
         <td align="left">{board.title} <span>{comments_num}</span></td>
-        <td align="center">{getTime(board.created,"date").split(" ")[0]}</td>
+        <td align="center">{getDate(board.created)}</td>
         <td align="center">{convertUnitOfNum(board.likes)}</td>
     </tr>
     <tr>

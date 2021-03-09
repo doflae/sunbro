@@ -29,6 +29,9 @@ export const sanitize = (dirty) => sanitizeHtml(dirty,{
       allowProtocolRelative: true,
       enforceHtmlBoundary: false
 })
+export const isEmpty = (st) => {
+    return (st == null ||st.length === 0 || !st.trim());
+}
 
 export const sanitizeHarder = (dirty) => sanitizeHtml(dirty,{
     allowedTags:[
@@ -53,8 +56,12 @@ export const sanitizeHarder = (dirty) => sanitizeHtml(dirty,{
     enforceHtmlBoundary: false
 })
 
-export const getTime = (time) =>{
-    let t = parseInt((Date.now() - Date.parse(time))/1000)
+export const getDate = (datetime) =>{
+    return datetime.replaceAll("-",".").replace("T"," ")
+}
+
+export const getTime = (datetime) =>{
+    let t = parseInt((Date.now() - Date.parse(datetime))/1000)
     if(t<60){
         return `${t}초 전`
     }else if(t<3600){
@@ -62,7 +69,7 @@ export const getTime = (time) =>{
     }else if(t<86400){
         return `${parseInt(t/3600)}시간 전`
     }else{
-        return time.replaceAll("-",".").replace("T"," ")
+        return datetime.replaceAll("-",".").replace("T"," ")
     }
 }
 

@@ -4,7 +4,7 @@ import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import Axios from "axios"
-import {getToday, getRandomGenerator} from "../utils/Utils"
+import {getToday, getRandomGenerator,isEmpty} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 
@@ -90,7 +90,6 @@ class Editor extends Component {
     tempDir = getRandomGenerator(10);
 
 
-    //editor 임시 dir 할당 받아야함
     componentDidMount(){
       this.props.request("get","/account/check/auth").then(res=>{
         if(res.status===200 && res.data.success===false){
@@ -114,7 +113,7 @@ class Editor extends Component {
     submit = () => async (e) =>{
       e.preventDefault();
       var title = document.querySelector(".editor_title").value
-      if(this.isEmpty(title)){
+      if(isEmpty(title)){
         this.setState({
           titleErr:"제목을 작성해주세요."
         })
@@ -132,10 +131,7 @@ class Editor extends Component {
         elem.removeAttribute("class")
         const video = elem.firstElementChild
         video.removeAttribute("class")
-        await fetch(video.src).then(r=>{
-          const ret = r.blob()
-          return ret
-        }).then(
+        await fetch(video.src).then(r=>r.blob()).then(
           blob=>{
             video.setAttribute("src", filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1])
             if(video.videoWidth>0){
@@ -160,7 +156,7 @@ class Editor extends Component {
       }
       var content = document.querySelector(".ql-editor").innerHTML
       var real = document.querySelector(".ql-editor").innerText
-      if (!this.isEmpty(real) || content.search("img")!==-1||content.search("video")!==-1){
+      if (!isEmpty(real) || content.search("img")!==-1||content.search("video")!==-1){
         let data = new FormData();
         data.append('title',title)
         data.append('content',content)
@@ -173,9 +169,6 @@ class Editor extends Component {
           }
         })
       }
-    }
-    isEmpty = (st) => {
-      return st.length === 0 || !st.trim();
     }
 
     saveFile = (file,path,needConvert) => {

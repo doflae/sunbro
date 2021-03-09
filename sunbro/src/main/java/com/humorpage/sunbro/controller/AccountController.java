@@ -33,7 +33,7 @@ public class AccountController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    private UserRepository userrepository;
+    private UserRepository userRepository;
 
     @Autowired
     private UserSimpleRepository userSimpleRepository;
@@ -53,9 +53,8 @@ public class AccountController {
     @Autowired
     private RedisTokenService redisTokenService;
 
-
     @Autowired
-    private FileMoveService fileMoveService;
+    private ChangeProfileService changeProfileService;
 
     @Autowired
     private EmailAuthService emailAuthService;
@@ -124,18 +123,8 @@ public class AccountController {
         }catch (Exception e){
             return responseService.getDetailResult(false,-1,"Need to Login");
         }
-        try{
-            Long userNum = userSimple.getUsernum();
-            UserSimple userBefore = userSimpleRepository.findByUsernum(userNum);
-            userBefore.setAge(user.getAge());
-            userBefore.setGender(user.getGender());
-            userBefore.setName(user.getName());
-            userBefore.setUserImg(fileMoveService.moveProfileImage(userBefore.getUserImg(),user.getUserImg(),userNum));
-            userSimpleRepository.save(userBefore);
-            return responseService.getSuccessResult();
-        }catch (Exception e){
-            return responseService.getFailResult();
-        }
+        changeProfileService.ChangeProfile(userSimple,user);
+        return responseService.getSuccessResult();
     }
 
     @ApiOperation(value = "타 플랫폼 로그인")
@@ -237,7 +226,7 @@ public class AccountController {
     public CommonResult signup(@Valid @ModelAttribute User user) {
         user.setRole("USER");
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userrepository.save(user);
+        userRepository.save(user);
         return responseService.getSuccessResult();
     }
 

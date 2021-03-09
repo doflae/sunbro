@@ -6,7 +6,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {withRouter, Link} from 'react-router-dom'
 import {authWrapper} from "../auth/AuthWrapper"
 import CommentUploader from "./CommentUploader"
-import {sanitizeHarder,getTime,convertUnitOfNum} from "../utils/Utils"
+import {sanitizeHarder,getTime,convertUnitOfNum,isEmpty} from "../utils/Utils"
 class ReComment extends Component{
     constructor(props){
         super(props);
@@ -72,7 +72,9 @@ class ReComment extends Component{
 							</button>
 						</div>
 					</div>
-					<div className="comment-context" dangerouslySetInnerHTML={{__html:sanitizeHarder(c.content)}}>
+					<div className="comment-context">
+						{isEmpty(c.content)?null:<p dangerouslySetInnerHTML={{__html:sanitizeHarder(c.content)}}></p>}
+						{isEmpty(c.media)?null:<img src={c.media} alt="" className="comment_context_img" height="100px" width="auto"/>}
 					</div>
 					{this.props.commentUploaderOn === c.id?(<CommentUploader imageHandler={this.props.imageHandler} imageDelete={this.props.imageDelete}
             submitComment={this.props.submitComment} board_id={this.props.board_id} comment_id={this.props.id} cname={c.author.name}/>):null}

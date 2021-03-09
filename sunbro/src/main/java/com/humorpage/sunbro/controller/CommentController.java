@@ -1,7 +1,6 @@
 package com.humorpage.sunbro.controller;
 
 
-import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Comment;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.CommentLikesRepository;
@@ -10,14 +9,12 @@ import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.CommentService;
-import com.humorpage.sunbro.service.FileMoveService;
 import com.humorpage.sunbro.service.LikesService;
 import com.humorpage.sunbro.service.ResponseService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -44,8 +41,6 @@ public class CommentController {
     @Autowired
     private CommentRepository commentRepository;
 
-    @Autowired
-    private FileMoveService fileMoveService;
 
     @ApiOperation(value = "댓글 열람",notes = "게시글의 id또는 댓글의 id를 받아 해당 글의 댓글 열람")
     @GetMapping("/list")
@@ -95,7 +90,6 @@ public class CommentController {
         }catch (NullPointerException ignored){
             return responseService.getFailSingleResult();
         }
-        comment.setContent(fileMoveService.moveOnlyImage(comment.getContent()));
         commentService.save(userSimple,board_id, comment_id,comment);
         return responseService.getSingleResult(comment);
 

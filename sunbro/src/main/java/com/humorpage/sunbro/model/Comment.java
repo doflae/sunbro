@@ -2,6 +2,7 @@ package com.humorpage.sunbro.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,6 +19,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name="comment")
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Comment implements Serializable {
 
     @Id
@@ -32,8 +34,11 @@ public class Comment implements Serializable {
     @JoinColumn(name = "author_num")
     private UserSimple author;
 
-    @NotNull
+    @Column(name="content")
     private String content;
+
+    @Column(name="media")
+    private String media;
 
     @Column(name="board_id")
     @JsonIgnore
@@ -48,9 +53,6 @@ public class Comment implements Serializable {
     @Column(name ="updated")
     private LocalDateTime updated;
 
-//    @JsonManagedReference
-//    @OneToMany(mappedBy = "comment")
-//    private List<Commentlikes> commentlikes = new ArrayList<>();
 
     @Basic(fetch = FetchType.LAZY)
     @Formula("(select count(*) from commentlikes cl where cl.comment_id=id)")

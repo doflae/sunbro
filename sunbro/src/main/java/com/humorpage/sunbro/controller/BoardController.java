@@ -48,8 +48,6 @@ public class BoardController {
     @Autowired
     private CacheRankingService cacheRankingService;
 
-    @Autowired
-    private FileMoveService fileMoveService;
 
     @Autowired
     private FileUploadService fileUploadService;
@@ -76,7 +74,6 @@ public class BoardController {
             return responseService.getDetailResult(false,-1,"Need to Login");
         }
         try{
-            board.setContent(fileMoveService.moveContents(board.getContent()));
             board.setThumbnailImg(thumbNailService.getThumbnailImage(board.getContent()));
             board.setAuthor(userSimple);
             boardRepository.save(board);
