@@ -73,17 +73,10 @@ public class BoardController {
         }catch (NullPointerException e){
             return responseService.getDetailResult(false,-1,"Need to Login");
         }
-        try{
-            board.setThumbnailImg(thumbNailService.getThumbnailImage(board.getContent()));
-            board.setAuthor(userSimple);
-            boardRepository.save(board);
-            return responseService.getSuccessResult();
-        }
-        catch (IOException e){
-            board.setAuthor(userSimple);
-            boardRepository.save(board);
-            return responseService.getSuccessResult();
-        }
+        System.out.println(board.toString());
+        board.setAuthor(userSimple);
+        boardRepository.save(board);
+        return responseService.getSuccessResult();
     }
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")
     @GetMapping(value = "/likeon")

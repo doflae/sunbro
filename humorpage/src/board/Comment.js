@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import userDefaultImg from "../static/img/user_default.png";
+import userDefaultImg from "../static/img/user_32x.png";
 import {faHeart as rHeart} from "@fortawesome/free-regular-svg-icons"
 import {faHeart as sHeart} from "@fortawesome/free-solid-svg-icons"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
@@ -208,8 +208,8 @@ class Comment extends Component{
 		}
 		return this.props.commentList.map( c =>
 			<div className="comment" key={c.id}>
-				<img className="comment-userimg" alt="" src={c.author.userImg} onError={(e)=>{
-					e.target.onerror=null;e.target.src=userDefaultImg;
+				<img className="comment-userimg" srcSet={"/72"+c.author.userImg+" 72w"} alt="" src={c.author.userImg} onError={(e)=>{
+					e.preventDefault(); e.target.onError=null;e.target.src=userDefaultImg; e.target.removeAttribute("srcset");
 				}}/>
 				
 				<div className="comment-main">
@@ -234,7 +234,8 @@ class Comment extends Component{
 					</div>
 					<div className="comment-context">
 						{isEmpty(c.content)?null:<p dangerouslySetInnerHTML={{__html:sanitizeHarder(c.content)}}></p>}
-						{isEmpty(c.media)?null:<img src={c.media} alt="" className="comment_context_img" height="100px" width="auto"/>}
+						{isEmpty(c.media)?null:<img srcSet={"/120x120"+c.media+" 120w"}
+						src={c.media} alt="" className="comment_context_img" max-height="120px" max-width="120px"/>}
 					</div>
 			{c.children_cnt>0 && (this.state.recommentList[c.id]===undefined || c.children_cnt>this.state.recommentList[c.id].length)?
 			(<button onClick={this.seeRecommment(c.id)}> 답글 {convertUnitOfNum(c.children_cnt)}</button>):null}

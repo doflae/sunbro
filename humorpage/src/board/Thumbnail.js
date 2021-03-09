@@ -1,5 +1,5 @@
 import React, {useState } from "react"
-import userDefaultImg from "../static/img/user_default.png";
+import userDefaultImg from "../static/img/user_32x.png";
 import CommentBox from "./CommentBox";
 import { useHistory, Link } from "react-router-dom";
 import {sanitizeNonNull, getTime, convertUnitOfNum} from "../utils/Utils"

@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import userDefaultImg from "../static/img/user_default.png";
+import userDefaultImg from "../static/img/user_128x.png";
 import {authWrapper} from "../auth/AuthWrapper"
 import {withRouter} from 'react-router-dom'
 import {ReactComponent as Cogwheel} from "../static/svg/cogwheel.svg"
@@ -12,7 +12,8 @@ class MyHeader extends Component{
             return null;
         }
         return <div className="mypage_header">
-        <img className="mypage_user_img" src={user.userImg} alt="" onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>
+        <img className="mypage_user_img" srcSet={"/120"+user.userImg+" 120w"}
+        src={user.userImg} alt="" onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;e.target.removeAttribute("srcset");}}/>
         <span className="mypage_user_detail">
             <div className="mypage_user_name">{user.name}
             </div>

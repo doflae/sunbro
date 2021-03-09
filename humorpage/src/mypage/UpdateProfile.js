@@ -1,6 +1,6 @@
 import React, { useState,createRef } from "react"
 import { useHistory } from "react-router-dom"
-import userDefaultImg from "../static/img/user_default.png";
+import userDefaultImg from "../static/img/user_128x.png";
 import Dropzone from "react-dropzone"
 import {ReactComponent as Pencil} from '../static/svg/pencil.svg'
 import {authWrapper} from "../auth/AuthWrapper"
@@ -92,7 +92,7 @@ function UpdateProfile({userDetail,...props}){
                         history.go();
                     }
                     else{
-                        console.log(res)
+                        history.push("/login");
                     }
                 }
             )

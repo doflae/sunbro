@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import { withRouter,Link} from "react-router-dom";
 import { authWrapper } from '../auth/AuthWrapper';
 import logo from "../static/img/logo.jpg"
-import userImg from "../static/img/user_default.png";
+import userImg from "../static/img/user_128x.png";
 class Header extends Component{
   handleLogout = () => (e) =>{
       this.props.signout().then(res=>{

@@ -27,19 +27,32 @@ public class ThumbNailService {
         this.ffMpegVideoConvert = ffMpegVideoConvert;
     }
 
-    public String getThumbnailImage(String content) throws IOException {
+    public String getThumbnailImage(String content) {
         Matcher matcher = thumbNailPattern.matcher(content);
         if (matcher.find()){
             String src = matcher.group(2);
             String baseDir ="C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
             Pattern tempPattern = Pattern.compile("^(/.+/[^/]+)\\.(.+)");
             Matcher tempMatcher = tempPattern.matcher(src);
+            System.out.println(src);
             if(matcher.group(1).equals("img")){
-                String newImagePath = tempMatcher.group(1)+"thumbnail."+tempMatcher.group(2);
-                File f = new File(baseDir+src);
-                BufferedImage resizedImage = resizeService.resize(f,-1,240);
-                ImageIO.write(resizedImage,tempMatcher.group(2),new File(baseDir+newImagePath));
-                return newImagePath;
+                System.out.println("content");
+                if(tempMatcher.find()){
+                    System.out.println(tempMatcher.group());
+                    String newImagePath = tempMatcher.group(1)+"thumbnail."+tempMatcher.group(2);
+                    File f = new File(baseDir+src);
+                    try {
+                        BufferedImage resizedImage = resizeService.resize(f, -1, 240);
+                        ImageIO.write(resizedImage, tempMatcher.group(2), new File(baseDir + newImagePath));
+                        System.out.println(baseDir + newImagePath);
+                        return newImagePath;
+                    }catch (IOException e){
+                        System.out.println(baseDir + newImagePath);
+
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
             }else{
                 if(tempMatcher.find()){
                     String newImagePath = tempMatcher.group(1)+"thumbnail.jpg";

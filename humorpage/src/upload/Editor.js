@@ -17,6 +17,7 @@ class CustomImage extends Image{
     image.src = this.sanitize(value)
     image.setAttribute("style","max-height:100%;max-width:100%;")
     image.className="image_preview"
+    image.setAttribute("id","ql")
     return image
   }
   static sanitize(url){
@@ -32,6 +33,7 @@ class CustomVideo extends Video{
   static create(value){
     const node = super.create();
     const video = document.createElement('video')
+    video.setAttribute("id","ql")
     const temp = document.createElement('div')
     const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
     const path = document.createElementNS("http://www.w3.org/2000/svg","path")
@@ -123,7 +125,34 @@ class Editor extends Component {
           titleErr:null,
         })
       }
+      var content = document.querySelector(".ql-editor").innerHTML
       const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+"/"
+      // path = /240/path.jpg
+      let data = new FormData();
+      const elem = document.querySelector("#ql")
+      if(elem.length!==null){
+        console.log("hi222")
+        const thumbnailPath = filePath+getRandomGenerator(10)+'.'
+        if(elem.tagName==="IMG"){
+          await fetch(elem.src).then(r=>r.blob()).then(blob=>{
+            elem.setAttribute("src",thumbnailPath+blob.type.split("/")[1])
+            this.saveFile(blob,elem.getAttribute("src"),false,"THUMBNAIL")
+            data.append("thumbnailImg",elem.getAttribute("src"))
+          })
+        }else{
+          await fetch(elem.src).then(r=>r.blob()).then(blob=>{
+            console.log(blob)
+            elem.setAttribute("src",thumbnailPath+blob.type.split("/")[1])
+            if(elem.videoWidth>0){
+              this.saveFile(blob,elem.getAttribute("src"),false,"THUMBNAIL")
+            }else{
+              this.saveFile(blob,elem.getAttribute("src"),true,"THUMBNAIL")
+            }
+            data.append("thumbnailImg","/240"+thumbnailPath+"jpg")
+          })
+        }
+      }
+      
       for(const elem of document.querySelectorAll(".ql-prevideo")){
         if(elem.childElementCount>1) elem.removeChild(elem.lastChild)
         elem.removeAttribute("src")
@@ -131,33 +160,34 @@ class Editor extends Component {
         elem.removeAttribute("class")
         const video = elem.firstElementChild
         video.removeAttribute("class")
-        await fetch(video.src).then(r=>r.blob()).then(
-          blob=>{
-            video.setAttribute("src", filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1])
-            if(video.videoWidth>0){
-              this.saveFile(blob,video.getAttribute("src"),false)
-            }else{
-              this.saveFile(blob,video.getAttribute("src"),true)
+        
+        if(video.src.startsWith("blob")){
+          await fetch(video.src).then(r=>r.blob()).then(
+            blob=>{
+              video.setAttribute("src", filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1])
+              if(video.videoWidth>0){
+                this.saveFile(blob,video.getAttribute("src"),false)
+              }else{
+                this.saveFile(blob,video.getAttribute("src"),true)
+              }
             }
-          }
-        )
+          )
+        }
       }
       for(const elem of document.querySelectorAll(".image_preview")){
         elem.removeAttribute("class")
-        await fetch(elem.src).then(r=>{
-          const ret = r.blob()
-          return ret
-        }).then(
-          blob=>{
-            elem.setAttribute("src", filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1])
-            this.saveFile(blob,elem.getAttribute("src"),false)
-          }
-        )
+        if(elem.src.startsWith("blob")){
+          await fetch(elem.src).then(r=>r.blob()).then(
+            blob=>{
+              elem.setAttribute("src", filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1])
+              this.saveFile(blob,elem.getAttribute("src"),false)
+            }
+          )
+        }
       }
-      var content = document.querySelector(".ql-editor").innerHTML
+      content = document.querySelector(".ql-editor").innerHTML
       var real = document.querySelector(".ql-editor").innerText
       if (!isEmpty(real) || content.search("img")!==-1||content.search("video")!==-1){
-        let data = new FormData();
         data.append('title',title)
         data.append('content',content)
         data.append('thumbnail',real.slice(0,100))
@@ -171,11 +201,12 @@ class Editor extends Component {
       }
     }
 
-    saveFile = (file,path,needConvert) => {
+    saveFile = (file,path,needConvert,mediaType="BOARD") => {
       const formData = new FormData();
       formData.append('file',file);
       formData.append('path',path);
       formData.append('needConvert',needConvert)
+      formData.append("mediaType",mediaType)
       Axios.post("/file/upload",formData,{
         headers:{
           'Content-Type':'multipart/form-data',

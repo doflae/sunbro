@@ -28,6 +28,7 @@ public class FFMpegVideoConvert {
         this.ffprobe = ffprobe;
     }
 
+    //need Absolute Path
     public void extractThumbNail(String input, String ouput) throws VideoConvertException{
 
         FFmpegBuilder builder = new FFmpegBuilder()

@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 public class ResizeService {
 
     public BufferedImage resize(File inputImg, int width, int height) throws IOException {
+        System.out.println(inputImg.canRead());
         BufferedImage inputImage = ImageIO.read(inputImg);
         if(width==-1){
             width = inputImage.getWidth()*height/inputImage.getHeight();
@@ -39,7 +40,6 @@ public class ResizeService {
         if(tempMatcher.find()){
             try {
                 BufferedImage inputImage = ImageIO.read(inputImg);
-                int resize = Math.max(width, height);
                 if (width == -1) {
                     width = inputImage.getWidth() * height / inputImage.getHeight();
                 } else if (height == -1) {
@@ -52,7 +52,7 @@ public class ResizeService {
                 grapics2D.drawImage(tmp, 0, 0, null);
                 grapics2D.dispose();
 
-                String resizeImgPath = tempMatcher.group(1) + resize + "." + tempMatcher.group(2);
+                String resizeImgPath = tempMatcher.group(1) + "." + tempMatcher.group(2);
                 File f = new File(baseDir+resizeImgPath);
                 f.getParentFile().mkdirs();
                 ImageIO.write(resizedImage, tempMatcher.group(2), new File(baseDir + resizeImgPath));
