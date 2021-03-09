@@ -6,6 +6,8 @@ import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.FileUploadService;
+import com.humorpage.sunbro.service.MediaType;
+import com.humorpage.sunbro.service.ResizeService;
 import com.humorpage.sunbro.service.ResponseService;
 import com.humorpage.sunbro.utils.FFMpegVideoConvert;
 import io.swagger.annotations.ApiOperation;
@@ -30,20 +32,13 @@ public class FileUploadController {
     @Autowired
     private ResponseService responseService;
 
-    @Autowired
-    private FFMpegVideoConvert ffMpegVideoConvert;
 
-    @GetMapping(path = "/delete")
-    public CommonResult deleteImg(String src, Authentication authentication){
-        try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            fileUploadService.deleteImg(src);
-            return responseService.getSuccessResult();
-        }catch (NullPointerException e){
-            return responseService.getFailResult();
-        }
-    }
-
+    /**
+     * @param file 멀티 미디어 파일
+     * @param path 상대 경로 + 파일네임
+     * @param needConvert 비디오의 경우 코덱 변환 여부
+     * @param mediaType 멀티 미디어 파일 사용 용도
+     */
     @PostMapping(path = "/upload",
             consumes = MULTIPART_FORM_DATA_VALUE,
             produces = APPLICATION_JSON_VALUE,
@@ -51,9 +46,10 @@ public class FileUploadController {
     public CommonResult upload(MultipartFile file,
                                @RequestParam(required = false) String path,
                                @RequestParam(required = false, defaultValue = "false") boolean needConvert,
+                               @RequestParam(required = false, defaultValue = "BOARD") MediaType mediaType,
                                Authentication authentication) {
         if(authentication!=null && authentication.isAuthenticated()){
-            fileUploadService.fileUpload(file,path,needConvert);
+            fileUploadService.fileUpload(file,path,needConvert,mediaType);
             return responseService.getSuccessResult();
         }else{
             return responseService.getFailResult();

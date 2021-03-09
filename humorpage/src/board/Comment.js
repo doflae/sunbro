@@ -71,7 +71,7 @@ class Comment extends Component{
                 blob=>{
                     const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+'.'+blob.type.split("/")[1];
                     data.append('media',filePath)
-                    this.saveFile(blob,filePath,false);
+                    this.saveFile(blob,filePath);
                 }
             )
         }
@@ -130,11 +130,12 @@ class Comment extends Component{
         if(acceptFile[0]) reader.readAsDataURL(acceptFile[0]);
     }
 
-    saveFile = (file,path,needConvert) => {
+    saveFile = (file,path) => {
         const formData = new FormData();
         formData.append('file',file);
         formData.append('path',path);
-        formData.append('needConvert',needConvert)
+        formData.append('needConvert',false)
+		formData.append('mediaType',"COMMENT")
         Axios.post("/file/upload",formData,{
           headers:{
             'Content-Type':'multipart/form-data',

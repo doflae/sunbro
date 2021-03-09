@@ -29,8 +29,8 @@ public class FileUploadService {
     private final FFMpegVideoConvert ffMpegVideoConvert;
     private final TemporaryFileStore temporaryFileStore;
 
-    private final SimpleDateFormat format = new SimpleDateFormat("/yyyy/MM/dd/");
-    private final String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
+    @Autowired
+    ResizeService resizeService;
 
     @Autowired
     public FileUploadService(TemporaryFileStore temporaryFileStore, FFMpegVideoConvert ffMpegVideoConvert){
@@ -39,30 +39,14 @@ public class FileUploadService {
     }
 
 
-    public String createTemporaryDir() throws IOException{
-        Date date = new Date();
-        String tempDir = "temp"+RandomGenerator.RandomnameGenerate(8);
-        while(!temporaryFileStore.create(new File(baseDir+format.format(date)+tempDir))){
-            tempDir = "temp"+RandomGenerator.RandomnameGenerate(8);
-        }
-        return tempDir;
-    }
-
-    public void deleteImg(String path){
-        try{
-            path = path.equals("") ? null: baseDir+path;
-            temporaryFileStore.delete(Path.of(path));
-        }catch (IOException ignored){
-
-        }
-    }
-
-    public void fileUpload(MultipartFile file, String path, boolean needConvert){
+    @Async("fileUploadExecutor")
+    public void fileUpload(MultipartFile file, String path, boolean needConvert, MediaType mediaType){
         try{
             byte[] data = file.getBytes();
-            File dir = new File(baseDir+path);
+            String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
+            File dir = new File(baseDir +path);
             dir.getParentFile().mkdirs();
-            Path tempPath = Paths.get(baseDir+path);
+            Path tempPath = Paths.get(baseDir +path);
             if(needConvert){
                 Path tempFile = temporaryFileStore.store(data);
                 if(ffMpegVideoConvert.checkVideoCodec(tempFile.toString())){
@@ -76,8 +60,17 @@ public class FileUploadService {
                 }
                 temporaryFileStore.delete(tempFile);
             }else{
-                System.out.println(tempPath);
                 Files.write(tempPath, data);
+                File f = new File(tempPath.toString());
+                switch (mediaType){
+                    case COMMENT -> {
+                        resizeService.resizeAndSave(f,"/120x120"+path,120,120);
+                    }
+                    case PROFILE -> {
+                        resizeService.resizeAndSave(f,"/120x120"+path,120,120);
+                        resizeService.resizeAndSave(f,"/72x72"+path,72,72);
+                    }
+                }
             }
         }catch (IOException e){
             e.printStackTrace();

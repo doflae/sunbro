@@ -14,6 +14,10 @@ import java.util.regex.Pattern;
 
 @Service
 public class ThumbNailService {
+
+    @Autowired
+    ResizeService resizeService;
+
     private final FFMpegVideoConvert ffMpegVideoConvert;
 
     private final Pattern thumbNailPattern = Pattern.compile("<(img|video)[^>]*src=[\"']?([^>\"']+)[\"']?[^>]*>");
@@ -33,7 +37,7 @@ public class ThumbNailService {
             if(matcher.group(1).equals("img")){
                 String newImagePath = tempMatcher.group(1)+"thumbnail."+tempMatcher.group(2);
                 File f = new File(baseDir+src);
-                BufferedImage resizedImage = resize(f,-1,240);
+                BufferedImage resizedImage = resizeService.resize(f,-1,240);
                 ImageIO.write(resizedImage,tempMatcher.group(2),new File(baseDir+newImagePath));
                 return newImagePath;
             }else{
@@ -51,21 +55,5 @@ public class ThumbNailService {
         return null;
     }
 
-    private BufferedImage resize(File inputimg, int width, int height) throws IOException{
-        BufferedImage inputImage = ImageIO.read(inputimg);
-        if(width==-1){
-            width = inputImage.getWidth()*height/inputImage.getHeight();
-        }else if(height==-1){
-            height = inputImage.getHeight()*width/inputImage.getWidth();
-        }
-        Image tmp = inputImage.getScaledInstance(width,height,Image.SCALE_SMOOTH);
-        BufferedImage outputImage = new BufferedImage(width, height, inputImage.getType());
-
-        Graphics2D grapics2D = outputImage.createGraphics();
-        grapics2D.drawImage(tmp, 0, 0,null);
-        grapics2D.dispose();
-
-        return outputImage;
-    }
 
 }

@@ -13,6 +13,7 @@ function UpdateProfile({userDetail,...props}){
     const [gender, setGender] = useState(userDetail.gender)
     const [age, setAge] = useState(userDetail.age)
     const [canSubmit, setCanSubmit] = useState(null)
+    const [mediaFormat, setMediaFormat] = useState(null)
     const prevName = userDetail.name
     let history = useHistory();
     const dropzoneRef = createRef()
@@ -31,6 +32,7 @@ function UpdateProfile({userDetail,...props}){
     }
     const onDrop = async(acceptFile) =>{
         var reader = new FileReader();
+        setMediaFormat(acceptFile[0].type.split("/")[1]);
         reader.onload = (e) =>{
             const dataURL = e.target.result;
             var byteString = atob(dataURL.split(',')[1]);
@@ -49,11 +51,12 @@ function UpdateProfile({userDetail,...props}){
         if(acceptFile[0]) reader.readAsDataURL(acceptFile[0]);
        
     }
-    const saveFile = (file,path,needConvert) =>{
+    const saveFile = (file,path) =>{
         const formData = new FormData();
         formData.append('file',file);
         formData.append('path',path);
-        formData.append('needConvert',needConvert)
+        formData.append('needConvert',false)
+        formData.append('mediaType',"PROFILE")
         Axios.post("/file/upload",formData,{
           headers:{
             'Content-Type':'multipart/form-data',
@@ -69,13 +72,15 @@ function UpdateProfile({userDetail,...props}){
         if(prevName===name||(canSubmit!==null&&canSubmit.startsWith("사"))){
             let form = new FormData();
             if(userImg.startsWith("blob")){
-                await fetch(userImg).then(r=>r.blob()).then(
+                const filePath = "/profileImg/"+userDetail.uid+getRandomGenerator(5)+'.'+mediaFormat;
+                form.append('userImg',filePath)
+                fetch(userImg).then(r=>r.blob()).then(
                     blob=>{
-                        const filePath = "/profileImg/"+userDetail.uid+getRandomGenerator(5)+'.'+blob.type.split("/")[1];
-                        form.append('userImg',filePath)
-                        saveFile(blob,filePath,false);
+                        saveFile(blob,filePath);
                     }
                 )
+            }else{
+                form.append('userImg',userImg);
             }
             form.append('name',name)
             form.append('gender',gender)
@@ -95,11 +100,17 @@ function UpdateProfile({userDetail,...props}){
             setCanSubmit("중복 확인이 필요합니다.");
         }
     }
+    const imageDelete = ()=>(e) =>{
+        setUserImg("");
+    }
     return <div>
         <div className="myprofile">
-            <div className="myprofile_imgzone" onClick={imageHandler()}>
-                <img className="myprofile_img" src={userImg} alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>
-                <Pencil width="20" height="20" className="myprofile_pencil"/>
+            <div className="myprofile_imgzone">
+                <button className="profileimg_delete" onClick={imageDelete()}></button>
+                <div onClick={imageHandler()}>
+                    <img className="myprofile_img" src={userImg} alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>
+                    <Pencil width="20" height="20" className="myprofile_pencil"/>
+                </div>
             </div>
         </div>
         <input type="text" value={name} onChange={e=>{e.preventDefault();setName(e.target.value)}}></input><button onClick={checkDuplicate()}>중복확인</button><br/>

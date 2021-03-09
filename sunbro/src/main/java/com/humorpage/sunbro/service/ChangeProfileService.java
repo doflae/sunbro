@@ -26,13 +26,15 @@ public class ChangeProfileService {
         before.setGender(newUserInfo.getGender());
         before.setName(newUserInfo.getName());
         String beforeProfileImage = before.getUserImg();
-        File f = new File(baseDir+beforeProfileImage);
-        try{
-            temporaryFileStore.delete(f.toPath());
-        }catch (IOException | InvalidPathException ignored){
+        if(!beforeProfileImage.equals(newUserInfo.getUserImg())){
+            File f = new File(baseDir+beforeProfileImage);
+            try{
+                temporaryFileStore.delete(f.toPath());
+            }catch (IOException | InvalidPathException ignored){
 
+            }
+            before.setUserImg(newUserInfo.getUserImg());
         }
-        before.setUserImg(newUserInfo.getUserImg());
         userSimpleRepository.save(before);
     }
 }
