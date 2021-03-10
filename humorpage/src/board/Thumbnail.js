@@ -86,7 +86,7 @@ function Thumbnail({
         <div className="board_top">
             <div className="board_top_left">
                 <img className="author_img" src={board.author.userImg} alt="" onError={(e)=>{
-                    e.target.onerror=null;e.target.src=userDefaultImg;
+                    e.target.onError=null;e.target.src=userDefaultImg;
                 }}/>
             </div>
             <div className="board_top_center">
@@ -99,7 +99,8 @@ function Thumbnail({
         </div>
         <div className="board_main">
             <div className="board_thumbnail">
-                <img className="board_thumbnail_img" alt="" src={board.thumbnailImg}/>
+                <img className="board_thumbnail_img" alt="" srcSet={"/240"+board.thumbnailImg+" 240w"} onError={(e)=>{
+                    e.target.onError=null; e.target.srcSet=null}} src={board.thumbnailImg}/>
                 <div className="board_thumbnail_text" dangerouslySetInnerHTML={{__html:sanitizeNonNull(board.thumbnail)}}></div>
             </div>
         </div>

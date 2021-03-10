@@ -8,12 +8,17 @@ import Axios from "axios"
 import styled from "styled-components"
 import {getRandomGenerator} from "../utils/Utils"
 
-const SubmitImageBtn = styled.button`
+const SubmitImageBtnStyled = styled.button`
     width:80px;
     height:30px;
     font-size:0.8em;
     position:absolute;
 `
+
+const SubmitImageBtn = ({isChanged, onClick}) => {
+    if(isChanged) return <SubmitImageBtnStyled onClick={onClick()}>변경 완료</SubmitImageBtnStyled>
+    else return null;
+}
 
 function MyHeader({
     ...props
@@ -21,6 +26,7 @@ function MyHeader({
     const user = props.userDetail;
     const [userImg, setUserImg] = useState(user.userImg);
     const [mediaFormat, setMediaFormat] = useState(null);
+    const [isChanged, setIsChanged] = useState(false);
     const dropzoneRef = useRef()
     const profileImgRef = useRef()
     const imageHandler = () => (e) =>{
@@ -61,6 +67,7 @@ function MyHeader({
             var blob = new Blob([ab], {type: mimeString});
             setUserImg(URL.createObjectURL(blob))
             profileImgRef.current.style.margin = "10px"
+            setIsChanged(true)
         }
         if(acceptFile[0]) reader.readAsDataURL(acceptFile[0]);
        
@@ -74,9 +81,8 @@ function MyHeader({
                 formData.append('path',filePath)
                 props.request("post","/account/update/img",formData).then(res=>{
                     if(res.status===200 && res.data.success){
-                        user.userImg = filePath;
-                        setUserImg(filePath)
                         profileImgRef.current.style.margin = "";
+                        setIsChanged(false)
                     }
                 })
             })
@@ -94,7 +100,7 @@ function MyHeader({
                     <Pencil width="20" height="20" className="myprofile_pencil"/>
                 </div>
             </div>
-            {userImg!==user.userImg?<SubmitImageBtn onClick={imageSubmit()}>변경 완료</SubmitImageBtn>:null}
+            <SubmitImageBtn isChanged = {isChanged} onClick={imageSubmit}/>
         </div>
     <span className="mypage_user_detail">
         <div className="mypage_user_name">{user.name}
