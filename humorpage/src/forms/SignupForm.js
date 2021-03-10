@@ -135,7 +135,7 @@ export class SignupForm extends Component{
 		const value = target.previousElementSibling.value
         const {validationErrors,validationSuccess} = this.state
 		Axios.get(`/account/checkdup/${targetName}?${targetName}=${value}`).then(res=>{
-			if(res.data.success){
+			if(res.status===200 && res.data.success){
                 validationSuccess[targetName] = `사용 가능한 ${targetName.toUpperCase()} 입니다.`
                 validationErrors[targetName] = null
             }

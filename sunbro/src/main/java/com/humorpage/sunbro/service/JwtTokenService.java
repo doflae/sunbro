@@ -75,8 +75,8 @@ public class JwtTokenService {
     }
 
     public Boolean validateToken(String token, UserSimple userSimple) {
-        final Long usernum = getUsernum(token);
-
-        return (usernum.equals(userSimple.getUsernum()) && !isTokenExpired(token));
+        Long tokenNum = getUsernum(token);
+        Long userNum = userSimple.getUsernum();
+        return (userNum!=null && userNum.equals(tokenNum) && !isTokenExpired(token));
     }
 }

@@ -32,11 +32,14 @@ public class User implements UserDetails {
     @JsonIgnore
     @Column(name = "usernum")
     private Long usernum;
+
     @Column(nullable = false, unique = true, length = 30)
     private String uid;
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false, length = 100)
     private String password;
+
     @Column(nullable = false, length = 30)
     private String name;
     private boolean enabled;

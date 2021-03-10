@@ -33,6 +33,7 @@ public class FileUploadController {
     private ResponseService responseService;
 
 
+
     /**
      * @param file 멀티 미디어 파일
      * @param path 상대 경로 + 파일네임
@@ -55,4 +56,5 @@ public class FileUploadController {
             return responseService.getFailResult();
         }
     }
+
 }

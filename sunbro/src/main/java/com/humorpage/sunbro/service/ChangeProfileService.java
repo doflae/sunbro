@@ -21,11 +21,24 @@ public class ChangeProfileService {
 
     private final String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
 
-    public void ChangeProfile(UserSimple before, UserSimple newUserInfo){
-        before.setAge(newUserInfo.getAge());
-        before.setGender(newUserInfo.getGender());
-        before.setName(newUserInfo.getName());
-        String beforeProfileImage = before.getUserImg();
+    public void ChangeImage(UserSimple saveTarget, String path){
+        String beforeProfileImage = saveTarget.getUserImg();
+        if(!beforeProfileImage.equals(path)){
+            File f = new File(baseDir+beforeProfileImage);
+            try{
+                temporaryFileStore.delete(f.toPath());
+            }catch (IOException | InvalidPathException ignored){
+
+            }
+            saveTarget.setUserImg(path);
+            userSimpleRepository.save(saveTarget);
+        }
+    }
+    public void ChangeProfile(UserSimple saveTarget, UserSimple newUserInfo){
+        saveTarget.setAge(newUserInfo.getAge());
+        saveTarget.setGender(newUserInfo.getGender());
+        saveTarget.setName(newUserInfo.getName());
+        String beforeProfileImage = saveTarget.getUserImg();
         if(!beforeProfileImage.equals(newUserInfo.getUserImg())){
             File f = new File(baseDir+beforeProfileImage);
             try{
@@ -33,8 +46,8 @@ public class ChangeProfileService {
             }catch (IOException | InvalidPathException ignored){
 
             }
-            before.setUserImg(newUserInfo.getUserImg());
+            saveTarget.setUserImg(newUserInfo.getUserImg());
         }
-        userSimpleRepository.save(before);
+        userSimpleRepository.save(saveTarget);
     }
 }

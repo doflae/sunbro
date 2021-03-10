@@ -7,6 +7,7 @@ import GoogleLogin from "react-google-login";
 import NaverLogin from "react-naver-login";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 import styled from 'styled-components'
+import SignupPlatForm from "../forms/SignupPlatForm";
 
 const GoogleBtn = styled.div`
 	padding: 0;
@@ -96,6 +97,8 @@ export const Login = withRouter(authWrapper(class extends Component{
 		this.state={
 			errorMessage: null,
 			data:null,
+			platform:false,
+			userDetail:null
 		}
 		this.defaultAttrs = {required:true};
 		this.formModel = [
@@ -120,61 +123,95 @@ export const Login = withRouter(authWrapper(class extends Component{
 		})
 	}
 
-	responseKaKao = (res) =>{
+	responseKaKao = (user) =>{
 		const formData = new FormData();
-		formData.append('uid',"KaKao"+res.profile.id)
-		formData.append('name',"KPerson"+res.profile.id)
-		const account = res.profile.kakao_account
-		if(account.has_gender===true){
-			if(account.gender==="male") formData.append("gender","Male")
-			else formData.append("gender","Female")
-		}
-		if(account.has_age_range===true){
-			formData.append("age",account.age_range.split("~")[0])
-		}
+		formData.append('uid',"K"+user.profile.id)
+		
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
 				this.props.history.push("/boards")
+			}else{
+				const userDetail = new Set();
+				userDetail.uid = "K"+user.profile.id
+				userDetail.name = "K"+user.profile.id
+				const account = user.profile.kakao_account
+				if(account.has_gender===true){
+					userDetail.gender = account.gender==="male"?"Male":"Female";
+				}
+				if(account.has_age_range===true){
+					userDetail.age = account.age_range.split("~")[0]
+				}
+				this.setState({
+					platform:true,
+					userDetail:userDetail,
+				})
 			}
 		})
 	}
-	responseGoogle = (res) =>{
+	responseGoogle = (user) =>{
 		const formData = new FormData();
-		const id = res.profileObj.googleId
-		formData.append('uid',"Google"+id)
-		formData.append('name',"GPerson"+id)
-		formData.append("age",0)
-		formData.append("gender","Male")
+		const id = user.profileObj.googleId
+		formData.append('uid',"G"+id)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
 				this.props.history.push("/boards")
-			}
-		})
-	}
-
-	responseNaver = (res) =>{
-		const formData = new FormData();
-		formData.append('uid',"Naver"+res.id)
-		formData.append('name',"NPerson"+res.id)
-		const age = res.age!==undefined?res.age.split("-")[0]:"0"
-		formData.append("age",age)
-		if(res.gender!==undefined){
-			const gender = res.gender==="M"?"Male":"Female";
-			formData.append("gender",gender)
-		}
-		this.props.request("post","/account/anologin",formData).then(res=>{
-			if(res.data.success){
-				this.props.history.push("/boards")
+			}else{
+				const userDetail = new Set();
+				userDetail.uid = "G"+id
+				userDetail.name = "G"+id
+				this.setState({
+					platform:true,
+					userDetail:userDetail,
+				})
 			}
 		})
 	}
 
-	responseFacebook = (res) =>{
-		console.log(res)
+	responseNaver = (user) =>{
+		const formData = new FormData();
+		formData.append('uid',"N"+user.id)
+		this.props.request("post","/account/anologin",formData).then(res=>{
+			if(res.data.success){
+				this.props.history.push("/boards")
+			}else{
+				const userDetail = new Set();
+				userDetail.uid = "N"+user.id
+				userDetail.name = "N"+user.id
+				userDetail.age = user.age!==undefined?user.age.split("-")[0]:"0"
+				if(user.gender!==undefined){
+					const gender = user.gender==="M"?"Male":"Female";
+					userDetail.gender = gender
+				}
+				this.setState({
+					platform:true,
+					userDetail:userDetail,
+				})
+			}
+		})
+		
 	}
 
-	render = () =>
-		<div className="row">
+	responseFacebook = (user) =>{
+		const formData = new FormData();
+		formData.append('uid',"F"+user.id);
+		this.props.request("post","/account/anologin",formData).then(res=>{
+			if(res.data.success){
+				this.props.history.push("/boards")
+			}else{
+				const userDetail = new Set();
+				userDetail.uid = "F"+user.id;
+				userDetail.name = "F"+user.id;
+				this.setState({
+					platform:true,
+					userDetail:userDetail,
+				})
+			}
+		})
+	}
+
+	render = () => {
+		if(this.state.platform) return <SignupPlatForm userDetail={this.state.userDetail}/>
+		return <div className="row">
 			<div className="col m-2">
 				<LoginForm formModel={this.formModel}
 				defaultAttrs={this.defaultAttrs}
@@ -219,4 +256,5 @@ export const Login = withRouter(authWrapper(class extends Component{
 				callback={this.responseFacebook}
 			/>
 		</div>
+	}
 }))

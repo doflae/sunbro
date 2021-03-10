@@ -36,7 +36,7 @@ public class BoardThumbnail implements Serializable {
     @Column(name="content")
     private String content;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER,optional = false)
     @JoinColumn(name = "author_num")
     private UserSimple author;
 

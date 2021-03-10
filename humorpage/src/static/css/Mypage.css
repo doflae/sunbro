@@ -1,9 +1,9 @@
 .mypage_user_img{
-    max-width: 100px;
-    max-height: 100px;
-    border-radius: 50px;
+    max-width: 120px;
+    max-height: 120px;
+    border-radius: 60px;
     border : 1px solid #e9e1ee;
-    margin:30px;
+    margin: 10px;
 }
 .mypage_header{
     position: relative;
@@ -70,6 +70,10 @@
 }
 .MyBoard_table{
     width: 100%;
+}
+.myprofile{
+    display: flex;
+    position: relative;
 }
 .myprofile_img{
     width: 150px;

@@ -114,6 +114,19 @@ public class AccountController {
         }
     }
 
+    @ApiOperation(value = "프로필 이미지 수정")
+    @PostMapping(value="/update/img")
+    CommonResult updateImg(String path, Authentication authentication){
+        UserSimple userSimple;
+        try{
+            userSimple = (UserSimple) authentication.getPrincipal();
+            changeProfileService.ChangeImage(userSimple,path);
+            return responseService.getSuccessResult();
+        }catch (Exception e){
+            return responseService.getFailResult();
+        }
+    }
+
     @ApiOperation(value = "회원 정보 수정")
     @PostMapping(value="/update")
     CommonResult update(@Valid @ModelAttribute UserSimple user, Authentication authentication){
@@ -127,6 +140,8 @@ public class AccountController {
         return responseService.getSuccessResult();
     }
 
+
+
     @ApiOperation(value = "타 플랫폼 로그인")
     @PostMapping(value = "/anologin")
     CommonResult anologin(@ApiParam(value = "user", required = true) @ModelAttribute UserSimple user,
@@ -136,19 +151,15 @@ public class AccountController {
         UserSimple userSimple=null;
         try{
             userSimple = userSimpleRepository.findByUid(user.getUid()).orElseThrow(RuntimeException::new);
-            /*
+            /**
             1. {platform}+uid값으로 조회
             2. 조회 성공 ? => token생성
             */
         }catch (RuntimeException e){
-            /*
-            조회 실패
-            유저 생성
-            */
-            user.setRole("USER");
-            user.setPassword(passwordEncoder.encode(RandomGenerator.RandomnameGenerate(23)));
-            userSimpleRepository.save(user);
-            userSimple = user;
+            /**
+             * 조회 실패 => 플랫폼 회원가입 페이지로 이동
+             */
+            return responseService.getFailResult();
         }
         if(userSimple!=null) {
             final String token = jwtTokenService.generateToken(userSimple);
@@ -221,18 +232,27 @@ public class AccountController {
     }
 
 
-    @ApiOperation(value = "가입", notes = "회원가입을 한다.")
+    /**
+     * 회원가입
+     * @param user 유저 폼, Valid 검사는 프론트에서 진행
+     * @param isPlatForm 타 플랫폼 통해 가입한 경우 비밀번호는 무작위 부여
+     * @return 성공 여부,
+     * 실패하는 경우가 있나? column 조건에 안맞는 경우?
+     */
     @PostMapping(value = "/signup")
-    public CommonResult signup(@Valid @ModelAttribute User user) {
+    CommonResult signup(@ModelAttribute User user,
+                        @RequestParam(required = false, defaultValue = "false") boolean isPlatForm) {
         user.setRole("USER");
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if(!isPlatForm) user.setPassword(passwordEncoder.encode(user.getPassword()));
+        else user.setPassword(passwordEncoder.encode(RandomGenerator.RandomnameGenerate(26)));
         userRepository.save(user);
         return responseService.getSuccessResult();
     }
 
+
     @ApiOperation(value = "회원 탈퇴", notes = "authentication의 정보, 입력받은 id, pw 대조하여 확인 후 유저 삭제")
     @PostMapping(value = "/withdrawal")
-    public CommonResult withdrawal(@ApiParam(value = "id",required = true)@RequestParam String uid,
+    CommonResult withdrawal(@ApiParam(value = "id",required = true)@RequestParam String uid,
                                @ApiParam(value = "pw", required = true)@RequestParam String password,
                                Authentication authentication, HttpServletResponse res, HttpServletRequest req) {
         try{

@@ -66,13 +66,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             if(usernum!=null){
                 UserSimple userSimple = userService.loadUserSimpleByUsernum(usernum);
-                if(httpServletResponse.getHeader("user")==null){
-                    httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
-                }
-                if(jwtTokenService.validateToken(jwt,userSimple)){
-                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple,null,userSimple.getAuthorities());
-                    usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
-                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                if(userSimple!=null){
+                    if(httpServletResponse.getHeader("user")==null){
+                        httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
+                    }
+                    if(jwtTokenService.validateToken(jwt,userSimple)) {
+                        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple, null, userSimple.getAuthorities());
+                        usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+                        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                    }
                 }
             }
         }catch (ExpiredJwtException e){

@@ -4,7 +4,6 @@ import {authWrapper} from "../auth/AuthWrapper"
 import MyHeader from "./MyHeader"
 import MyPageMain from "./MyPageMain"
 import MyLikePageMain from "./MyLikePageMain"
-import UpdateProfile from "./UpdateProfile"
 
 class MyPage extends Component{
     constructor(props){
@@ -15,7 +14,6 @@ class MyPage extends Component{
             pagesize:10,
             loading:true
         }
-        this.gotoupdate = this.gotoupdate.bind(this)
     }
     componentDidMount(){
         this.props.request("get","/user/log").then(res=>{
@@ -29,20 +27,11 @@ class MyPage extends Component{
             }
         })
     }
-    gotoupdate = () => (e)=> {
-        e.preventDefault();
-        this.setState({
-            option:2,
-        })
-    }
     //내가 쓴 글
     //내가 쓴 댓글
     //프로필 수정
     render(){
         if(this.state.loading) return <span>Loading...</span>
-        if(this.state.option===2){
-            return <UpdateProfile userDetail={this.state.userDetail}/>
-        }
         return <span className="mypage">
                 <MyHeader gotoupdate={this.gotoupdate}
                  userDetail = {this.state.userDetail}/>
