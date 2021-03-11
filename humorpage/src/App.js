@@ -9,7 +9,7 @@ import './static/css/Mypage.css'
 import {Route, Switch,withRouter} from "react-router-dom"
 import BoardConnector from "./board/BoardConnector"
 import Footer from "./footer/Footer"
-import Editor from "./upload/Editor"
+import Upload from "./upload/Upload"
 import Header from "./header/Header"
 import {Login} from "./auth/Login"
 import {Provider} from "react-redux"
@@ -26,7 +26,7 @@ class App extends Component{
             <Switch>
               <React.Fragment>
                 <Route exact path="/" component={BoardConnector}/>
-                <Route path="/upload" component={Editor}/>
+                <Route path="/upload" component={Upload}/>
                 <Route path="/login" component={Login}/>
                 <Route path="/boards" component={BoardConnector}/>
                 <Route path="/mypage" component={MyPage}/>

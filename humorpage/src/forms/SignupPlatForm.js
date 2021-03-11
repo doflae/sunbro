@@ -4,7 +4,7 @@ import userDefaultImg from "../static/img/user_128x.png";
 import Dropzone from "react-dropzone"
 import {authWrapper} from "../auth/AuthWrapper";
 import {ReactComponent as Pencil} from '../static/svg/pencil.svg'
-import {AgeSelector, getRandomGenerator} from "../utils/Utils"
+import {AgeSelector, getRandomGenerator, dataUrltoBlob, ResizeImage} from "../utils/Utils"
 import Axios from "axios";
 import { ValidationSuccess } from "../forms/ValidationSuccess";
 import styled from "styled-components"
@@ -19,6 +19,26 @@ const SingupDiv = styled.div`
     padding:20px
 `
 
+const MyProfileStyledImage = styled.img`
+    width: 150px;
+    height: 150px;
+    border: 1px solid #dddddd;
+    border-radius: 75px;
+`
+
+export const MyProfileResizedImage = ({srcSet, src, defaultImg})=>{
+    if(defaultImg===null){
+        return <MyProfileStyledImage alt="" 
+        srcSet={srcSet}
+        src={src} 
+        onError={e=>{e.target.onError=null;e.target.style.display="none"}}/>
+    }
+    return <MyProfileStyledImage alt="" 
+    srcSet={srcSet}
+    src={src} 
+    onError={e=>{e.target.onError=null;e.target.src=defaultImg}}/>
+}
+
 
 function SignupPlatForm({userDetail,...props}){
     const [userImg,setUserImg] = useState(userDetail.userImg==null?"":userDetail.userImg)
@@ -27,9 +47,11 @@ function SignupPlatForm({userDetail,...props}){
     const [age, setAge] = useState(userDetail.age==null?0:userDetail.age)
     const [canSubmit, setCanSubmit] = useState(null)
     const [mediaFormat, setMediaFormat] = useState(null)
+    const [userImgSet, setUserImgSet] = useState(null)
     const prevName = userDetail.name
     let history = useHistory();
     const dropzoneRef = createRef()
+    let CheckedName = null;
 
     const imageHandler = () => (e) =>{
         e.preventDefault();
@@ -38,31 +60,31 @@ function SignupPlatForm({userDetail,...props}){
     const checkDuplicate = () => (e) => {
         let target = e.target
         const value = target.previousElementSibling.value
-        Axios.get(`/account/checkdup/name?name=${value}`).then(res=>{
-            if(res.data.success) setCanSubmit("사용 가능한 NAME입니다.");
-            else setCanSubmit("중복된 NAME 입니다.")
-        })
+        if(value!==CheckedName){
+            Axios.get(`/account/checkdup/name?name=${value}`).then(res=>{
+                if(res.status===200){
+                    return res.data
+                }
+            }).then(res=>{
+                CheckedName = value
+                if(res.success) setCanSubmit("사용 가능한 NAME입니다.");
+                else setCanSubmit("중복된 NAME 입니다.")
+            })
+        }
     }
-    const onDrop = async(acceptFile) =>{
+    const onDrop = async (acceptFile) =>{
         var reader = new FileReader();
-        setMediaFormat(acceptFile[0].type.split("/")[1]);
         reader.onload = (e) =>{
             const dataURL = e.target.result;
-            var byteString = atob(dataURL.split(',')[1]);
-
-            var mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0]
-
-            var ab = new ArrayBuffer(byteString.length);
-            var ia = new Uint8Array(ab);
-            for (var i = 0; i < byteString.length; i++) {
-              ia[i] = byteString.charCodeAt(i);
-            }
-
-            var blob = new Blob([ab], {type: mimeString});
-            setUserImg(URL.createObjectURL(blob))
+            setUserImg(URL.createObjectURL(dataUrltoBlob(dataURL)))
         }
-        if(acceptFile[0]) reader.readAsDataURL(acceptFile[0]);
-       
+        if(acceptFile[0]) {
+            setMediaFormat(acceptFile[0].type.split("/")[1]);
+            ResizeImage(acceptFile[0],240).then(resizedImage=>{
+                setUserImgSet(URL.createObjectURL(resizedImage)+" 240w,");
+            })
+            reader.readAsDataURL(acceptFile[0]);
+        }
     }
     const saveFile = (file,path) =>{
         const formData = new FormData();
@@ -144,7 +166,7 @@ function SignupPlatForm({userDetail,...props}){
                 <div className="myprofile_imgzone">
                     <button className="profileimg_delete" onClick={imageDelete()}></button>
                     <div onClick={imageHandler()}>
-                        <img className="myprofile_img" src={userImg} alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>
+                        <MyProfileResizedImage src={userImg} srcSet={userImgSet} defaultImg = {userDefaultImg}/>
                         <Pencil width="20" height="20" className="myprofile_pencil"/>
                     </div>
                 </div>
@@ -182,5 +204,8 @@ function SignupPlatForm({userDetail,...props}){
         </SingupDiv>
     </React.Fragment>
 }
+
+
+
 
 export default authWrapper(SignupPlatForm);

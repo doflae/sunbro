@@ -1,5 +1,5 @@
 import ReactQuill, {Quill} from "react-quill"
-import React,{Component} from "react"
+import React,{Component,createRef} from "react"
 import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
@@ -78,18 +78,20 @@ CustomVideo.className = "ql-prevideo";
 CustomVideo.tagName = "DIV";
 
 Quill.register('formats/myvideo', CustomVideo,false);
-class Editor extends Component {
+class Upload extends Component {
     constructor(props) {
       super(props)
       this.state = {
         contents: __ISMSIE__ ? "<p>&nbsp;</p>" : "",
         open:"image/*",
-        titleErr:null
+        titleErr:null,
+        contentErr:null,
       };
     }
     quillRef = null;
     dropzone = null;
     tempDir = getRandomGenerator(10);
+    titleRef = createRef();
 
 
     componentDidMount(){
@@ -114,24 +116,19 @@ class Editor extends Component {
     //blob to file list, name-> src 정해서
     submit = () => async (e) =>{
       e.preventDefault();
-      var title = document.querySelector(".editor_title").value
+      var title = this.titleRef.current.value
       if(isEmpty(title)){
         this.setState({
-          titleErr:"제목을 작성해주세요."
+          titleErr:["제목을 작성해주세요."]
         })
         return
-      }else{
-        this.setState({
-          titleErr:null,
-        })
       }
       var content = document.querySelector(".ql-editor").innerHTML
       const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+"/"
       // path = /240/path.jpg
       let data = new FormData();
       const elem = document.querySelector("#ql")
-      if(elem.length!==null){
-        console.log("hi222")
+      if(elem!==null){
         const thumbnailPath = filePath+getRandomGenerator(10)+'.'
         if(elem.tagName==="IMG"){
           await fetch(elem.src).then(r=>r.blob()).then(blob=>{
@@ -197,6 +194,10 @@ class Editor extends Component {
           }else{
             console.log(res)
           }
+        })
+      }else{
+        this.setState({
+          contentErr:["내용을 입력해주세요."],
         })
       }
     }
@@ -325,21 +326,26 @@ class Editor extends Component {
         _contents = contents.replace(/<p><br><\/p>/gi, "<p>&nbsp;</p>");
       }
     }
-    this.setState({ contents: _contents || contents });
+    this.setState({ contents: _contents || contents,contentErr:null, });
   };
-
-  test = ()=>(e)=>{
-    const quill = this.quillRef.getEditor();
-    console.log(quill.getSelection());
+  
+  onChangeTitle = (title) =>{
+    if(isEmpty(title)){
+      this.setState({
+        titleErr:["제목을 작성해주세요."],
+      })
+    }else{
+      this.setState({
+        titleErr:null,
+      })
+    }
   }
   
     render() {
-      
       return (
         <div className="main-panel">
-          <button onClick={this.test()}>test</button>
           <div className="editor_navbar">
-            <input type="text" className="editor_title"></input>
+            <input type="text" className="editor_title" ref={this.titleRef} onChange={e=>{e.preventDefault(); this.onChangeTitle(e.target.value)}}></input>
             <ValidationError errors={this.state.titleErr}/>
           </div>
           <div className="main-content">
@@ -351,6 +357,7 @@ class Editor extends Component {
             modules={this.modules}
             formats={this.formats}
           />
+          <ValidationError errors = {this.state.contentErr}/>
           <Dropzone
             ref = {(el)=>(this.dropzone = el)}
             accept = {this.state.open}
@@ -373,4 +380,4 @@ class Editor extends Component {
       )
     }
   }
-export default authWrapper(withRouter(Editor));
+export default authWrapper(withRouter(Upload));

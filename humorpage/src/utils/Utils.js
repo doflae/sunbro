@@ -105,3 +105,52 @@ export const getRandomGenerator = (length) =>{
     }
     return ret
 }
+
+
+export const dataUrltoBlob = (dataURL) =>{
+    var byteString = atob(dataURL.split(',')[1]);
+
+    var mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0]
+
+    var ab = new ArrayBuffer(byteString.length);
+    var ia = new Uint8Array(ab);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ab], {type: mimeString});
+}
+
+export const ResizeImage = (data, maxSize) =>{
+    const fileReader = new FileReader();
+    
+    var canvas = document.createElement("canvas");
+    var image = new Image();
+    var resize = () => {
+        var width = image.width;
+        var height = image.height;
+        if(width>height){
+            height *= maxSize / width;
+            width = maxSize;
+        }else{
+            width *= maxSize / height;
+            height = maxSize;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(image,0,0,width,height);
+        var dataUrl = canvas.toDataURL('image/jpeg');
+        return dataUrltoBlob(dataUrl);
+    }
+    return new Promise(function(ok, no){
+        if(!data.type.match(/image.*/)){
+            no(new Error("Not an Image"))
+            return;
+        }
+        fileReader.onload = (readerEvent) =>{
+            image.onload = () => ok(resize());
+            image.src = readerEvent.target.result;
+        };
+        fileReader.readAsDataURL(data);
+    })
+}

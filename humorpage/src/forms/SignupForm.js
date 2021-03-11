@@ -19,6 +19,7 @@ export class SignupForm extends Component{
 		}
 		this.formElements = {};
 		this.checkCode = this.checkCode.bind(this)
+		this.name = null;
 	}
 
 	handleSubmit = () => {
@@ -133,21 +134,24 @@ export class SignupForm extends Component{
 	checkDuplicate = (targetName) => (e)=>{
 		let target = e.target
 		const value = target.previousElementSibling.value
-        const {validationErrors,validationSuccess} = this.state
-		Axios.get(`/account/checkdup/${targetName}?${targetName}=${value}`).then(res=>{
-			if(res.status===200 && res.data.success){
-                validationSuccess[targetName] = `사용 가능한 ${targetName.toUpperCase()} 입니다.`
-                validationErrors[targetName] = null
-            }
-            else{
-                validationErrors[targetName] = [`${targetName.toUpperCase()} 중복입니다.`]
-                validationSuccess[targetName] = null
-            }
-            this.setState({
-                validationErrors:validationErrors,
-                validationSuccess:validationSuccess
-            })
-		})
+		if(value!==this.name){
+			this.name = value;
+			const {validationErrors,validationSuccess} = this.state
+			Axios.get(`/account/checkdup/${targetName}?${targetName}=${value}`).then(res=>{
+				if(res.status===200 && res.data.success){
+					validationSuccess[targetName] = `사용 가능한 ${targetName.toUpperCase()} 입니다.`
+					validationErrors[targetName] = null
+				}
+				else{
+					validationErrors[targetName] = [`${targetName.toUpperCase()} 중복입니다.`]
+					validationSuccess[targetName] = null
+				}
+				this.setState({
+					validationErrors:validationErrors,
+					validationSuccess:validationSuccess
+				})
+			})
+		}   
 	}
 
 	renderElement = (modelItem) => {
