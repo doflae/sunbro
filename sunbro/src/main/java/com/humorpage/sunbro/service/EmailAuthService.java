@@ -60,7 +60,7 @@ public class EmailAuthService {
             emailSender.send(message);
         }catch (Exception e){
             e.printStackTrace();
-            redisTokenService.setDataExpire(email,String.valueOf(true),0);//토큰삭제
+            redisTokenService.deleteData(email);
             throw e;
         }
     }

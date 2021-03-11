@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class BasicRankingService implements RankingService {
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private BoardThumbnailRepository boardThumbnailRepository;

@@ -24,6 +24,7 @@ public class JwtTokenService {
     public final static long EmailAuthValidMilisecond = 1000L * 7200; // 2시간 토큰 유효
     public final static long RefreshTokenValidMilisecond = 1000L * 172800; // 2일 유효
 
+    public final static long TempNameForDuplicateSecond = 60*5; // 10분 유효
     public final static long EmailAuthValidSecond = 7200; // 2시간 토큰 유효
     public final static long AccessTokenValidSecond = 1800;
     public final static long RefreshTokenValidSecond = 172800; // 2일 유효
