@@ -65,23 +65,23 @@ public class BoardThumbnail implements Serializable {
     @Transient
     private boolean like;
 
-    //thumbnail내용이 전부라면 false
-    //else true
+    //true->썸네일이 필요하다.
+    //false->썸네일 필요없다.
     @Column(name = "more")
     private boolean more;
 
     public String getContent() {
-        if(this.isMore()) return content;
-        return null;
+        if(this.isMore()) return null;
+        return content;
     }
 
     public String getThumbnail() {
-        if(this.isMore()) return null;
-        return thumbnail;
+        if(this.isMore()) return thumbnail;
+        return null;
     }
 
     public String getThumbnailImg() {
-        if(this.isMore()) return null;
-        return thumbnailImg;
+        if(this.isMore()) return thumbnailImg;
+        return null;
     }
 }

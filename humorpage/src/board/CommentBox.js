@@ -14,14 +14,22 @@ class CommentBox extends Component{
             commentList : [],
             last_id : null,
             keyList : new Set(),
-            comment_cnt: this.props.comment_cnt
+            comment_cnt: this.props.comment_cnt,
+            onoff:false
         };
         this.imageHandler = this.imageHandler.bind(this)
         this.imageDelete = this.imageDelete.bind(this)
         this.submitComment = this.submitComment.bind(this)
+        this.seeMore = this.seeMore.bind(this)
     }
     componentDidMount(){
-        this.getData();
+        const target = this.props.CommentBtnRef.current
+        target.onclick = () =>{
+            if(this.state.commentList.length===0){
+                this.getData();
+            }
+            this.setState({onoff:!this.state.onoff})
+        }
 	}
 	getData = () => {
         const {commentList, last_id, keyList} = this.state
@@ -156,16 +164,13 @@ class CommentBox extends Component{
     }
 
     render(){
+        if(this.state.onoff===false) return null;
         const commentList = this.state.commentList
         const commentList_cnt = commentList.length
         const comment_cnt = this.state.comment_cnt
         return <div className="comment-box">
             <Comment commentList={commentList} board_id = {this.props.board_id}/>
-            {
-                comment_cnt>commentList_cnt
-                ?<div><button onClick={this.seeMore()}>더보기</button></div>
-                : null
-            }
+            <SeeMoreBtn on={comment_cnt>commentList_cnt} seeMore = {this.seeMore}/>
             <CommentUploader imageHandler={this.imageHandler} imageDelete={this.imageDelete}
             submitComment={this.submitComment} board_id={this.props.board_id} comment_id={0}/>
         
@@ -187,4 +192,10 @@ class CommentBox extends Component{
         </div>
     }
 }
+
+const SeeMoreBtn = ({on, seeMore}) =>{
+    if(on===true) return <div><button onClick={seeMore()}>더보기</button></div>
+    else return null
+}
+
 export default authWrapper(withRouter(CommentBox));

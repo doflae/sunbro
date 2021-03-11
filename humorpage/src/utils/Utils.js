@@ -63,7 +63,7 @@ export const getDate = (datetime) =>{
 export const getTime = (datetime) =>{
     let t = parseInt((Date.now() - Date.parse(datetime))/1000)
     if(t<60){
-        return `${t}초 전`
+        return "방금 전"
     }else if(t<3600){
         return `${parseInt(t/60)}분 전`
     }else if(t<86400){
@@ -123,7 +123,6 @@ export const dataUrltoBlob = (dataURL) =>{
 
 export const ResizeImage = (data, maxSize) =>{
     const fileReader = new FileReader();
-    
     var canvas = document.createElement("canvas");
     var image = new Image();
     var resize = () => {

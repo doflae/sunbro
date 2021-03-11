@@ -30,14 +30,6 @@
 .board_top_center{
     padding-left: 1em;
 }
-.see_detail{
-    width: 100%;
-    border:0em;
-    background-color: rgb(231, 76, 60);
-    font-weight: 700;
-    color: aliceblue;
-    border-radius: 5px;
-}
 .buttons{
     display: -webkit-box;
     display: -moz-box;
@@ -47,24 +39,6 @@
     display: flex;
     justify-content: space-between;
     margin-top: 3px;
-}
-.board_btn{
-    display: flex;
-    justify-content: space-evenly;
-    width: 33%;
-    height: 100%;
-    border: 0px;
-    background-color: #e7e6e1;
-}
-.board_btn:hover{
-    background-color:#aaaaaa;
-}
-
-.like_on{
-    background-color: #f875aa;
-}
-.like_on:hover{
-    background-color: #f875aa;
 }
 .board_thumbnail{
     display: flex;

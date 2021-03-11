@@ -1,9 +1,9 @@
 import React, {Component} from "react";
 import {authWrapper} from "../auth/AuthWrapper"
-import Board from "./Board"
+import Board from "./Board";
 class BoardConnector extends Component{
-    constructor(){
-        super()
+    constructor(props){
+        super(props)
 
         this.state = {
             boardList : [],
@@ -83,7 +83,8 @@ class BoardConnector extends Component{
     }
     render(){
         const boardList = this.state.boardList;
-        return <Board boards={boardList}/>
+        if(boardList.length===0) return null;
+        return boardList.map(board => <Board board={board} key={board.id}/>)
     }
 }
 
