@@ -7,7 +7,7 @@ import GoogleLogin from "react-google-login";
 import NaverLogin from "react-naver-login";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 import styled from 'styled-components'
-import SignupPlatForm from "../forms/SignupPlatForm";
+import SignupPlatForm from "./SignupPlatForm";
 
 const GoogleBtn = styled.div`
 	padding: 0;

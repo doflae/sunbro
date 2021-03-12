@@ -2,7 +2,7 @@ import React, { useState,createRef } from "react"
 import { useHistory } from "react-router-dom"
 import userDefaultImg from "../static/img/user_128x.png";
 import Dropzone from "react-dropzone"
-import {authWrapper} from "../auth/AuthWrapper";
+import {authWrapper} from "./AuthWrapper";
 import {ReactComponent as Pencil} from '../static/svg/pencil.svg'
 import {AgeSelector, getRandomGenerator, dataUrltoBlob, ResizeImage} from "../utils/Utils"
 import Axios from "axios";
@@ -20,21 +20,24 @@ const SingupDiv = styled.div`
 `
 
 const MyProfileStyledImage = styled.img`
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     border: 1px solid #dddddd;
     border-radius: 75px;
 `
 
 export const MyProfileResizedImage = ({srcSet, src, defaultImg})=>{
+    const srcset = Object.keys(srcSet).map(key=>{
+        return `${srcSet[key]} ${key}w,`
+    }).join("\n")
     if(defaultImg===null){
         return <MyProfileStyledImage alt="" 
-        srcSet={srcSet}
+        srcSet={srcset}
         src={src} 
         onError={e=>{e.target.onError=null;e.target.style.display="none"}}/>
     }
     return <MyProfileStyledImage alt="" 
-    srcSet={srcSet}
+    srcSet={srcset}
     src={src} 
     onError={e=>{e.target.onError=null;e.target.src=defaultImg}}/>
 }
@@ -47,7 +50,7 @@ function SignupPlatForm({userDetail,...props}){
     const [age, setAge] = useState(userDetail.age==null?0:userDetail.age)
     const [canSubmit, setCanSubmit] = useState(null)
     const [mediaFormat, setMediaFormat] = useState(null)
-    const [userImgSet, setUserImgSet] = useState(null)
+    const [userImgSet, setUserImgSet] = useState({})
     const prevName = userDetail.name
     let history = useHistory();
     const dropzoneRef = createRef()
@@ -80,22 +83,42 @@ function SignupPlatForm({userDetail,...props}){
         }
         if(acceptFile[0]) {
             setMediaFormat(acceptFile[0].type.split("/")[1]);
-            ResizeImage(acceptFile[0],240).then(resizedImage=>{
-                setUserImgSet(URL.createObjectURL(resizedImage)+" 240w,");
+            await setUserImgSet({});
+            ResizeImage(acceptFile[0],120).then(resizedImage=>{
+                setUserImgSet(userImgSet=> ({...userImgSet,120:URL.createObjectURL(resizedImage)}));
+            })
+            ResizeImage(acceptFile[0],72).then(resizedImage=>{
+                setUserImgSet(userImgSet=>({...userImgSet,72:URL.createObjectURL(resizedImage)}));
             })
             reader.readAsDataURL(acceptFile[0]);
         }
     }
-    const saveFile = (file,path) =>{
-        const formData = new FormData();
-        formData.append('file',file);
-        formData.append('path',path);
-        formData.append('needConvert',false)
-        formData.append('mediaType',"PROFILE")
-        Axios.post("/file/upload",formData,{
-          headers:{
-            'Content-Type':'multipart/form-data',
-          }
+    const saveFile = (path) =>{
+        Object.keys(userImgSet).forEach(key=>{
+            fetch(userImgSet[key]).then(r=>r.blob()).then(blob=>{
+                const formData = new FormData();
+                formData.append('file',blob);
+                formData.append('path',`/${key}`+path);
+                formData.append('needConvert',false)
+                formData.append('mediaType',"PROFILE")
+                Axios.post("/file/upload",formData,{
+                  headers:{
+                    'Content-Type':'multipart/form-data',
+                  }
+                })
+            })
+        })
+        fetch(userImg).then(r=>r.blob()).then(blob=>{
+            const formData = new FormData();
+            formData.append('file',blob);
+            formData.append('path',path);
+            formData.append('needConvert',false)
+            formData.append('mediaType',"PROFILE")
+            Axios.post("/file/upload",formData,{
+              headers:{
+                'Content-Type':'multipart/form-data',
+              }
+            })
         })
     }
     const genderHandler = () => (e)=>{
@@ -114,24 +137,20 @@ function SignupPlatForm({userDetail,...props}){
             if(userImg.startsWith("blob")){
                 const filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
                 form.append('userImg',filePath)
-                fetch(userImg).then(r=>r.blob()).then(
-                    blob=>{
-                        Axios.post("/account/signup",form).then(
-                            res=>{
+                Axios.post("/account/signup",form).then(
+                    res=>{
+                        if(res.data.success){
+                            const formData = new FormData();
+                            formData.append("uid",userDetail.uid);
+                            props.request("post","/account/anologin",formData).then(res=>{
                                 if(res.data.success){
-                                    const formData = new FormData();
-                                    formData.append("uid",userDetail.uid);
-                                    props.request("post","/account/anologin",formData).then(res=>{
-                                        if(res.data.success){
-                                            saveFile(blob,filePath);
-                                            history.push("/boards")
-                                        }
-                                    })
-                                }else{
-                                    console.log(res)
+                                    saveFile(filePath)
+                                    history.push("/boards")
                                 }
-                            }
-                        )
+                            })
+                        }else{
+                            console.log(res)
+                        }
                     }
                 )
             }else{
@@ -164,7 +183,7 @@ function SignupPlatForm({userDetail,...props}){
         <SingupDiv>
             <div className="myprofile">
                 <div className="myprofile_imgzone">
-                    <button className="profileimg_delete" onClick={imageDelete()}></button>
+                    <ImageDeleteBtnStyled onClick={imageDelete()}></ImageDeleteBtnStyled>
                     <div onClick={imageHandler()}>
                         <MyProfileResizedImage src={userImg} srcSet={userImgSet} defaultImg = {userDefaultImg}/>
                         <Pencil width="20" height="20" className="myprofile_pencil"/>
@@ -207,5 +226,33 @@ function SignupPlatForm({userDetail,...props}){
 
 
 
+const ImageDeleteBtnStyled = styled.button`
+    position:absolute;
+    top:-5px;
+    right:-5px;
+    width: 19px;
+    height: 19px;
+    border-radius: 10px;
+    border: 0px;
+    opacity: 0.3;
+    &:hover{
+        opacity:1;
+    }
+    &::before, &::after{
+        position:absolute;
+        left: 8px;
+        bottom: 0px;
+        content: ' ';
+        height: 19px;
+        width: 2px;
+        background-color: #333;
+    }
+    &::before{
+	    transform: rotate(45deg);
+    }
+    &::after{
+        transform: rotate(-45deg);
+    }
+`
 
 export default authWrapper(SignupPlatForm);

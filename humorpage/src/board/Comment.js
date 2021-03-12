@@ -16,6 +16,7 @@ import CommentUploader from "./CommentUploader"
 
 const Comment = ({...props}) =>{
 	const c = props.comment
+	console.log(c)
 	const [keyList, setKeyList] = useState(new Set());
 	const [recommentList,setRecommentList] = useState([]);
 	const [recommentLastId,setRecommentLastId] = useState(0);
@@ -108,7 +109,10 @@ const Comment = ({...props}) =>{
 								onOff={recommentOnId===c.id}/>
 						</div>
 					</div>
-					<CommentContext content={c.content} media={c.media}/>
+					<CommentContext 
+						content={c.content} 
+						media={c.media}
+						blob={c.blob}/>
 					<ConnectorBtn onClick={getRecomment}
 						cnt={c.children_cnt}/>
 				<RecommentConnector id={c.id} 
@@ -176,9 +180,22 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 	</button>
 }
 
-export const CommentContext = ({content,media}) =>{
+export const CommentContext = ({content,media,blob}) =>{
+	console.log(blob)
+	let srcset =null;
+	let src = null;
+	if(blob!=null){
+		srcset = Object.keys(blob.commentResizedImg).map(key=>{
+			return `${blob.commentResizedImg[key]} ${key}w,`
+		}).join("\n")
+		src = blob.commentImg
+	}else{
+		if(!isEmpty(media)){
+			src = media
+			srcset = `/200${media} 200w`
+		}
+	}
 	const contentChecked = isEmpty(content)?null:sanitizeHarder(content)
-	const mediaChecked = isEmpty(media)?null:"/120x120"+media+" 120w"
 	const ImageClickHandler = () => (e) =>{
 		let target = e.target;
 		if(target.style.maxHeight.endsWith("%")){
@@ -191,8 +208,12 @@ export const CommentContext = ({content,media}) =>{
 	}
 	return <CommentContextStyled>
 		<p dangerouslySetInnerHTML={{__html:contentChecked}}></p>
-		<CommentImgStyled onClick = {ImageClickHandler()} srcSet={"/120x120"+mediaChecked+" 120w"}
-			src={mediaChecked} alt="" onError = {e=>{e.preventDefault(); e.target.onerror=null; e.target.style.display="none";}}/>
+		<CommentImgStyled onClick = {ImageClickHandler()} srcSet={srcset}
+			src={src} alt="" 
+			onLoad={e=>{
+				setTimeout(()=>console.log("TIME!!!!!!!!!!!!"),60000)
+				e.target.style.removeProperty("display")}}
+			onError = {e=>{e.preventDefault(); e.target.onerror=null; e.target.style.display="none";}}/>
 	</CommentContextStyled>
 }
 

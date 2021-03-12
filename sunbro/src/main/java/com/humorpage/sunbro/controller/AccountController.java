@@ -208,23 +208,19 @@ public class AccountController {
     @ApiOperation(value = "로그아웃", notes = "refresh token access token 세션 삭제 및 cookie 만료기간 0")
     @GetMapping(value = "/logout")
     public CommonResult logout(HttpServletRequest req, HttpServletResponse res){
-        try{
-            Cookie jwtAccessToken = cookieService.getCookie(req, JwtTokenService.ACCESS_TOKEN_NAME);
+        Cookie jwtAccessToken = cookieService.getCookie(req, JwtTokenService.ACCESS_TOKEN_NAME);
+        if(jwtAccessToken!=null){
             Cookie delcookie = new Cookie(jwtAccessToken.getName(),null);
             delcookie.setMaxAge(0);
             delcookie.setPath("/");
             res.addCookie(delcookie);
-        }catch (ExpiredJwtException ignored){
-
         }
-        try {
-            Cookie jwtRefreshToken = cookieService.getCookie(req, JwtTokenService.REFRESH_TOKEN_NAME);
+        Cookie jwtRefreshToken = cookieService.getCookie(req, JwtTokenService.REFRESH_TOKEN_NAME);
+        if(jwtRefreshToken!=null){
             Cookie delcookie = new Cookie(jwtRefreshToken.getName(),null);
             delcookie.setPath("/");
             delcookie.setMaxAge(0);
             res.addCookie(delcookie);
-        }catch (ExpiredJwtException ignored){
-
         }
         return responseService.getSuccessResult();
     }

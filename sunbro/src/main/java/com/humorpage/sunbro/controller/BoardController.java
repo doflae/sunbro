@@ -48,12 +48,8 @@ public class BoardController {
     @Autowired
     private CacheRankingService cacheRankingService;
 
-
     @Autowired
     private FileUploadService fileUploadService;
-
-    @Autowired
-    private ThumbNailService thumbNailService;
 
 
 

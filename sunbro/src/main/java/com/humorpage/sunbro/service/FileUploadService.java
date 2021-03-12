@@ -20,8 +20,6 @@ public class FileUploadService {
     private final FFMpegVideoConvert ffMpegVideoConvert;
     private final TemporaryFileStore temporaryFileStore;
 
-    @Autowired
-    ResizeService resizeService;
 
     @Autowired
     public FileUploadService(TemporaryFileStore temporaryFileStore, FFMpegVideoConvert ffMpegVideoConvert){
@@ -66,19 +64,6 @@ public class FileUploadService {
                 temporaryFileStore.delete(tempFile);
             }else{
                 Files.write(target,data);
-                File f = new File(target.toString());
-                switch (mediaType){
-                    case THUMBNAIL -> {
-                        resizeService.resizeAndSave(f,"/240"+path, -1,240);
-                    }
-                    case COMMENT -> {
-                        resizeService.resizeAndSave(f,"/120"+path,120,120);
-                    }
-                    case PROFILE -> {
-                        resizeService.resizeAndSave(f,"/120"+path,120,120);
-                        resizeService.resizeAndSave(f,"/72"+path,72,72);
-                    }
-                }
             }
         }catch (IOException e){
             e.printStackTrace();

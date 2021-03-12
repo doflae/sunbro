@@ -86,12 +86,12 @@
 }
 .comment_preimgzone{
 	position: relative;
-	height: auto;
-	width: 60px;
+	width: fit-content;
+	height: fit-content;
 }
 .comment_preimg{
-	max-height: 100%;
-	max-width: 100%;
+	height: 100px;
+	width: 100px;
 }
 .comment_context_img{
 	margin-top: 5px;
