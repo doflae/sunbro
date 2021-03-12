@@ -9,6 +9,13 @@ class BoardConnector extends Component{
             boardList : [],
             last_board:0,
         };
+        this.boardElements = [];
+    }
+
+    registerRef = (elem) =>{
+        if(elem!==null){
+            this.boardElements.push(elem)
+        }
     }
 
     componentDidMount(){
@@ -34,10 +41,10 @@ class BoardConnector extends Component{
     gotoNext = () =>(e)=> {
         e.preventDefault();
         const {documentElement, body} = document;
-        let {lastElementid} = this.state
+        const {lastElementid} = this.state;
         const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
         const scrollBottom = scrollTop+documentElement.clientHeight
-        const boards = documentElement.querySelectorAll(".board")
+        const boards = this.boardElements
         for(let i = lastElementid+1; i<boards.length;i++){
             const b = boards[i]
             const offsetTop = b.offsetTop
@@ -84,7 +91,7 @@ class BoardConnector extends Component{
     render(){
         const boardList = this.state.boardList;
         if(boardList.length===0) return null;
-        return boardList.map(board => <Board board={board} key={board.id}/>)
+        return boardList.map(board => <Board ref={this.registerRef} board={board} key={board.id}/>)
     }
 }
 

@@ -81,7 +81,7 @@ public class CommentController {
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
     @PostMapping(value = "/upload")
     public SingleResult<Comment> uploadComment(@Valid Comment comment,
-                                            @RequestParam Long board_id,
+                                            @RequestParam(required = false,defaultValue = "0") Long board_id,
                                             @RequestParam(required = false,defaultValue = "0") Long comment_id,
                                             Authentication authentication) {
         UserSimple userSimple;

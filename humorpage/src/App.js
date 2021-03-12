@@ -6,14 +6,13 @@ import './static/css/Comment.css'
 import "react-quill/dist/quill.snow.css"
 import './static/css/Editor.css'
 import './static/css/Mypage.css'
-import {Route, Switch,withRouter} from "react-router-dom"
+import {Route, Switch} from "react-router-dom"
 import BoardConnector from "./board/BoardConnector"
 import Footer from "./footer/Footer"
 import Upload from "./upload/Upload"
 import Header from "./header/Header"
 import {Login} from "./auth/Login"
 import {Provider} from "react-redux"
-import {authWrapper} from "./auth/AuthWrapper";
 import {HumorDataStore} from "./data/DataStore"
 import MyPage from "./mypage/MyPage";
 import UserPage from "./userpage/UserPage"
@@ -39,4 +38,4 @@ class App extends Component{
           </Provider>
   }
 }
-export default authWrapper(withRouter(App));
+export default App;

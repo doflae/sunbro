@@ -1,215 +1,93 @@
-import React, {Component} from "react";
+import React, {useState, useRef} from "react";
 import userDefaultImg from "../static/img/user_32x.png";
 import {faHeart as rHeart} from "@fortawesome/free-regular-svg-icons"
 import {faHeart as sHeart} from "@fortawesome/free-solid-svg-icons"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {authWrapper} from "../auth/AuthWrapper"
-import {withRouter, Link} from "react-router-dom"
-import CommentUploader from "./CommentUploader"
-import Dropzone from "react-dropzone"
-import ReComment from "./ReComment"
+import {withRouter, Link, useHistory} from "react-router-dom"
 import {sanitizeHarder, 
 		getTime, 
 		convertUnitOfNum, 
-		getToday, 
-		getRandomGenerator,
 		isEmpty} from "../utils/Utils"
 import Axios from "axios";
-class Comment extends Component{
-	constructor(props){
-		super(props);
-        this.imageHandler = this.imageHandler.bind(this)
-        this.imageDelete = this.imageDelete.bind(this)
-        this.submitComment = this.submitComment.bind(this)
-		this.recommentClick = this.recommentClick.bind(this)
-		this.state = {
-			recommentList : [],
-			recommentLastid :[],
-			keyList:new Set(),
-			likeList:new Set(),
-			commentUploaderOn:null,
+import RecommentConnector from "./RecommentConnector"
+import styled from "styled-components"
+import CommentUploader from "./CommentUploader"
+
+const Comment = ({...props}) =>{
+	const c = props.comment
+	const [keyList, setKeyList] = useState(new Set());
+	const [recommentList,setRecommentList] = useState([]);
+	const [recommentLastId,setRecommentLastId] = useState(0);
+	const [uploaderSetting, setUploaderSetting] = useState({
+		onOff:false,
+		target:null
+	})
+	const [recommentOnId, setRecommentOnId] = useState(0);
+	const [onOffrecomment, setOnOffrecomment] = useState(false);
+	const [onOffSeeMore, setOnOffSeeMore] = useState(true);
+
+	const getData = () => {
+		let resturl = `/comment/list?parent_id=${c.id}`
+		if(recommentLastId>0){
+			resturl+=`&comment_id=${recommentLastId}`
 		}
-	}
-
-	recommentClick = (cid) => (e) => {
-		e.preventDefault();
-		const {commentUploaderOn} = this.state
-		if (commentUploaderOn===cid){
-			this.setState({
-				commentUploaderOn:null,
-			})
-		}else{
-			this.setState({
-				commentUploaderOn:cid
-			})
-		}
-	}
-
-    appendComment = (cid,comment) =>{
-        const {recommentList, keyList} = this.state
-		if(recommentList[cid]===undefined) recommentList[cid]=[]
-		recommentList[cid]=recommentList[cid].concat(comment)
-		keyList.add(comment.id);
-        this.setState({
-            recommentList:recommentList,
-			keyList:keyList,
-			commentUploaderOn:null
-        })
-    }
-	//대댓글용
-    submitComment = (board_id, comment_id, cname) => async (e) =>{
-        let tmp = e.target;
-        let data = new FormData();
-        let media = tmp.parentElement.previousElementSibling.firstElementChild.getAttribute('src');
-        let content = tmp.parentElement.previousElementSibling.previousElementSibling.value
-        if (!isEmpty(content)){
-            content = `<span class="recomment_target">@${cname}</span>${content}`
-        }
-        if(!isEmpty(media)){
-            await fetch(media).then(r=> r.blob()
-            ).then(
-                blob=>{
-                    const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+'.'+blob.type.split("/")[1];
-                    data.append('media',filePath)
-                    this.saveFile(blob,filePath);
-                }
-            )
-        }
-        if(!isEmpty(content)){
-            let data = new FormData();
-            data.append('content',content)
-            data.append('board_id',board_id)
-			data.append("comment_id",comment_id)
-            return this.props.request('post',"/comment/upload",data).then(res =>{
-                if(res.status===200 && res.data.success){
-					tmp.parentElement.previousElementSibling.firstElementChild.setAttribute('src',"");
-					tmp.parentElement.previousElementSibling.lastElementChild.style.zIndex="-1";
-					tmp.parentElement.previousElementSibling.previousElementSibling.value="";
-					const comment = res.data.data
-                    comment.media = media // replace to blob data
-                    this.appendComment(comment_id,comment)
-                }else{
-					this.props.history.push("/login")
-                }
-            })
-        }else{
-            alert("내용을 입력해주세요.")
-        }
-    }
-
-    imageHandler = () => (e) =>{
-        let target = e.target;
-        while(target.className!=="comment_bottom"){
-            target = target.parentElement
-        }
-        this.setState({
-            target:target.previousElementSibling,
-        })
-        if (this.dropzone) this.dropzone.open();
-    }
-
-    onDrop = async(acceptFile) =>{
-        var reader = new FileReader();
-        reader.onload = (e) =>{
-            const dataURL = e.target.result;
-            var byteString = atob(dataURL.split(',')[1]);
-
-            var mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0]
-
-            var ab = new ArrayBuffer(byteString.length);
-            var ia = new Uint8Array(ab);
-            for (var i = 0; i < byteString.length; i++) {
-              ia[i] = byteString.charCodeAt(i);
-            }
-
-            var blob = new Blob([ab], {type: mimeString});
-            const{target}=this.state
-            target.firstElementChild.src=URL.createObjectURL(blob);
-            target.lastElementChild.style.zIndex=0;
-        }
-        if(acceptFile[0]) reader.readAsDataURL(acceptFile[0]);
-    }
-
-    saveFile = (file,path) => {
-        const formData = new FormData();
-        formData.append('file',file);
-        formData.append('path',path);
-        formData.append('needConvert',false)
-		formData.append('mediaType',"COMMENT")
-        Axios.post("/file/upload",formData,{
-          headers:{
-            'Content-Type':'multipart/form-data',
-          }
-        })
-    };
-
-    imageDelete = () => (e) => {
-        let target = e.target;
-		target.style.zIndex=-1;
-		target.previousElementSibling.removeAttribute('src');
-    }
-
-	like = (target) => (e) => {
-		let btn = e.target
-		while(btn.className!=="comment-like"){
-			btn = btn.parentElement
-		}
-		const {likeList} = this.state;
-		if(target.like===true){
-			this.props.request("get",`/comment/likeoff?id=${target.id}`).then(res=>{
-				if(!res.data.success){
-					this.props.history.push("/login")
+		return Axios.get(resturl).then(res=>{
+			if(res.status===200){
+				return res.data
+			}
+		}).then(res=>{
+			let temp = [];
+			let resLastId = 0;
+			res.list.forEach(c=>{
+				if(!keyList.has(c.id)){
+					keyList.add(c.id)
+					temp.push(c)
 				}
+				resLastId=c.id
 			})
-			target.like = false
-			btn.firstElementChild.innerText = target.likes-1
-			target.likes-=1
-			likeList.delete(target.id)
-		}else{
-			this.props.request("get",`/comment/likeon?id=${target.id}`).then(res=>{
-				if(!res.data.success){
-					this.props.history.push("/login")
-				}
-			})
-			target.like = true
-			btn.firstElementChild.innerText = target.likes+1
-			target.likes+=1
-			likeList.add(target.id)
-		}
-		this.setState({
-			likeList:likeList
+			setRecommentList(recommentList.concat([...temp]))
+			setRecommentLastId(resLastId)
+			setKeyList(keyList)
+			if(res.list.length<10) setOnOffSeeMore(false);
 		})
 	}
 
-
-	seeRecommment = (cid) => (e) =>{
-		e.preventDefault();
-		const {recommentList, recommentLastid} = this.state
-		if (recommentList[cid]===undefined){
-			recommentList[cid]=[]
-		}
-		let resturl = `/comment/list?parent_id=${cid}`
-		if(recommentLastid[cid]!==undefined){
-			resturl += `&comment_id=${recommentLastid[cid]}`
-		}
-		this.props.request("get",resturl).then(res=>{
-			recommentList[cid]=recommentList[cid].concat(...res.data.list)
-			recommentLastid[cid] = res.data.list[res.data.list.length-1]['id']
-			this.setState({
-				recommentList:recommentList,
-				recommentLastid:recommentLastid
+	const recommentClickHandler = (id,authorName) => {
+		if(id===recommentOnId){
+			setUploaderSetting({
+				onOff:false,
+				target:authorName
 			})
-		})
+			setRecommentOnId(0);
+		}else{
+			setUploaderSetting({
+				onOff:true,
+				target:authorName
+			})
+			setRecommentOnId(id);
+		}
+	}
+	const appendComment = (comment) =>{
+		keyList.add(comment.id)
+		setRecommentList(recommentList.concat(comment))
+		setKeyList(keyList)
 	}
 
-	render(){
-		if(this.props.commentList===null || this.props.commentList.length === 0){
-			return <span>첫 댓글을 달아주세요</span>
+	const getRecomment = () => (e) =>{
+		if(onOffrecomment===false){
+			getData().then(
+				setOnOffrecomment(!onOffrecomment)
+			)
+		}else{
+			setOnOffrecomment(!onOffrecomment)
 		}
-		return this.props.commentList.map( c =>
-			<div className="comment" key={c.id}>
-				<img className="comment-userimg" srcSet={"/72"+c.author.userImg+" 72w"} alt="" src={c.author.userImg} onError={(e)=>{
-					e.preventDefault(); e.target.onError=null;e.target.src=userDefaultImg; e.target.removeAttribute("srcset");
+	}
+
+	if(c==null) return null;
+	return <CommentStyled>
+			<img className="comment-userimg" srcSet={"/72"+c.author.userImg+" 72w"} alt="" src={c.author.userImg} onError={(e)=>{
+					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg; e.target.removeAttribute("srcset");
 				}}/>
 				
 				<div className="comment-main">
@@ -223,56 +101,134 @@ class Comment extends Component{
 							</div>
 						</div>
 						<div className="comment-right">
-							<button className="comment-like" onClick={this.like(c)}>
-								좋아요 <span>{convertUnitOfNum(c.likes)}</span>{c.like || this.state.likeList.has(c.id)?(<FontAwesomeIcon icon={sHeart} color="red" size="lg"/>)
-								:(<FontAwesomeIcon icon={rHeart} color="red" size="lg"/>)} 
-							</button>
-							<button className="re-comment" onClick={this.recommentClick(c.id)}>
-								{this.state.commentUploaderOn===c.id?("답글 접기"):("답글 달기")}
-							</button>
+							<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
+							<RecommentBtn recommentClick={recommentClickHandler}
+								authorName={c.author.name}
+								id={c.id}
+								onOff={recommentOnId===c.id}/>
 						</div>
 					</div>
-					<div className="comment-context">
-						{isEmpty(c.content)?null:<p dangerouslySetInnerHTML={{__html:sanitizeHarder(c.content)}}></p>}
-						{isEmpty(c.media)?null:<img srcSet={"/120x120"+c.media+" 120w"}
-						src={c.media} alt="" className="comment_context_img" max-height="120px" max-width="120px"/>}
-					</div>
-			{c.children_cnt>0 && (this.state.recommentList[c.id]===undefined || c.children_cnt>this.state.recommentList[c.id].length)?
-			(<button onClick={this.seeRecommment(c.id)}> 답글 {convertUnitOfNum(c.children_cnt)}</button>):null}
-				
-
-			{/* 대댓글 다는 박스를 답글위에 위치할건지
-			답글아래에 위치할건지 위 아래 위치만 바꾸면됨 */}
-			{this.state.recommentList[c.id]!==undefined?(
-				<ReComment recommentList ={this.state.recommentList[c.id]} id={c.id} recommentClick={this.recommentClick}
-				commentUploaderOn={this.state.commentUploaderOn} imageHandler={this.imageHandler} 
-				imageDelete={this.imageDelete} submitComment={this.submitComment} board_id={this.props.board_id}/>
-			):null}
-			{this.state.recommentList[c.id]!==undefined&&c.children_cnt>this.state.recommentList[c.id].length?(
-				<div><button onClick={this.seeRecommment(c.id)}>더보기</button></div>
-			):null}
-            {this.state.commentUploaderOn === c.id?(<CommentUploader imageHandler={this.imageHandler} imageDelete={this.imageDelete}
-            submitComment={this.submitComment} board_id={this.props.board_id} comment_id={c.id} cname={c.author.name}/>):null}
-					<Dropzone
-                    ref = {(el)=>(this.dropzone = el)}
-                    accept = "image/*"
-                    onDrop = {this.onDrop}
-					multiple = {false}
-                    styles={{dropzone:{width:0,height:0}}}
-                	>
-                    {({getRootProps, getInputProps}) =>(
-                    <section>
-                        <div {...getRootProps()}>
-                        <input {...getInputProps()}/>
-                        </div>
-                    </section>
-                    )}
-                	</Dropzone>
+					<CommentContext content={c.content} media={c.media}/>
+					<ConnectorBtn onClick={getRecomment}
+						cnt={c.children_cnt}/>
+				<RecommentConnector id={c.id} 
+						onOff={onOffrecomment}
+						getData={getData}
+						recommentOnId={recommentOnId}
+						recommentList={recommentList}
+						recommentClickHandler={recommentClickHandler}
+						onOffSeeMore={onOffSeeMore}/>
+				<CommentUploader 
+						onOff = {uploaderSetting.onOff}
+						cname = {uploaderSetting.target}
+						board_id={props.board_id}
+						comment_id={c.id}
+						appendComment={appendComment}/>
 			</div>
-        </div>
-		
-		)
-	}
+	</CommentStyled>
 }
+
+const ConnectorBtn = ({cnt,onClick})=>{
+	if(cnt>0) return <button onClick={onClick()}> 답글 {convertUnitOfNum(cnt)} </button>
+	else return null;
+}
+
+export const CommentLikeBtn = ({id,like,likes}) =>{
+
+	const [likeCnt,setLikeCnt] = useState({
+		like:like,
+		cnt:likes
+	})
+	const likeBtnRef = useRef();
+	let history = useHistory();
+
+	const likeHandler = () => (e) => {
+		if(likeCnt.like){
+			Axios.get(`/comment/likeoff?id=${id}`).then(res=>{
+				if(res.status===200 && !res.data.success){
+					history.push("/login")
+				}
+			})
+			setLikeCnt({
+				like:!likeCnt.like,
+				cnt:likeCnt.cnt-1
+			})
+		}else{
+			Axios.get(`/comment/likeon?id=${id}`).then(res=>{
+				if(res.status===200 && !res.data.success){
+					history.push("/login")
+				}
+			})
+			setLikeCnt({
+				like:!likeCnt.like,
+				cnt:likeCnt.cnt+1
+			})
+		}
+	}
+
+	const renderHeartIcon = () =>{
+		return <FontAwesomeIcon icon={likeCnt.like?sHeart:rHeart} color="red" size="lg"/>
+	}
+
+	return <button className="comment-like" ref = {likeBtnRef} onClick={likeHandler()}>
+		좋아요 <span>{convertUnitOfNum(likeCnt.cnt)} </span>
+		{renderHeartIcon()}
+	</button>
+}
+
+export const CommentContext = ({content,media}) =>{
+	const contentChecked = isEmpty(content)?null:sanitizeHarder(content)
+	const mediaChecked = isEmpty(media)?null:"/120x120"+media+" 120w"
+	const ImageClickHandler = () => (e) =>{
+		let target = e.target;
+		if(target.style.maxHeight.endsWith("%")){
+			target.style.maxHeight = "120px"
+			target.styled.maxWidth = "120px"
+		}else{
+			target.style.maxHeight = "100%"
+			target.styled.maxWidth = "100%"
+		}
+	}
+	return <CommentContextStyled>
+		<p dangerouslySetInnerHTML={{__html:contentChecked}}></p>
+		<CommentImgStyled onClick = {ImageClickHandler()} srcSet={"/120x120"+mediaChecked+" 120w"}
+			src={mediaChecked} alt="" onError = {e=>{e.preventDefault(); e.target.onerror=null; e.target.style.display="none";}}/>
+	</CommentContextStyled>
+}
+
+export const RecommentBtn = ({recommentClick, authorName, onOff, id}) =>{
+
+	return <RecommentBtnStyled onClick={e=>{e.preventDefault();
+		recommentClick(id,authorName)}}>{onOff?"답글 접기":"답글 달기"}</RecommentBtnStyled>
+}
+const CommentStyled = styled.div`
+	margin-left: 30px;
+	margin-right: 30px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border-bottom: solid gainsboro 1px;
+	display: flex;
+`
+
+const RecommentBtnStyled = styled.button`
+
+	margin-left: auto;
+	margin-right: 20px;
+	background-color: #e8e8e8;
+	cursor: pointer;
+	border: none;
+`
+
+const CommentImgStyled = styled.img`
+	margin-top: 5px;
+	max-width: 120px;
+	max-height: 120px;
+`
+const CommentContextStyled = styled.div`
+	padding-top:5px;
+	& *{
+		white-space:pre-wrap;
+	}
+`
 
 export default withRouter(authWrapper(Comment));
