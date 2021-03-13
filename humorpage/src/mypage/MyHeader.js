@@ -6,7 +6,7 @@ import {ReactComponent as Pencil} from '../static/svg/pencil.svg'
 import Dropzone from "react-dropzone"
 import Axios from "axios"
 import styled from "styled-components"
-import {getRandomGenerator} from "../utils/Utils"
+import {getRandomGenerator, ResizeImage} from "../utils/Utils"
 
 const SubmitImageBtnStyled = styled.button`
     width:80px;
@@ -25,6 +25,7 @@ function MyHeader({
 }){
     const user = props.userDetail;
     const [userImg, setUserImg] = useState(user.userImg);
+    const [userImgResized, setUserImgResized] = useState({})
     const [mediaFormat, setMediaFormat] = useState(null);
     const [isChanged, setIsChanged] = useState(false);
     const dropzoneRef = useRef()
@@ -35,56 +36,79 @@ function MyHeader({
     }
 
     const imageDelete = ()=>(e) =>{
+        revoke()
         setUserImg("");
     }
-    const saveFile = (file,path) =>{
-        const formData = new FormData();
-        formData.append('file',file);
-        formData.append('path',path);
-        formData.append('needConvert',false)
-        formData.append('mediaType',"PROFILE")
-        Axios.post("/file/upload",formData,{
-          headers:{
-            'Content-Type':'multipart/form-data',
-          }
+    const saveFile = (path) =>{
+
+        Object.keys(userImgResized).forEach(key=>{
+            fetch(userImgResized[key]).then(r=>r.blob()).then((blob)=>{
+                var x = new Image();
+                x.onload = () =>{
+                    const formData = new FormData();
+                    formData.append('file',blob);
+                    formData.append('path',`/${key}`+path);
+                    formData.append('needConvert',false)
+                    formData.append('needResize',key<Math.max(x.width,x.height))
+                    formData.append('mediaType',"PROFILE")
+                    Axios.post("/file/upload",formData,{
+                    headers:{
+                        'Content-Type':'multipart/form-data',
+                    }
+                    }).then(res=>console.log(res))
+                }
+                x.src = URL.createObjectURL(blob);
+            })
+        })
+        fetch(userImg).then(r=>r.blob()).then(blob=>{
+            const formData = new FormData();
+            formData.append('file',blob);
+            formData.append('path',path);
+            formData.append('needConvert',false)
+            formData.append('mediaType',"PROFILE")
+            Axios.post("/file/upload",formData,{
+              headers:{
+                'Content-Type':'multipart/form-data',
+              }
+            })
         })
     }
-    const onDrop = async(acceptFile) =>{
-        var reader = new FileReader();
-        setMediaFormat(acceptFile[0].type.split("/")[1]);
-        reader.onload = (e) =>{
-            const dataURL = e.target.result;
-            var byteString = atob(dataURL.split(',')[1]);
-
-            var mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0]
-
-            var ab = new ArrayBuffer(byteString.length);
-            var ia = new Uint8Array(ab);
-            for (var i = 0; i < byteString.length; i++) {
-              ia[i] = byteString.charCodeAt(i);
-            }
-
-            var blob = new Blob([ab], {type: mimeString});
-            setUserImg(URL.createObjectURL(blob))
-            profileImgRef.current.style.margin = "10px"
-            setIsChanged(true)
+    const revoke = () =>{
+        const imgURL = userImg
+        const resizedImgURL = userImgResized
+        if(imgURL.startsWith("blob")){
+            console.log("revoke!")
+            URL.revokeObjectURL(imgURL)
+            Object.keys(resizedImgURL).forEach(key=>{
+                URL.revokeObjectURL(resizedImgURL[key])
+            })
         }
-        if(acceptFile[0]) reader.readAsDataURL(acceptFile[0]);
-       
+    }
+
+    const onDrop = async (acceptFile) =>{
+        await revoke()
+        if(acceptFile[0]) {
+            setMediaFormat(acceptFile[0].type.split("/")[1]);
+            ResizeImage(acceptFile[0],240).then(resizedImage=>{
+                setUserImg(URL.createObjectURL(resizedImage));
+            })
+            ResizeImage(acceptFile[0],72).then(resizedImage=>{
+                setUserImgResized({72:URL.createObjectURL(resizedImage)});
+            })
+            setIsChanged(true);
+        }
     }
     const imageSubmit = () => (e) => {
         if(userImg.startsWith("blob")){
             const filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
-            fetch(userImg).then(r=>r.blob()).then(async(blob)=>{
-                await saveFile(blob,filePath)
-                const formData = new FormData();
-                formData.append('path',filePath)
-                props.request("post","/account/update/img",formData).then(res=>{
-                    if(res.status===200 && res.data.success){
-                        profileImgRef.current.style.margin = "";
-                        setIsChanged(false)
-                    }
-                })
+            saveFile(filePath)
+            const formData = new FormData();
+            formData.append('path',filePath)
+            props.request("post","/account/update/img",formData).then(res=>{
+                if(res.status===200 && res.data.success){
+                    profileImgRef.current.style.margin = "";
+                    setIsChanged(false)
+                }
             })
         }
     }

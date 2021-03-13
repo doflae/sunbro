@@ -1,10 +1,10 @@
-import React, { useState,createRef } from "react"
+import React, { useState,createRef} from "react"
 import { useHistory } from "react-router-dom"
 import userDefaultImg from "../static/img/user_128x.png";
 import Dropzone from "react-dropzone"
 import {authWrapper} from "./AuthWrapper";
 import {ReactComponent as Pencil} from '../static/svg/pencil.svg'
-import {AgeSelector, getRandomGenerator, dataUrltoBlob, ResizeImage} from "../utils/Utils"
+import {AgeSelector, getRandomGenerator, ResizeImage} from "../utils/Utils"
 import Axios from "axios";
 import { ValidationSuccess } from "../forms/ValidationSuccess";
 import styled from "styled-components"
@@ -26,18 +26,13 @@ const MyProfileStyledImage = styled.img`
     border-radius: 75px;
 `
 
-export const MyProfileResizedImage = ({srcSet, src, defaultImg})=>{
-    const srcset = Object.keys(srcSet).map(key=>{
-        return `${srcSet[key]} ${key}w,`
-    }).join("\n")
+export const MyProfileResizedImage = ({src, defaultImg})=>{
     if(defaultImg===null){
         return <MyProfileStyledImage alt="" 
-        srcSet={srcset}
         src={src} 
         onError={e=>{e.target.onError=null;e.target.style.display="none"}}/>
     }
     return <MyProfileStyledImage alt="" 
-    srcSet={srcset}
     src={src} 
     onError={e=>{e.target.onError=null;e.target.src=defaultImg}}/>
 }
@@ -50,7 +45,7 @@ function SignupPlatForm({userDetail,...props}){
     const [age, setAge] = useState(userDetail.age==null?0:userDetail.age)
     const [canSubmit, setCanSubmit] = useState(null)
     const [mediaFormat, setMediaFormat] = useState(null)
-    const [userImgSet, setUserImgSet] = useState({})
+    const [userImgResized, setUserImgResized] = useState({})
     const prevName = userDetail.name
     let history = useHistory();
     const dropzoneRef = createRef()
@@ -75,27 +70,35 @@ function SignupPlatForm({userDetail,...props}){
             })
         }
     }
-    const onDrop = async (acceptFile) =>{
-        var reader = new FileReader();
-        reader.onload = (e) =>{
-            const dataURL = e.target.result;
-            setUserImg(URL.createObjectURL(dataUrltoBlob(dataURL)))
+
+
+    const revoke = () =>{
+        const imgURL = userImg
+        const resizedImgURL = userImgResized
+        if(imgURL.startsWith("blob")){
+            console.log("revoke!")
+            URL.revokeObjectURL(imgURL)
+            Object.keys(resizedImgURL).forEach(key=>{
+                URL.revokeObjectURL(resizedImgURL[key])
+            })
         }
+    }
+
+    const onDrop = async (acceptFile) =>{
+        await revoke()
         if(acceptFile[0]) {
             setMediaFormat(acceptFile[0].type.split("/")[1]);
-            await setUserImgSet({});
-            ResizeImage(acceptFile[0],120).then(resizedImage=>{
-                setUserImgSet(userImgSet=> ({...userImgSet,120:URL.createObjectURL(resizedImage)}));
+            ResizeImage(acceptFile[0],240).then(resizedImage=>{
+                setUserImg(URL.createObjectURL(resizedImage));
             })
             ResizeImage(acceptFile[0],72).then(resizedImage=>{
-                setUserImgSet(userImgSet=>({...userImgSet,72:URL.createObjectURL(resizedImage)}));
+                setUserImgResized({72:URL.createObjectURL(resizedImage)});
             })
-            reader.readAsDataURL(acceptFile[0]);
         }
     }
     const saveFile = (path) =>{
-        Object.keys(userImgSet).forEach(key=>{
-            fetch(userImgSet[key]).then(r=>r.blob()).then(blob=>{
+        Object.keys(userImgResized).forEach(key=>{
+            fetch(userImgResized[key]).then(r=>r.blob()).then(blob=>{
                 const formData = new FormData();
                 formData.append('file',blob);
                 formData.append('path',`/${key}`+path);
@@ -176,6 +179,7 @@ function SignupPlatForm({userDetail,...props}){
         }
     }
     const imageDelete = ()=>(e) =>{
+        revoke()
         setUserImg("");
     }
     return <React.Fragment>
@@ -185,7 +189,7 @@ function SignupPlatForm({userDetail,...props}){
                 <div className="myprofile_imgzone">
                     <ImageDeleteBtnStyled onClick={imageDelete()}></ImageDeleteBtnStyled>
                     <div onClick={imageHandler()}>
-                        <MyProfileResizedImage src={userImg} srcSet={userImgSet} defaultImg = {userDefaultImg}/>
+                        <MyProfileResizedImage src={userImg} defaultImg = {userDefaultImg}/>
                         <Pencil width="20" height="20" className="myprofile_pencil"/>
                     </div>
                 </div>

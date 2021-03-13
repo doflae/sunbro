@@ -112,7 +112,6 @@ class Upload extends Component {
       //2. text체크 -> 에디터 스크롤 height 이용?
       const height = document.querySelector(".ql-editor").scrollHeight;
       if(height>700){
-        console.log(height)
         return true;
       }
       return false;
@@ -145,7 +144,6 @@ class Upload extends Component {
           })
         }else{
           await fetch(elem.src).then(r=>r.blob()).then(blob=>{
-            console.log(blob)
             elem.setAttribute("src",thumbnailPath+blob.type.split("/")[1])
             if(elem.videoWidth>0){
               this.saveFile(blob,elem.getAttribute("src"),false,"THUMBNAIL")

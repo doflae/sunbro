@@ -16,7 +16,6 @@ import CommentUploader from "./CommentUploader"
 
 const Comment = ({...props}) =>{
 	const c = props.comment
-	console.log(c)
 	const [keyList, setKeyList] = useState(new Set());
 	const [recommentList,setRecommentList] = useState([]);
 	const [recommentLastId,setRecommentLastId] = useState(0);
@@ -87,8 +86,8 @@ const Comment = ({...props}) =>{
 
 	if(c==null) return null;
 	return <CommentStyled>
-			<img className="comment-userimg" srcSet={"/72"+c.author.userImg+" 72w"} alt="" src={c.author.userImg} onError={(e)=>{
-					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg; e.target.removeAttribute("srcset");
+			<img className="comment-userimg" src={"/72"+c.author.userImg} alt="" onError={(e)=>{
+					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
 				
 				<div className="comment-main">
@@ -181,39 +180,46 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 }
 
 export const CommentContext = ({content,media,blob}) =>{
-	console.log(blob)
-	let srcset =null;
-	let src = null;
+	let src_small =null;
+	let src_large = null;
+	let largeOnOff = false
 	if(blob!=null){
-		srcset = Object.keys(blob.commentResizedImg).map(key=>{
-			return `${blob.commentResizedImg[key]} ${key}w,`
-		}).join("\n")
-		src = blob.commentImg
+		src_small = Object.keys(blob.commentResizedImg).map(key=>{
+			return blob.commentResizedImg[key]
+		})
+		src_large = blob.commentImg
 	}else{
 		if(!isEmpty(media)){
-			src = media
-			srcset = `/200${media} 200w`
+			src_small = `/200${media}`
+			src_large = media
 		}
 	}
 	const contentChecked = isEmpty(content)?null:sanitizeHarder(content)
 	const ImageClickHandler = () => (e) =>{
 		let target = e.target;
-		if(target.style.maxHeight.endsWith("%")){
-			target.style.maxHeight = "120px"
-			target.styled.maxWidth = "120px"
+		if(largeOnOff){
+			target.src = src_small
+			target.setAttribute("width","100px")
+			target.setAttribute("height","100px")
+			largeOnOff=false
 		}else{
-			target.style.maxHeight = "100%"
-			target.styled.maxWidth = "100%"
+			target.removeAttribute("width")
+			target.removeAttribute("height")
+			target.src = src_large
+			largeOnOff=true
 		}
+	}
+	const renderImage = () =>{
+		if(media!=null || blob!=null) return <CommentImgStyled onClick = {ImageClickHandler()}
+		src={src_small} alt="" 
+		width="100px" height="100px"
+		onLoad={e=>{e.target.style.removeProperty("display");}}
+		onError = {e=>{e.preventDefault(); e.target.onerror=null; e.target.style.display="none";}}/>
+		else return null
 	}
 	return <CommentContextStyled>
 		<p dangerouslySetInnerHTML={{__html:contentChecked}}></p>
-		<CommentImgStyled onClick = {ImageClickHandler()} srcSet={srcset}
-			src={src} alt="" 
-			onLoad={e=>{
-				setTimeout(()=>console.log("TIME!!!!!!!!!!!!"),60000)
-				e.target.style.removeProperty("display")}}
-			onError = {e=>{e.preventDefault(); e.target.onerror=null; e.target.style.display="none";}}/>
+		{renderImage()}		
 	</CommentContextStyled>
 }
 
@@ -242,8 +248,6 @@ const RecommentBtnStyled = styled.button`
 
 const CommentImgStyled = styled.img`
 	margin-top: 5px;
-	max-width: 120px;
-	max-height: 120px;
 `
 const CommentContextStyled = styled.div`
 	padding-top:5px;

@@ -23,7 +23,7 @@ function Board({
     return <div className = "board" ref = {boardRef}>
         <div className="board_top">
             <div className="board_top_left">
-                <img className="author_img" src={board.author.userImg} alt="" onError={(e)=>{
+                <img className="author_img" src={"/72"+board.author.userImg} alt="" onError={(e)=>{
                     e.target.onError=null;e.target.src=userDefaultImg;
                 }}/>
             </div>

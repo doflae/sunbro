@@ -40,9 +40,10 @@ public class FileUploadController {
                                @RequestParam(required = false) String path,
                                @RequestParam(required = false, defaultValue = "false") boolean needConvert,
                                @RequestParam(required = false, defaultValue = "BOARD") MediaType mediaType,
+                               @RequestParam(required = false, defaultValue = "false") boolean needResize,
                                Authentication authentication) {
         if(authentication!=null && authentication.isAuthenticated()){
-            fileUploadService.fileUpload(file,path,needConvert,mediaType);
+            fileUploadService.fileUpload(file,path,needConvert,mediaType,needResize);
             return responseService.getSuccessResult();
         }else{
             return responseService.getFailResult();

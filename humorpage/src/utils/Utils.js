@@ -121,6 +121,42 @@ export const dataUrltoBlob = (dataURL) =>{
     return new Blob([ab], {type: mimeString});
 }
 
+
+export const ResizeImageDefault = (data) => {
+    //max-width 474px
+    const fileReader = new FileReader();
+    var canvas = document.createElement("canvas");
+    var image = new Image();
+    var resize = () => {
+        var width = image.width;
+        var height = image.height;
+        if(width>474){
+            height *= 474 / width;
+            width = 474;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(image,0,0,width,height);
+        var dataUrl = canvas.toDataURL(data.type);
+        return dataUrltoBlob(dataUrl);
+    }
+    return new Promise(function(ok, no){
+        if(!data.type.match(/image.*/)){
+            no(new Error("Not an Image"))
+            return;
+        }
+        fileReader.onload = (readerEvent) =>{
+            if(data.type.match(/image.gif/)){
+                image.onload = () => ok(dataUrltoBlob(readerEvent.target.result))
+            }else{
+                image.onload = () => ok(resize());
+            }
+            image.src = readerEvent.target.result;
+        };
+        fileReader.readAsDataURL(data);
+    })
+}
+
 export const ResizeImage = (data, maxSize) =>{
     const fileReader = new FileReader();
     var canvas = document.createElement("canvas");
@@ -138,7 +174,7 @@ export const ResizeImage = (data, maxSize) =>{
         canvas.width = width;
         canvas.height = height;
         canvas.getContext('2d').drawImage(image,0,0,width,height);
-        var dataUrl = canvas.toDataURL('image/jpeg');
+        var dataUrl = canvas.toDataURL(data.type);
         return dataUrltoBlob(dataUrl);
     }
     return new Promise(function(ok, no){
@@ -147,7 +183,11 @@ export const ResizeImage = (data, maxSize) =>{
             return;
         }
         fileReader.onload = (readerEvent) =>{
-            image.onload = () => ok(resize());
+            if(data.type.match(/image.gif/)){
+                image.onload = () => ok(dataUrltoBlob(readerEvent.target.result))
+            }else{
+                image.onload = () => ok(resize());
+            }
             image.src = readerEvent.target.result;
         };
         fileReader.readAsDataURL(data);

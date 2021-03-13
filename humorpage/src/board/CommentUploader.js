@@ -1,7 +1,7 @@
 import React, {useRef,useState} from "react"
 import {ReactComponent as Camera} from "../static/svg/camera.svg"
 import Dropzone from "react-dropzone"
-import {getToday, getRandomGenerator,isEmpty, dataUrltoBlob, ResizeImage} from "../utils/Utils"
+import {getToday, getRandomGenerator,isEmpty, ResizeImage, ResizeImageDefault} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
 import {useHistory} from "react-router-dom"
 import Axios from "axios"
@@ -38,7 +38,7 @@ function CommentUploader({...props}){
             blob.commentResizedImg = commentResizedImg
             props.request('post',"/comment/upload",data).then(res=>{
                 if(res.status===200 && res.data.success){
-                    mediaRef.current.style.display="none";
+                    if(mediaRef.current!=null) mediaRef.current.style.display="none";
                     contentRef.current.value="";
                     setImageOnOff(false)
                     const comment = res.data.data
@@ -56,18 +56,15 @@ function CommentUploader({...props}){
     
 
     const onDrop = (acceptFile) => {
-        const reader = new FileReader();
-        reader.onload = (e) =>{
-            const blobURL = URL.createObjectURL(dataUrltoBlob(e.target.result))
-            setCommentImg(blobURL);
-            setImageOnOff(true);
-        }
         if(acceptFile[0]) {
             setMediaFormat(acceptFile[0].type.split("/")[1]);
             ResizeImage(acceptFile[0],200).then(resizedImage=>{
                 setCommentResizedImg({200:URL.createObjectURL(resizedImage)});
             })
-            reader.readAsDataURL(acceptFile[0]);
+            ResizeImageDefault(acceptFile[0]).then(defaultImage=>{
+                setCommentImg(URL.createObjectURL(defaultImage))
+                setImageOnOff(true)
+            })
         }
     }
     const saveFile = (path) => {
@@ -114,7 +111,6 @@ function CommentUploader({...props}){
         <textarea ref={contentRef} className="comment_textarea"></textarea>
         <div className="comment_preimgzone">
             <ImageResized src={commentImg}
-                srcSet={commentResizedImg}
                 mediaRef={mediaRef}
                 setImageOnOff={setImageOnOff}/>
             <ImageDeleteBtn onOff={imageOnOff} imageDelete={imageDelete}></ImageDeleteBtn>
@@ -141,14 +137,10 @@ function CommentUploader({...props}){
     </div>
 }
 
-const ImageResized = ({src,srcSet,mediaRef, setImageOnOff}) =>{
-    const srcset = Object.keys(srcSet).map(key=>{
-        return `${srcSet[key]} ${key}w,`
-    }).join("\n")
+const ImageResized = ({src,mediaRef, setImageOnOff}) =>{
     if(src) return <img alt=""
         className="comment_preimg"
         ref={mediaRef}
-        srcSet={srcset}
         src={src}
         onLoad={e=>{e.target.style.removeProperty("display")}}
         onError={e=>{e.target.onerror=null;e.target.style.display="none";

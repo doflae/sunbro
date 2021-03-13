@@ -16,14 +16,14 @@ const RecommentConnector = ({...props}) => {
 
 const SeeMoreBtn = ({hasMore, getData}) =>{
 	if(hasMore===false) return null;
-	else return <button onClick={getData()}>더보기</button>
+	else return <button onClick={e=>{e.preventDefault();getData();}}>더보기</button>
 }
 
 const Recomment = ({c, recommentClickHandler,recommentOnId}) =>{
 	if(c==null) return null;
 	return <div className="recomment">
-			<img className="comment-userimg" alt="" srcSet={"/72"+c.author.userImg+" 72w"} src={c.author.userImg} onError={(e)=>{
-				e.preventDefault();e.target.onerror=null;e.target.src=userDefaultImg; e.target.removeAttribute("srcset");
+			<img className="comment-userimg" alt="" src={"/72"+c.author.userImg} onError={(e)=>{
+				e.preventDefault();e.target.onerror=null;e.target.src=userDefaultImg;
 			}}/>
 			
 			<div className="comment-main">
@@ -44,7 +44,7 @@ const Recomment = ({c, recommentClickHandler,recommentOnId}) =>{
 								onOff={recommentOnId===c.id}/>
 					</div>
 				</div>
-				<CommentContext content={c.content} media={c.media}/>
+				<CommentContext content={c.content} media={c.media} blob={c.blob}/>
 			</div>
 		</div>
 }
