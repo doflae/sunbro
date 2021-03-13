@@ -19,7 +19,7 @@ public class FileDeleteService {
     TemporaryFileStore temporaryFileStore;
 
 
-    private final String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
+    private final String baseDir = "C://mediaFiles/";
 
     public void DeleteFiles(String path, MediaType mediaType){
         List<String> deleteList = new ArrayList<>(Collections.singletonList(path));

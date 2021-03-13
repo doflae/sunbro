@@ -1,19 +1,17 @@
 package com.humorpage.sunbro.service;
 
 import com.humorpage.sunbro.utils.FFMpegVideoConvert;
+import com.humorpage.sunbro.utils.GifUtils.GifUtil;
 import com.humorpage.sunbro.utils.TemporaryFileStore;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,7 +35,7 @@ public class FileUploadService {
     public void fileUpload(MultipartFile file, String path, boolean needConvert, MediaType mediaType, boolean needResize){
         try{
             byte[] data = file.getBytes();
-            String baseDir = "C:/Users/tjsh0/OneDrive/Desktop/sunbro/humorpage/public";
+            String baseDir = "C://mediaFiles/";
             File dir = new File(baseDir +path);
             dir.getParentFile().mkdirs();
             Path target = Paths.get(baseDir +path);
@@ -70,45 +68,30 @@ public class FileUploadService {
                 temporaryFileStore.delete(tempFile);
             }else{
                 if(needResize){
-                    Path tempPath = temporaryFileStore.store(data);
-                    System.out.println(tempPath.toString());
-                    ImageIcon Icon = new ImageIcon(tempPath.toString());
-                    Pattern getSizePattern = Pattern.compile("^/(.+)/.+/[^/]+\\.(.+)");
-                    Matcher matcher = getSizePattern.matcher(path);
-                    if(matcher.find()){
-                        Image image = Icon.getImage();
-                        int size = Integer.parseInt(matcher.group(1));
-                        Image newImg = image.getScaledInstance(size,size,Image.SCALE_DEFAULT);
-                        Icon = new ImageIcon(newImg);
-                        System.out.println(size);
-                        BufferedImage bi = getBufferedImage(Icon.getImage());
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        ImageIO.write(bi, matcher.group(2), baos);
-                        data = baos.toByteArray();
+                    InputStream inputStream = file.getInputStream();
+                    File tempFile = File.createTempFile(String.valueOf(inputStream.hashCode()),".tmp");
+                    tempFile.deleteOnExit();
+                    FileUtils.copyInputStreamToFile(inputStream,tempFile);
+                    int maxSize;
+                    switch (mediaType){
+                        case THUMBNAIL -> {
+                            maxSize = 240;
+                        }
+                        case PROFILE -> {
+                            maxSize = 72;
+                        }
+                        default -> {
+                            maxSize = 100;
+                        }
                     }
+                    GifUtil.gifInputToOutput(tempFile,target.toFile(),maxSize);
                 }
-                Files.write(target,data);
-
+                else{
+                    Files.write(target,data);
+                }
             }
         }catch (IOException e){
             e.printStackTrace();
         }
-    }
-    private static BufferedImage getBufferedImage(Image img)
-    {
-        if (img instanceof BufferedImage)
-        {
-            return (BufferedImage) img;
-        }
-
-        BufferedImage bimage = new BufferedImage(img.getWidth(null),
-                img.getHeight(null), BufferedImage.TYPE_4BYTE_ABGR);
-
-        Graphics2D bGr = bimage.createGraphics();
-        bGr.drawImage(img, 0, 0, null);
-        bGr.dispose();
-
-        // Return the buffered image
-        return bimage;
     }
 }

@@ -3,27 +3,41 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.FileUploadService;
+import com.humorpage.sunbro.service.FileViewService;
 import com.humorpage.sunbro.service.MediaType;
 import com.humorpage.sunbro.service.ResponseService;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/file")
-public class FileUploadController {
+public class FileController {
 
 
     @Autowired
     private FileUploadService fileUploadService;
 
     @Autowired
+    private FileViewService fileViewService;
+
+    @Autowired
     private ResponseService responseService;
 
+
+    @GetMapping(value = "/get")
+    public ResponseEntity<byte[]> getMediaFile(String name) throws IOException{
+        return fileViewService.getFile(name);
+    }
 
 
     /**

@@ -40,7 +40,6 @@ function MyHeader({
         setUserImg("");
     }
     const saveFile = (path) =>{
-
         Object.keys(userImgResized).forEach(key=>{
             fetch(userImgResized[key]).then(r=>r.blob()).then((blob)=>{
                 var x = new Image();
@@ -55,7 +54,9 @@ function MyHeader({
                     headers:{
                         'Content-Type':'multipart/form-data',
                     }
-                    }).then(res=>console.log(res))
+                    }).then(res=>{
+                        console.log(res)
+                    })
                 }
                 x.src = URL.createObjectURL(blob);
             })
@@ -70,6 +71,8 @@ function MyHeader({
               headers:{
                 'Content-Type':'multipart/form-data',
               }
+            }).then(res=>{
+                console.log(res)
             })
         })
     }
@@ -99,8 +102,9 @@ function MyHeader({
         }
     }
     const imageSubmit = () => (e) => {
+        e.preventDefault();
         if(userImg.startsWith("blob")){
-            const filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
+            const filePath = "profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
             saveFile(filePath)
             const formData = new FormData();
             formData.append('path',filePath)
@@ -120,7 +124,7 @@ function MyHeader({
             <div className="myprofile_imgzone">
                 <button className="profileimg_delete" onClick={imageDelete()}></button>
                 <div ref={profileImgRef} onClick={imageHandler()}>
-                    <img className="myprofile_img" src={userImg} alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>
+                    <UserImage src={userImg} userDefaultImg={userDefaultImg}/>
                     <Pencil width="20" height="20" className="myprofile_pencil"/>
                 </div>
             </div>
@@ -150,5 +154,18 @@ function MyHeader({
         )}
         </Dropzone>
     </div>
+}
+
+const UserImage = ({src, userDefaultImg}) =>{
+    if(src!=null){
+        if(src.startsWith("blob")){
+            return <img className="myprofile_img" src={src}
+         alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>
+        }else{
+            return <img className="myprofile_img" src={`/file/get?name=${src}`}
+            alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>   
+        }   
+    }
+    return <img alt="" src={userDefaultImg}/>
 }
 export default withRouter(authWrapper(MyHeader));
