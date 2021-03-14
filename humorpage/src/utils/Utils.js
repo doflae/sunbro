@@ -122,6 +122,7 @@ export const dataUrltoBlob = (dataURL) =>{
 }
 
 
+//return Promise=>resizedImage(blob data)
 export const ResizeImageDefault = (data) => {
     //max-width 474px
     const fileReader = new FileReader();
@@ -157,6 +158,7 @@ export const ResizeImageDefault = (data) => {
     })
 }
 
+//return Promise=>resizedImage(blob data)
 export const ResizeImage = (data, maxSize) =>{
     const fileReader = new FileReader();
     var canvas = document.createElement("canvas");
@@ -188,6 +190,42 @@ export const ResizeImage = (data, maxSize) =>{
             }else{
                 image.onload = () => ok(resize());
             }
+            image.src = readerEvent.target.result;
+        };
+        fileReader.readAsDataURL(data);
+    })
+}
+
+
+//return Promise=>resizedImage(jpeg type blob data)
+export const ResizeThumbnailImage = (data)=>{
+    const maxHeight = 1000
+
+    const fileReader = new FileReader();
+    var canvas = document.createElement("canvas");
+    var image = new Image();
+    var resize = () => {
+        var width = image.width;
+        var height = image.height;
+        if(height>maxHeight){
+            width *= maxHeight/height;
+        }
+        height = maxHeight>>1;
+        width >>=1;
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(image,0,0,width,height);
+        var dataUrl = canvas.toDataURL("image/jpeg");
+        return dataUrltoBlob(dataUrl);
+    }
+
+    return new Promise(function(ok, no){
+        if(!data.type.match(/image.*/)){
+            no(new Error("Not an Image"))
+            return;
+        }
+        fileReader.onload = (readerEvent) =>{
+            image.onload = () => ok(resize());
             image.src = readerEvent.target.result;
         };
         fileReader.readAsDataURL(data);

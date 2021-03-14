@@ -56,7 +56,7 @@ public class FileUploadService {
                     Pattern tempPattern = Pattern.compile("^(/.+/[^/]+)\\..+");
                     Matcher tempMatcher = tempPattern.matcher(path);
                     if(tempMatcher.find()){
-                        String thumbnailPath = "/240"+tempMatcher.group(1)+".jpg";
+                        String thumbnailPath = tempMatcher.group(1)+"thumb.jpg";
                         File f = new File(baseDir+thumbnailPath);
                         f.getParentFile().mkdirs();
                         try{
@@ -71,28 +71,14 @@ public class FileUploadService {
                 if(needResize){
                     Path tempFile = temporaryFileStore.store(data);
                     int maxSize;
-                    switch (mediaType){
-                        case THUMBNAIL -> {
-                            maxSize = 240;
-                        }
-                        case PROFILE -> {
-                            maxSize = 72;
-                        }
-                        default -> {
-                            maxSize = 100;
-                        }
+                    if (mediaType == MediaType.PROFILE) {
+                        maxSize = 72;
+                    } else {
+                        maxSize = 100;
                     }
                     GifUtil.gifInputToOutput(tempFile.toFile(),target.toFile(),maxSize);
                 }
-                else if(mediaType==MediaType.THUMBNAIL){
-                    Files.write(target,data);
-                    File newFile = new File(baseDir+"/240"+path);
-                    newFile.getParentFile().mkdirs();
-                    if(file.getContentType().split("/")[1].equals("gif")){
-                        Path tempFile = temporaryFileStore.store(data);
-                        GifUtil.gifInputToOutput(target.toFile(),newFile,240);
-                    }
-                }else{
+                else{
                     Files.write(target,data);
                 }
             }

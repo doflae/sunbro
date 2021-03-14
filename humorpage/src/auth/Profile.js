@@ -74,6 +74,7 @@ function Profile({userDetail,...props}){
                 formData.append('file',blob);
                 formData.append('path',`/${key}`+path);
                 formData.append('needConvert',false)
+                formData.append('needResize',key<Math.max(x.width,x.height))
                 formData.append('mediaType',"PROFILE")
                 Axios.post("/file/upload",formData,{
                   headers:{

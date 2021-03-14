@@ -4,7 +4,7 @@ import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import Axios from "axios"
-import {getToday, getRandomGenerator,isEmpty} from "../utils/Utils"
+import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 
@@ -117,6 +117,10 @@ class Upload extends Component {
       return false;
     }
 
+    sendThumbnail = (elem) => {
+      
+    }
+
     //blob to file list, name-> src 정해서
     submit = () => async (e) =>{
       e.preventDefault();
@@ -134,27 +138,36 @@ class Upload extends Component {
       const isMore = this.checkIsmore();
       data.append('more',isMore)
       const elem = document.querySelector("#ql")
+      //썸네일은 0.5배로 min height 240 max height 500
+      //썸네일 저장소는 사이즈로 구분안되기 때문에 thumb/...로 변경
       if(isMore && elem!==null){
-        const thumbnailPath = filePath+getRandomGenerator(10)+'.'
+        const newPath = filePath+getRandomGenerator(10)
+        const ResizedFilePath = newPath+"thumb.jpg";
         if(elem.tagName==="IMG"){
+          //이미지는 원본 보내고 썸네일도 보내야함
+          //리사이징 이미지는 jpg파일로
           await fetch(elem.src).then(r=>r.blob()).then(blob=>{
-            const newPath = thumbnailPath+blob.type.split("/")[1]
-            elem.setAttribute("src","/file/get?name="+newPath)
-            this.saveFile(blob,newPath,false,"THUMBNAIL")
-            data.append("thumbnailImg","/file/get?name=/240"+newPath)
+            const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
+            elem.setAttribute("src","/file/get?name="+OriginalFilePath)
+            this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
+            ResizeThumbnailImage(blob).then(resizedImage=>{
+              this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
+            })
           })
         }else{
+          //비디오는 원본 보낼시 리사이징 백엔드에서 완료
+          //thumbnailImg만 원본FileOriginName+thumb.jpg
           await fetch(elem.src).then(r=>r.blob()).then(blob=>{
-            const newPath = thumbnailPath+blob.type.split("/")[1]
-            elem.setAttribute("src","/file/get?name="+newPath)
+            const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
+            elem.setAttribute("src","/file/get?name="+OriginalFilePath)
             if(elem.videoWidth>0){
               this.saveFile(blob,newPath,false,"THUMBNAIL")
             }else{
               this.saveFile(blob,newPath,true,"THUMBNAIL")
             }
-            data.append("thumbnailImg","/file/get?name=/240"+thumbnailPath+"jpg")
           })
         }
+        data.append("thumbnailImg","/file/get?name="+ResizedFilePath);
       }
       
       // NEED UPDATE : querySelector -> ref 사용 추천

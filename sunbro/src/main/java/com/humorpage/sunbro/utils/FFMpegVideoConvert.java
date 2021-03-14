@@ -28,10 +28,13 @@ public class FFMpegVideoConvert {
     public void extractThumbNail(String input, String ouput) throws VideoConvertException{
 
         FFmpegBuilder builder = new FFmpegBuilder()
+                .addExtraArgs("-itsoffset","-1")
                 .setInput(input)
                 .addOutput(ouput)
-                .addExtraArgs("-ss","00:00:00.100")
-                .addExtraArgs("-vf","scale=-1:240")//이미지 height 240에 맞춰서 비율 재조정
+                //if video height >= 1000px -> height 500px
+                //else if height>500px -> height / 2
+                //else height
+                .addExtraArgs("-filter:v","scale=-1:'if(gt(ih\\,500)\\,if(gt(ih\\,1000),500,ih/2),ih)',crop=iw:ih")
                 .addExtraArgs("-vframes","1").done();
         try{
             ffmpeg.run(builder);
