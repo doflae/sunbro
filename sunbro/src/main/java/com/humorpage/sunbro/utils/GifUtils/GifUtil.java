@@ -74,7 +74,7 @@ public class GifUtil {
             } else {
                 encoder.setDelay(decoder.getDelay(i));
             }
-            encoder.setTransparent(Color.black);
+            encoder.setTransparent(Color.blue);
         }
         // termino e chiudo
         encoder.finish();

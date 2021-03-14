@@ -138,19 +138,21 @@ class Upload extends Component {
         const thumbnailPath = filePath+getRandomGenerator(10)+'.'
         if(elem.tagName==="IMG"){
           await fetch(elem.src).then(r=>r.blob()).then(blob=>{
-            elem.setAttribute("src",thumbnailPath+blob.type.split("/")[1])
-            this.saveFile(blob,elem.getAttribute("src"),false,"THUMBNAIL")
-            data.append("thumbnailImg",elem.getAttribute("src"))
+            const newPath = thumbnailPath+blob.type.split("/")[1]
+            elem.setAttribute("src","/file/get?name="+newPath)
+            this.saveFile(blob,newPath,false,"THUMBNAIL")
+            data.append("thumbnailImg","/file/get?name=/240"+newPath)
           })
         }else{
           await fetch(elem.src).then(r=>r.blob()).then(blob=>{
-            elem.setAttribute("src",thumbnailPath+blob.type.split("/")[1])
+            const newPath = thumbnailPath+blob.type.split("/")[1]
+            elem.setAttribute("src","/file/get?name="+newPath)
             if(elem.videoWidth>0){
-              this.saveFile(blob,elem.getAttribute("src"),false,"THUMBNAIL")
+              this.saveFile(blob,newPath,false,"THUMBNAIL")
             }else{
-              this.saveFile(blob,elem.getAttribute("src"),true,"THUMBNAIL")
+              this.saveFile(blob,newPath,true,"THUMBNAIL")
             }
-            data.append("thumbnailImg","/240"+thumbnailPath+"jpg")
+            data.append("thumbnailImg","/file/get?name=/240"+thumbnailPath+"jpg")
           })
         }
       }
@@ -163,15 +165,17 @@ class Upload extends Component {
         elem.removeAttribute("class")
         const video = elem.firstElementChild
         video.removeAttribute("class")
+        video.setAttribute("controls","true")
         
         if(video.src.startsWith("blob")){
           await fetch(video.src).then(r=>r.blob()).then(
             blob=>{
-              video.setAttribute("src", filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1])
+              const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+              video.setAttribute("src", "/file/get?name="+newPath)
               if(video.videoWidth>0){
-                this.saveFile(blob,video.getAttribute("src"),false)
+                this.saveFile(blob,newPath,false)
               }else{
-                this.saveFile(blob,video.getAttribute("src"),true)
+                this.saveFile(blob,newPath,true)
               }
             }
           )
@@ -182,8 +186,9 @@ class Upload extends Component {
         if(elem.src.startsWith("blob")){
           await fetch(elem.src).then(r=>r.blob()).then(
             blob=>{
-              elem.setAttribute("src", filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1])
-              this.saveFile(blob,elem.getAttribute("src"),false)
+              const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+              elem.setAttribute("src", "/file/get?name="+newPath)
+              this.saveFile(blob,newPath,false)
             }
           )
         }

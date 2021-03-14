@@ -70,16 +70,21 @@ function CommentUploader({...props}){
     const saveFile = (path) => {
         Object.keys(commentResizedImg).forEach(key=>{
             fetch(commentResizedImg[key]).then(r=>r.blob()).then(blob=>{
-                const formData = new FormData();
-                formData.append('file',blob);
-                formData.append('path',`/${key}`+path);
-                formData.append('needConvert',false)
-                formData.append('mediaType',"COMMENT")
-                Axios.post("/file/upload",formData,{
-                  headers:{
-                    'Content-Type':'multipart/form-data',
-                  }
-                })
+                var x = new Image();
+                x.onload = () =>{
+                    const formData = new FormData();
+                    formData.append('file',blob);
+                    formData.append('path',`/${key}`+path);
+                    formData.append('needConvert',false)
+                    formData.append('needResize',key<Math.max(x.width,x.height))
+                    formData.append('mediaType',"COMMENT")
+                    Axios.post("/file/upload",formData,{
+                        headers:{
+                            'Content-Type':'multipart/form-data',
+                        }
+                    })
+                }
+                x.src = URL.createObjectURL(blob);
             })
         })
         fetch(commentImg).then(r=>r.blob()).then(blob=>{

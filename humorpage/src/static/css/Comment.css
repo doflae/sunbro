@@ -31,12 +31,6 @@
 	cursor: pointer;
 	border: none;
 }
-.comment-userimg{
-	max-width: 32px;
-	max-height: 32px;
-	border-radius: 16px;
-	margin: 0px 10px 10px 5px;
-}
 .comment-context{
 	padding-top: 5px;	
 }

@@ -86,7 +86,7 @@ const Comment = ({...props}) =>{
 
 	if(c==null) return null;
 	return <CommentStyled>
-			<img className="comment-userimg" src={"/72"+c.author.userImg} alt="" onError={(e)=>{
+			<CommentUserImageStyled className="comment-userimg" src={"/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
 				
@@ -190,8 +190,8 @@ export const CommentContext = ({content,media,blob}) =>{
 		src_large = blob.commentImg
 	}else{
 		if(!isEmpty(media)){
-			src_small = `/200${media}`
-			src_large = media
+			src_small = `/file/get?name=/200${media}`
+			src_large = `/file/get?name=${media}`
 		}
 	}
 	const contentChecked = isEmpty(content)?null:sanitizeHarder(content)
@@ -228,6 +228,14 @@ export const RecommentBtn = ({recommentClick, authorName, onOff, id}) =>{
 	return <RecommentBtnStyled onClick={e=>{e.preventDefault();
 		recommentClick(id,authorName)}}>{onOff?"답글 접기":"답글 달기"}</RecommentBtnStyled>
 }
+
+export const CommentUserImageStyled = styled.img`
+	max-width: 32px;
+	max-height: 32px;
+	border-radius: 16px;
+	margin: 0px 10px 10px 5px;
+`
+
 const CommentStyled = styled.div`
 	margin-left: 30px;
 	margin-right: 30px;

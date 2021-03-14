@@ -9,38 +9,9 @@ import Axios from "axios";
 import { ValidationSuccess } from "../forms/ValidationSuccess";
 import styled from "styled-components"
 
-const TopDiv = styled.div`
-    font-size: 20px;
-    font-weight: 700;
-    margin: 20px;
-    border-bottom: 1px solid black;
-`
-const SingupDiv = styled.div`
-    padding:20px
-`
-
-const MyProfileStyledImage = styled.img`
-    width: 120px;
-    height: 120px;
-    border: 1px solid #dddddd;
-    border-radius: 75px;
-`
-
-export const MyProfileResizedImage = ({src, defaultImg})=>{
-    if(defaultImg===null){
-        return <MyProfileStyledImage alt="" 
-        src={src} 
-        onError={e=>{e.target.onError=null;e.target.style.display="none"}}/>
-    }
-    return <MyProfileStyledImage alt="" 
-    src={src} 
-    onError={e=>{e.target.onError=null;e.target.src=defaultImg}}/>
-}
-
-
-function SignupPlatForm({userDetail,...props}){
+function Profile({userDetail,...props}){
     const [userImg,setUserImg] = useState(userDetail.userImg==null?"":userDetail.userImg)
-    const [name,setName] = useState(userDetail.name)
+    const [name,setName] = useState(userDetail.name==null?"":userDetail.name)
     const [gender, setGender] = useState(userDetail.gender==null?"Male":userDetail.gender)
     const [age, setAge] = useState(userDetail.age==null?0:userDetail.age)
     const [canSubmit, setCanSubmit] = useState(null)
@@ -130,7 +101,8 @@ function SignupPlatForm({userDetail,...props}){
         }
     }
     const submit = () => async (e) =>{
-        if(prevName===name||(canSubmit!==null&&canSubmit.startsWith("사"))){
+        if(name!=null && 
+            (prevName===name||(canSubmit!==null&&canSubmit.startsWith("사")))){
             let form = new FormData();
             form.append('uid',userDetail.uid)
             form.append('name',name)
@@ -175,7 +147,8 @@ function SignupPlatForm({userDetail,...props}){
                 )
             }
         }else{
-            setCanSubmit("중복 확인이 필요합니다.");
+            if(name==null) setCanSubmit("내용을 입력해주세요.");
+            else setCanSubmit("중복 확인이 필요합니다.");
         }
     }
     const imageDelete = ()=>(e) =>{
@@ -184,7 +157,7 @@ function SignupPlatForm({userDetail,...props}){
     }
     return <React.Fragment>
         <TopDiv>추가 정보 작성</TopDiv>
-        <SingupDiv>
+        <SignupDiv>
             <div className="myprofile">
                 <div className="myprofile_imgzone">
                     <ImageDeleteBtnStyled onClick={imageDelete()}></ImageDeleteBtnStyled>
@@ -194,7 +167,10 @@ function SignupPlatForm({userDetail,...props}){
                     </div>
                 </div>
             </div>
-            <input type="text" value={name} onChange={e=>{e.preventDefault();setName(e.target.value)}}></input><button onClick={checkDuplicate()}>중복확인</button><br/>
+            <NameInputForm userName={name}
+                pathName={history.location.pathname}
+                setName={setName}
+                checkDuplicate={checkDuplicate}/><br/>
             <ValidationSuccess success={canSubmit}/>
             <label><input type="checkbox" name="gender" value="Male"
             checked={gender==="Male"?true:false}
@@ -224,11 +200,49 @@ function SignupPlatForm({userDetail,...props}){
             </section>
             )}
             </Dropzone>
-        </SingupDiv>
+        </SignupDiv>
     </React.Fragment>
 }
 
+const NameInputForm = ({userName, pathName, setName, checkDuplicate})=>{
+    if(pathName==="/login"){
+        return <React.Fragment>
+            <input type="text" value={userName} 
+        onChange={e=>{e.preventDefault();setName(e.target.value)}}></input>
+        <button onClick={checkDuplicate()}>중복확인</button>
+        </React.Fragment>
+    }else{
+        return <input type="text" value={userName} disabled/>
+    }
+}
 
+export const MyProfileResizedImage = ({src, defaultImg})=>{
+    if(defaultImg===null){
+        return <MyProfileStyledImage alt="" 
+        src={src} 
+        onError={e=>{e.target.onError=null;e.target.style.display="none"}}/>
+    }
+    return <MyProfileStyledImage alt="" 
+    src={src} 
+    onError={e=>{e.target.onError=null;e.target.src=defaultImg}}/>
+}
+
+const TopDiv = styled.div`
+    font-size: 20px;
+    font-weight: 700;
+    margin: 20px;
+    border-bottom: 1px solid black;
+`
+const SignupDiv = styled.div`
+    padding:20px
+`
+
+const MyProfileStyledImage = styled.img`
+    width: 120px;
+    height: 120px;
+    border: 1px solid #dddddd;
+    border-radius: 75px;
+`
 
 const ImageDeleteBtnStyled = styled.button`
     position:absolute;
@@ -259,4 +273,4 @@ const ImageDeleteBtnStyled = styled.button`
     }
 `
 
-export default authWrapper(SignupPlatForm);
+export default authWrapper(Profile);

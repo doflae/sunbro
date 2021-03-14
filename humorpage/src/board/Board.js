@@ -23,7 +23,8 @@ function Board({
     return <div className = "board" ref = {boardRef}>
         <div className="board_top">
             <div className="board_top_left">
-                <img className="author_img" src={"/72"+board.author.userImg} alt="" onError={(e)=>{
+            <BoardAuthorImageStyled src={"/file/get?name=/72"+board.author.userImg}
+                alt="" onError={(e)=>{
                     e.target.onError=null;e.target.src=userDefaultImg;
                 }}/>
             </div>
@@ -77,8 +78,9 @@ const GetDetailBtn = ({...props}) => {
             props.setOffset(current.offsetTop + current.offsetHeight)
             window.scrollTo({top:current.offsetTop,behavior:'smooth'})
             target.innerText="접기"
-            if(props.content===null){
+            if(props.content==null){
                 Axios({method:"get",url:`/board/detail/${props.id}`}).then((res)=>{
+                    console.log(res)
                     if(res.status===200){
                         props.setContent(res.data.data)
                         props.setOnOff(true)
@@ -134,12 +136,19 @@ const MainContentComponent = ({content,thumbnail,onOff}) =>{
         return <BoardDetailStyled dangerouslySetInnerHTML={{__html:sanitizeNonNull(content)}}></BoardDetailStyled>
     }else{
         return <div className="board_thumbnail">
-            <img className="board_thumbnail_img" alt="" srcSet={"/240"+thumbnail.thumbnailImg+" 240w"} onError={(e)=>{
-                e.target.onError=null; e.target.style.display="none"}} src={thumbnail.thumbnailImg}/>
+            <img className="board_thumbnail_img" alt="" onError={(e)=>{
+                e.target.onError=null; e.target.style.display="none"}} 
+                src={thumbnail.thumbnailImg}/>
             <div className="board_thumbnail_text" dangerouslySetInnerHTML={{__html:sanitizeNonNull(thumbnail.thumbnail)}}></div>
         </div>
     }
 }
+
+const BoardAuthorImageStyled = styled.img`
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+`
 
 const BoardTitleStyled = styled.div`
     border-top: 0px;

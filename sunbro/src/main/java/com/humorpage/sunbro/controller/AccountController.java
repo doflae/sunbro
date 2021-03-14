@@ -121,6 +121,7 @@ public class AccountController {
             changeProfileService.ChangeImage(userSimple,path);
             return responseService.getSuccessResult();
         }catch (Exception e){
+            e.printStackTrace();
             return responseService.getFailResult();
         }
     }

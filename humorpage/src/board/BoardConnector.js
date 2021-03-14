@@ -66,7 +66,6 @@ class BoardConnector extends Component{
         }
         this.props.request('get',resturl).then(res=>{
             const resData = res.data.list
-            console.log(resData.length)
             if(0<resData.length && resData.length<11){
                 this.setState({
                     boardList:[...boardList, ...resData],

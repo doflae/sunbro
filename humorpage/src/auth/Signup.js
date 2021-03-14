@@ -2,13 +2,16 @@ import React, {Component} from "react";
 import {withRouter} from "react-router-dom";
 import {authWrapper} from "./AuthWrapper";
 import {SignupForm} from "../forms/SignupForm";
+import Profile from "./Profile"
 import Axios from "axios";
 export const Signup = withRouter(authWrapper(class extends Component{
 
 	constructor(props){
 		super(props);
 		this.state={
-			errorMessage: null
+			errorMessage: null,
+			needProfile:false,
+			userDetail:null,
 		}
         this.PWinValidator = this.PWinValidator.bind(this)
 		this.NameChangedAfterDuplChecked = this.NameChangeAfterDuplChecked.bind(this)
@@ -49,7 +52,13 @@ export const Signup = withRouter(authWrapper(class extends Component{
         formData.append("name",credentials.name)
         Axios.post("/account/signup",formData).then(res=>{
             if(res.data.success){
-                this.props.history.goBack();
+				const userDetail = {};
+				userDetail.uid = credentials.email
+				userDetail.name = credentials.name
+				this.setState({
+					needProfile:true,
+					userDetail:userDetail
+				})
             }
         })
 	}
@@ -60,8 +69,9 @@ export const Signup = withRouter(authWrapper(class extends Component{
 		})
 	}
 
-	render = () =>
-		<div className="row">
+	render = () =>{
+		if(this.state.needProfile) return <Profile userDetail={this.state.userDetail}/>
+		return <div className="row">
 			<div className="col m-2">
 				<SignupForm formModel={this.formModel}
 				defaultAttrs={this.defaultAttrs}
@@ -74,4 +84,5 @@ export const Signup = withRouter(authWrapper(class extends Component{
 				/>
 			</div>
 		</div>
+	}
 }))

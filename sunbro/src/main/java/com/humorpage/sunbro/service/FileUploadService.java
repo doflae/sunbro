@@ -35,8 +35,9 @@ public class FileUploadService {
     public void fileUpload(MultipartFile file, String path, boolean needConvert, MediaType mediaType, boolean needResize){
         try{
             byte[] data = file.getBytes();
-            String baseDir = "C://mediaFiles/";
+            String baseDir = "C://mediaFiles";
             File dir = new File(baseDir +path);
+            System.out.println(baseDir+path);
             dir.getParentFile().mkdirs();
             Path target = Paths.get(baseDir +path);
             if(needConvert){
@@ -68,10 +69,7 @@ public class FileUploadService {
                 temporaryFileStore.delete(tempFile);
             }else{
                 if(needResize){
-                    InputStream inputStream = file.getInputStream();
-                    File tempFile = File.createTempFile(String.valueOf(inputStream.hashCode()),".tmp");
-                    tempFile.deleteOnExit();
-                    FileUtils.copyInputStreamToFile(inputStream,tempFile);
+                    Path tempFile = temporaryFileStore.store(data);
                     int maxSize;
                     switch (mediaType){
                         case THUMBNAIL -> {
@@ -84,9 +82,17 @@ public class FileUploadService {
                             maxSize = 100;
                         }
                     }
-                    GifUtil.gifInputToOutput(tempFile,target.toFile(),maxSize);
+                    GifUtil.gifInputToOutput(tempFile.toFile(),target.toFile(),maxSize);
                 }
-                else{
+                else if(mediaType==MediaType.THUMBNAIL){
+                    Files.write(target,data);
+                    File newFile = new File(baseDir+"/240"+path);
+                    newFile.getParentFile().mkdirs();
+                    if(file.getContentType().split("/")[1].equals("gif")){
+                        Path tempFile = temporaryFileStore.store(data);
+                        GifUtil.gifInputToOutput(target.toFile(),newFile,240);
+                    }
+                }else{
                     Files.write(target,data);
                 }
             }

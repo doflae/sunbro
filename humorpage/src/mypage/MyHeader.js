@@ -54,8 +54,6 @@ function MyHeader({
                     headers:{
                         'Content-Type':'multipart/form-data',
                     }
-                    }).then(res=>{
-                        console.log(res)
                     })
                 }
                 x.src = URL.createObjectURL(blob);
@@ -71,8 +69,6 @@ function MyHeader({
               headers:{
                 'Content-Type':'multipart/form-data',
               }
-            }).then(res=>{
-                console.log(res)
             })
         })
     }
@@ -104,11 +100,13 @@ function MyHeader({
     const imageSubmit = () => (e) => {
         e.preventDefault();
         if(userImg.startsWith("blob")){
-            const filePath = "profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
+            const filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
             saveFile(filePath)
             const formData = new FormData();
             formData.append('path',filePath)
+            console.log("hi")
             props.request("post","/account/update/img",formData).then(res=>{
+                console.log(res)
                 if(res.status===200 && res.data.success){
                     profileImgRef.current.style.margin = "";
                     setIsChanged(false)

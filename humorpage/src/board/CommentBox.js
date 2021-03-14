@@ -11,20 +11,28 @@ function CommentBox({
     const [lastId, setLastId] = useState(null);
     const [keyList, setKeyList] = useState(new Set());
     const [onOff, setOnOff] = useState(false);
-    const [onOffSeeMore, setOnOffSeeMore] = useState(true);
-
+    const [onOffSeeMore, setOnOffSeeMore] = useState(false);
+    const commentCnt = props.comment_cnt
 
     useEffect(()=>{
         const target = props.CommentBtnRef.current
         target.onclick = () =>{
             if(commentList.length===0){
-                getData(3);
+                getData();
             }
             setOnOff(!onOff)
         }
     })
 
-    const getData = (num) =>{
+    useEffect(()=>{
+        if(commentList.length>=commentCnt){
+            setOnOffSeeMore(false);
+        }else{
+            setOnOffSeeMore(true);
+        }
+    },[commentList,commentCnt])
+
+    const getData = () =>{
         const id = props.board_id
         let resturl = `/comment/list?board_id=${id}`
         if(lastId){
@@ -45,12 +53,11 @@ function CommentBox({
             setCommentList(commentList.concat([...temp]));
             setLastId(resLastId)
             setKeyList(keyList)
-            if(res.list.length<num) setOnOffSeeMore(false);
         })
     }
 
     const seeMore = () => (e) =>{
-        getData(10);
+        getData();
     }
     
     const appendComment = (comment) =>{

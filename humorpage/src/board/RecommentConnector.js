@@ -2,7 +2,7 @@ import React from "react"
 import userDefaultImg from "../static/img/user_32x.png";
 import {Link} from 'react-router-dom'
 import {getTime} from "../utils/Utils"
-import {CommentLikeBtn, CommentContext, RecommentBtn} from "./Comment"
+import {CommentLikeBtn, CommentContext, RecommentBtn, CommentUserImageStyled} from "./Comment"
 
 const RecommentConnector = ({...props}) => {
 	if(props.onOff===false) return null;
@@ -22,9 +22,9 @@ const SeeMoreBtn = ({hasMore, getData}) =>{
 const Recomment = ({c, recommentClickHandler,recommentOnId}) =>{
 	if(c==null) return null;
 	return <div className="recomment">
-			<img className="comment-userimg" alt="" src={"/72"+c.author.userImg} onError={(e)=>{
-				e.preventDefault();e.target.onerror=null;e.target.src=userDefaultImg;
-			}}/>
+			<CommentUserImageStyled className="comment-userimg" src={"/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
+					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
+				}}/>
 			
 			<div className="comment-main">
 				<div className="comment-subscript">

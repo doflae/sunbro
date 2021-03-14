@@ -19,7 +19,7 @@ public class FileDeleteService {
     TemporaryFileStore temporaryFileStore;
 
 
-    private final String baseDir = "C://mediaFiles/";
+    private final String baseDir = "C://mediaFiles";
 
     public void DeleteFiles(String path, MediaType mediaType){
         List<String> deleteList = new ArrayList<>(Collections.singletonList(path));
@@ -39,7 +39,7 @@ public class FileDeleteService {
             File f = new File(baseDir+target);
             try{
                 temporaryFileStore.delete(f.toPath());
-            }catch (IOException ignored){
+            }catch (Exception ignored){
 
             }
         });

@@ -51,7 +51,6 @@ public class UserSimple implements UserDetails {
     @JsonIgnore
     private LocalDateTime created;
 
-
     private String role;
     @Override
     @JsonIgnore
