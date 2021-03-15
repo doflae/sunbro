@@ -19,6 +19,7 @@ export const sanitize = (dirty) => sanitizeHtml(dirty,{
       disallowedTagsMode: 'discard',
       allowedAttributes: {
         a: [ 'href', 'name', 'target', 'class' ],
+        div: ['class','frameborder','allowfullscreen'],
         img: ['src','class','style'],
         video:['src','controls','type','style','class']
       },
@@ -199,21 +200,22 @@ export const ResizeImage = (data, maxSize) =>{
 
 //return Promise=>resizedImage(jpeg type blob data)
 export const ResizeThumbnailImage = (data)=>{
-    const maxHeight = 1000
-
     const fileReader = new FileReader();
     var canvas = document.createElement("canvas");
     var image = new Image();
     var resize = () => {
         var width = image.width;
         var height = image.height;
-        if(height>maxHeight){
-            width *= maxHeight/height;
+        var maxSize = Math.max(width,height);
+        var scale = 1
+        if(maxSize>1000){
+            scale = 500 / maxSize
         }
-        height = maxHeight>>1;
-        width >>=1;
-        canvas.width = width;
-        canvas.height = height;
+        else if(maxSize>500){
+            scale = 0.5
+        }
+        canvas.width = width * scale;
+        canvas.height = height * scale;
         canvas.getContext('2d').drawImage(image,0,0,width,height);
         var dataUrl = canvas.toDataURL("image/jpeg");
         return dataUrltoBlob(dataUrl);

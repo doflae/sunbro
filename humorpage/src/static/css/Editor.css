@@ -1,5 +1,5 @@
 .ql-editor {
-    height: 700px;
+    height: 670px;
 }
 .quill-blur {
 display: none;
@@ -15,9 +15,11 @@ display: none;
 }
 .ql-editor .ql-prevideo{
     position: relative;
-    height: 300px;
-    width: 300px;
-    margin: 5px;
+    height: 500px;
+    width: 500px;
+    display: flex;
+    justify-content: center;
+    background: black;
 }
 .ql-editor .video_preview_tempData{
     position: absolute;

@@ -35,16 +35,11 @@
     justify-content: space-between;
     margin-top: 3px;
 }
-.board_thumbnail{
+.board_video{
+    position: relative;
+    height: 500px;
+    width: 500px;
     display: flex;
-}
-.board_thumbnail_text{
-    font-size: 1.2em;
-    padding: 10px;
-}
-.board_thumbnail_img{
-    max-height: 240px;
-    max-width: 240px;
-    width: auto;
-    height:auto;
+    justify-content: center;
+    background: black;
 }

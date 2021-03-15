@@ -70,17 +70,21 @@ function Profile({userDetail,...props}){
     const saveFile = (path) =>{
         Object.keys(userImgResized).forEach(key=>{
             fetch(userImgResized[key]).then(r=>r.blob()).then(blob=>{
-                const formData = new FormData();
-                formData.append('file',blob);
-                formData.append('path',`/${key}`+path);
-                formData.append('needConvert',false)
-                formData.append('needResize',key<Math.max(x.width,x.height))
-                formData.append('mediaType',"PROFILE")
-                Axios.post("/file/upload",formData,{
-                  headers:{
-                    'Content-Type':'multipart/form-data',
-                  }
-                })
+                var x = new Image();
+                x.onload = () =>{
+                    const formData = new FormData();
+                    formData.append('file',blob);
+                    formData.append('path',`/${key}`+path);
+                    formData.append('needConvert',false)
+                    formData.append('needResize',key<Math.max(x.width,x.height))
+                    formData.append('mediaType',"PROFILE")
+                    Axios.post("/file/upload",formData,{
+                      headers:{
+                        'Content-Type':'multipart/form-data',
+                      }
+                    })
+                }
+                x.src = URL.createObjectURL(blob);
             })
         })
         fetch(userImg).then(r=>r.blob()).then(blob=>{

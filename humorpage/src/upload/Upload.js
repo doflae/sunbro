@@ -39,13 +39,12 @@ class CustomVideo extends Video{
     const path = document.createElementNS("http://www.w3.org/2000/svg","path")
     video.setAttribute('controls',true);
     video.setAttribute('type',"video/mp4");
-    video.setAttribute('style',"max-height:100%;max-width:100%;postion:relative;");
+    video.setAttribute('style',"max-height:100%;max-width:100%;postion:relative;margin:3px;");
     video.setAttribute('class',"video_preview");
     video.src = this.sanitize(value.blob)
     temp.setAttribute('class',"video_preview_tempData")
     node.appendChild(video);
     video.onloadeddata = (e) =>{
-      console.log(video.videoWidth, video.videoHeight)
       if(video.videoWidth===0){
         video.removeAttribute("controls")
         node.style.backgroundColor = "#e8eae6"
@@ -151,6 +150,7 @@ class Upload extends Component {
             elem.setAttribute("src","/file/get?name="+OriginalFilePath)
             this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
             ResizeThumbnailImage(blob).then(resizedImage=>{
+              console.log(resizedImage)
               this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
             })
           })
@@ -176,6 +176,7 @@ class Upload extends Component {
         elem.removeAttribute("src")
         elem.removeAttribute("style")
         elem.removeAttribute("class")
+        elem.setAttribute("class","board_video");
         const video = elem.firstElementChild
         video.removeAttribute("class")
         video.setAttribute("controls","true")
