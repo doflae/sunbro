@@ -51,4 +51,7 @@ public class Board implements Serializable {
 
     @Column(name = "more")
     private boolean more;
+
+    @Column(name = "media_dir")
+    private String mediaDir;
 }

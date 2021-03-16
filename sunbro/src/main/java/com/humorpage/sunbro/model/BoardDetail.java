@@ -50,4 +50,6 @@ public class BoardDetail {
     @Transient
     private boolean like;
 
+    @Column(name = "media_dir")
+    private String mediaDir;
 }

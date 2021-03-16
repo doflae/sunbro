@@ -24,14 +24,18 @@ function Board({
     const UpdateBoard = ()=>(e)=>{
         if(props.user==null) history.push("/login")
         if(props.user.usernum===board.author.usernum){
-            props.getBoard(id).then(res=>{
-                console.log(props)
-                // if(res.status===200 && res.data.success){
-                //     history.push(`/update/${id}`)
-                // }else{
-                //     history.push('/login')
-                // }
-            })
+            if(board.content==null){
+                Axios.get(`/board/content/${id}`).then((res)=>{
+                    if(res.status===200){
+                        board.content=res.data.data
+                        props.setBoard(board)
+                        history.push(`/update/${id}`)
+                    }
+                })
+            }else{
+                props.setBoard(board);
+                history.push(`/update/${id}`)
+            }
         }
     }
     const DeleteBoard = ()=>(e)=>{

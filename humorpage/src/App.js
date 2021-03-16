@@ -10,6 +10,7 @@ import {Route, Switch} from "react-router-dom"
 import BoardConnector from "./board/BoardConnector"
 import Footer from "./footer/Footer"
 import Upload from "./upload/Upload"
+import Update from "./upload/Update"
 import Header from "./header/Header"
 import {Login} from "./auth/Login"
 import {Provider} from "react-redux"
@@ -34,7 +35,7 @@ class App extends Component{
                 <Route path="/boards" component={BoardConnector}/>
                 <Route path="/mypage" component={MyPage}/>
                 <Route path="/signup" component={Signup}/>
-                <Route path="/update/:key" component={Upload}/>
+                <Route path="/update/:key" component={Update}/>
                 <Route path="/userpage/:key" component={UserPage}/>
                 <Route path="/board/:key" component={BoardSingleConnector}/>
               </MainBoxStyled>

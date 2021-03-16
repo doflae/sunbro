@@ -1,10 +1,7 @@
 package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
-import com.humorpage.sunbro.model.Board;
-import com.humorpage.sunbro.model.BoardDetail;
-import com.humorpage.sunbro.model.BoardThumbnail;
-import com.humorpage.sunbro.model.UserSimple;
+import com.humorpage.sunbro.model.*;
 import com.humorpage.sunbro.respository.*;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
@@ -58,6 +55,18 @@ public class BoardController {
     @Autowired
     private AssignDirectoryService assignDirectoryService;
 
+    @Autowired
+    private BoardSimpleRepository boardSimpleRepository;
+
+    @GetMapping(value = "/simple/{bid}")
+    SingleResult<BoardSimple> getBoardSimple(@PathVariable Long bid){
+        try {
+            BoardSimple boardSimple = boardSimpleRepository.findById(bid).orElseThrow(CIdSigninFailedException::new);
+            return responseService.getSingleResult(boardSimple);
+        }catch (CIdSigninFailedException e){
+            return responseService.getFailSingleResult();
+        }
+    }
 
     @GetMapping(value = "/dir")
     SingleResult<String> getDirectory(Authentication authentication){
@@ -67,8 +76,8 @@ public class BoardController {
         return responseService.getFailSingleResult();
     }
 
-    @GetMapping(value = "/{bid}")
-    SingleResult<BoardDetail> getBoard(@PathVariable Long bid){
+    @GetMapping(value = "/detail/{bid}")
+    SingleResult<BoardDetail> getBoardDetail(@PathVariable Long bid){
         try {
             BoardDetail boardDetail = boardDetailRepository.findById(bid).orElseThrow(CIdSigninFailedException::new);
             return responseService.getSingleResult(boardDetail);
@@ -186,7 +195,7 @@ public class BoardController {
         return responseService.getListResult(boardThumbnailList);
     }
 
-    @GetMapping("/detail/{board_id}")
+    @GetMapping("/content/{board_id}")
     SingleResult<String> detail(@PathVariable("board_id") Long id){
         return responseService.getSingleResult(boardRepository.findByIdOnlyContent(id));
     }

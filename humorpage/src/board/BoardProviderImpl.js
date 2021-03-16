@@ -1,5 +1,4 @@
 import React, {Component} from "react"
-import Axios from "axios"
 import {BoardContext} from "./BoardContext";
 
 export class BoardProviderImpl extends Component{
@@ -9,20 +8,14 @@ export class BoardProviderImpl extends Component{
             boardDetail:null,
         }
     }
-    getBoard = (bid) =>{
-        return Axios.get(`/board/${bid}`).then(res=>{
-            if(res.status===200 && res.data.success){
-                this.setState({
-                    boardDetail:res.data.data,
-                },()=>{
-                    return res;
-                });
-            }
+    setBoard = (board) =>{
+        this.setState({
+            boardDetail:board,
         })
     }
     render = () =>
         <BoardContext.Provider value={{...this.state,
-        getBoard:this.getBoard}}>
+        setBoard:this.setBoard}}>
             {this.props.children}
         </BoardContext.Provider>
 }
