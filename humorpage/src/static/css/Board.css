@@ -1,18 +1,3 @@
-.author_name{
-    font-size: 1em;
-    font-weight: 700;
-}
-.created{
-    margin-top: 3px;
-    font-size:0.8em;
-}
-.board_top{
-    display: flex;
-    margin-top: 10px;
-}
-.board{
-    margin: 8px 5px 8px 5px;
-}
 .board_title{
     border-top: 0px;
     border-left: 0px;
@@ -21,9 +6,6 @@
     font-size: 1.5rem;
     font-weight: normal;
     border-bottom: 1px solid rgba(94, 93, 93, 0.418);
-}
-.board_top_center{
-    padding-left: 1em;
 }
 .buttons{
     display: -webkit-box;

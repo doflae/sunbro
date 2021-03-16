@@ -163,15 +163,15 @@ function Profile({userDetail,...props}){
     return <React.Fragment>
         <TopDiv>추가 정보 작성</TopDiv>
         <SignupDiv>
-            <div className="myprofile">
-                <div className="myprofile_imgzone">
+            <MyProfileStyled>
+                <MyProfileImageZoneStyled>
                     <ImageDeleteBtnStyled onClick={imageDelete()}></ImageDeleteBtnStyled>
                     <div onClick={imageHandler()}>
                         <MyProfileResizedImage src={userImg} defaultImg = {userDefaultImg}/>
-                        <Pencil width="20" height="20" className="myprofile_pencil"/>
+                        <PencilStyled width="20" height="20"/>
                     </div>
-                </div>
-            </div>
+                </MyProfileImageZoneStyled>
+            </MyProfileStyled>
             <NameInputForm userName={name}
                 pathName={history.location.pathname}
                 setName={setName}
@@ -231,6 +231,25 @@ export const MyProfileResizedImage = ({src, defaultImg})=>{
     src={src} 
     onError={e=>{e.target.onError=null;e.target.src=defaultImg}}/>
 }
+
+const PencilStyled = styled(Pencil)`
+    position: absolute;
+    right: 0;
+    bottom: 5px;
+`
+
+const MyProfileImageZoneStyled = styled.div`
+    position: relative;
+    cursor: pointer;
+    width: min-content;
+    border: solid 1px #dddddd;
+    margin: 10px;
+`
+
+const MyProfileStyled = styled.div`
+    display: flex;
+    position: relative;
+`
 
 const TopDiv = styled.div`
     font-size: 20px;

@@ -29,7 +29,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 	authenticate = (credentials) => {
 		this.props.authenticate(credentials)
 		.then((res)=>{
-			this.props.history.goBack();
+			this.props.history.push("/boards");
 		})
 		.catch(err => {
 			this.setState({errorMessage:err.message})

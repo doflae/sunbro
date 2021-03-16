@@ -62,15 +62,6 @@ public class AccountController {
     @Autowired
     private CheckDuplicateService checkDuplicateService;
 
-    @GetMapping(value = "/check/auth")
-    CommonResult checkAuth(Authentication authentication){
-        if(authentication!=null && authentication.isAuthenticated()){
-            return responseService.getSuccessResult();
-        }else{
-            return responseService.getFailResult();
-        }
-    }
-
     @ApiOperation(value ="id중복 체크 후 이메일 전송")
     @GetMapping(value="/checkdup/id")
     CommonResult checkId(String id){

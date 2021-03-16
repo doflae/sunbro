@@ -16,7 +16,7 @@ import java.util.Date;
 public class EmailAuthService {
 
     @Autowired
-    JavaMailSender emailSender;
+    private JavaMailSender emailSender;
 
     private final SimpleDateFormat emailTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 

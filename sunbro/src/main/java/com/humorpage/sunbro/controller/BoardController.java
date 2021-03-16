@@ -2,6 +2,7 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
 import com.humorpage.sunbro.model.Board;
+import com.humorpage.sunbro.model.BoardDetail;
 import com.humorpage.sunbro.model.BoardThumbnail;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.*;
@@ -9,6 +10,7 @@ import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.*;
+import com.humorpage.sunbro.utils.RandomGenerator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -16,7 +18,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
@@ -51,6 +52,54 @@ public class BoardController {
     @Autowired
     private FileUploadService fileUploadService;
 
+    @Autowired
+    private BoardDetailRepository boardDetailRepository;
+
+    @Autowired
+    private AssignDirectoryService assignDirectoryService;
+
+
+    @GetMapping(value = "/dir")
+    SingleResult<String> getDirectory(Authentication authentication){
+        if(authentication!=null && authentication.isAuthenticated()){
+            return responseService.getSingleResult(assignDirectoryService.assignDirectory());
+        }
+        return responseService.getFailSingleResult();
+    }
+
+    @GetMapping(value = "/{bid}")
+    SingleResult<BoardDetail> getBoard(@PathVariable Long bid){
+        try {
+            BoardDetail boardDetail = boardDetailRepository.findById(bid).orElseThrow(CIdSigninFailedException::new);
+            return responseService.getSingleResult(boardDetail);
+        }catch (CIdSigninFailedException e){
+            return responseService.getFailSingleResult();
+        }
+    }
+
+    @PostMapping(value="/delete")
+    CommonResult deleteBoard(@RequestParam List<Long> boardList, Authentication authentication){
+        System.out.println(boardList);
+        if(authentication==null) return responseService.getFailResult();
+        try{
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+
+            boardList.forEach(bid->{
+                try{
+                    Board board = boardRepository.findById(bid).orElseThrow(CIdSigninFailedException::new);
+                    if(board.getAuthor().getUsernum().equals(userSimple.getUsernum())){
+                        boardRepository.delete(board);
+                    }
+                }catch (CIdSigninFailedException ignored){
+
+                }
+
+            });
+            return responseService.getSuccessResult();
+        }catch (NullPointerException e){
+            return responseService.getFailResult();
+        }
+    }
 
 
     /**
@@ -74,6 +123,7 @@ public class BoardController {
         boardRepository.save(board);
         return responseService.getSuccessResult();
     }
+
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")
     @GetMapping(value = "/likeon")
     CommonResult likeBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
@@ -86,6 +136,7 @@ public class BoardController {
         likesService.savelikeBoard(userSimple.getUsernum(),board_id);
         return responseService.getSuccessResult();
     }
+
     @ApiOperation(value="좋아요 취소",notes = "board_id를 받아 좋아요 off")
     @GetMapping(value = "likeoff")
     CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
@@ -152,7 +203,7 @@ public class BoardController {
     }
 
     @GetMapping("/search")
-    ListResult<BoardThumbnail> all(@RequestParam(required = false, defaultValue = "") String title,
+    ListResult<BoardThumbnail> Search(@RequestParam(required = false, defaultValue = "") String title,
                    @RequestParam(required = false, defaultValue = "") String uid,
                    @RequestParam(required = false, defaultValue = "") String content,Authentication authentication) {
         List<BoardThumbnail> boardThumbnailList;

@@ -33,6 +33,7 @@ display: none;
     white-space: nowrap;
     overflow: hidden;
     color: #1e212d;
+    text-align: center;
     font-size: 1em;
 }
 .video_preview_tempData_url{

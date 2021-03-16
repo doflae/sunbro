@@ -8,18 +8,6 @@ import Axios from "axios"
 import styled from "styled-components"
 import {getRandomGenerator, ResizeImage} from "../utils/Utils"
 
-const SubmitImageBtnStyled = styled.button`
-    width:80px;
-    height:30px;
-    font-size:0.8em;
-    position:absolute;
-`
-
-const SubmitImageBtn = ({isChanged, onClick}) => {
-    if(isChanged) return <SubmitImageBtnStyled onClick={onClick()}>변경 완료</SubmitImageBtnStyled>
-    else return null;
-}
-
 function MyHeader({
     ...props
 }){
@@ -104,7 +92,6 @@ function MyHeader({
             saveFile(filePath)
             const formData = new FormData();
             formData.append('path',filePath)
-            console.log("hi")
             props.request("post","/account/update/img",formData).then(res=>{
                 console.log(res)
                 if(res.status===200 && res.data.success){
@@ -117,23 +104,22 @@ function MyHeader({
     if(user===null){
         return null;
     }
-    return <div className="mypage_header">
-        <div className="myprofile">
-            <div className="myprofile_imgzone">
-                <button className="profileimg_delete" onClick={imageDelete()}></button>
+    return <MyPageHeader>
+        <MyProfile>
+            <MyProfileImgZone>
+                <ProfileImgDelete onClick={imageDelete()}></ProfileImgDelete>
                 <div ref={profileImgRef} onClick={imageHandler()}>
                     <UserImage src={userImg} userDefaultImg={userDefaultImg}/>
-                    <Pencil width="20" height="20" className="myprofile_pencil"/>
+                    <PencilStyled width="20" height="20"/>
                 </div>
-            </div>
+            </MyProfileImgZone>
             <SubmitImageBtn isChanged = {isChanged} onClick={imageSubmit}/>
-        </div>
-    <span className="mypage_user_detail">
-        <div className="mypage_user_name">{user.name}
-        </div>
-        <div className="mypage_user_log">
+        </MyProfile>
+    <span>
+        <MyPageUserName>{user.name}</MyPageUserName>
+        <div>
             게시물 {user.total_board_num} 개  댓글 {user.total_comment_num} 개
-        </div>    
+        </div>
     </span>
 
     <Dropzone
@@ -151,19 +137,99 @@ function MyHeader({
         </section>
         )}
         </Dropzone>
-    </div>
+    </MyPageHeader>
 }
 
 const UserImage = ({src, userDefaultImg}) =>{
     if(src!=null){
         if(src.startsWith("blob")){
-            return <img className="myprofile_img" src={src}
+            return <MyProfileImg src={src}
          alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>
         }else{
-            return <img className="myprofile_img" src={`/file/get?name=${src}`}
+            return <MyProfileImg className="myprofile_img" src={`/file/get?name=${src}`}
             alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>   
         }   
     }
-    return <img alt="" src={userDefaultImg}/>
+    return <MyProfileImg alt="" src={userDefaultImg}/>
 }
+
+const SubmitImageBtn = ({isChanged, onClick}) => {
+    if(isChanged) return <SubmitImageBtnStyled onClick={onClick()}>변경 완료</SubmitImageBtnStyled>
+    else return null;
+}
+
+const MyProfileImg = styled.img`
+    width: 120px;
+    height: 120px;
+    border-radius: 75px;
+`
+
+const MyProfileImgZone = styled.div`
+    position: relative;
+    cursor: pointer;
+    width: min-content;
+    border: solid 1px #dddddd;
+    margin: 10px;
+`
+
+const PencilStyled = styled(Pencil)`
+    position: absolute;
+    right: 0;
+    bottom: 5px;
+`
+
+const MyPageHeader = styled.div`
+    position:relative;
+    display:flex;
+`
+const MyProfile = styled.div`
+    position:relative;
+    display:flex;
+`
+
+const MyPageUserName = styled.div`
+    font-size:1.3em;
+    margin:20px;
+    font-weight:700;
+`
+
+const SubmitImageBtnStyled = styled.button`
+    width:80px;
+    height:30px;
+    font-size:0.8em;
+    position:absolute;
+`
+
+const ProfileImgDelete = styled.button`
+    position:absolute;
+    top:-10px;
+    right:-10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 18px;
+    border: 0px;
+    opacity: 0.6;
+    z-index: 1;
+    &:hover{
+        opacity:1;
+    }
+    &::before, &::after{
+        position:absolute;
+        left: 11px;
+        bottom: 0px;
+        content: ' ';
+        height: 24px;
+        width: 2px;
+        background-color: #333;
+    }
+    &::before{
+        transform: rotate(45deg);
+    }
+    &::after{
+        transform: rotate(-45deg);
+    }
+`
+
+
+
 export default withRouter(authWrapper(MyHeader));

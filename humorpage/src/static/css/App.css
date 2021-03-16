@@ -108,6 +108,10 @@ button:focus{
 	background: #ffffff;
 }
 
+button{
+	outline: 0;
+}
+
 button > span{
 	cursor: inherit;
 }

@@ -3,9 +3,12 @@ import React,{Component,createRef} from "react"
 import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
+import {boardWrapper} from "../board/BoardWrapper"
 import Axios from "axios"
 import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
+import Play from "../static/svg/play.svg";
+
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 
 const Video = Quill.import('formats/video');
@@ -35,8 +38,7 @@ class CustomVideo extends Video{
     const video = document.createElement('video')
     video.setAttribute("id","ql")
     const temp = document.createElement('div')
-    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
-    const path = document.createElementNS("http://www.w3.org/2000/svg","path")
+    const embed = document.createElement('embed')
     video.setAttribute('controls',true);
     video.setAttribute('type',"video/mp4");
     video.setAttribute('style',"max-height:100%;max-width:100%;postion:relative;margin:3px;");
@@ -48,18 +50,13 @@ class CustomVideo extends Video{
       if(video.videoWidth===0){
         video.removeAttribute("controls")
         node.style.backgroundColor = "#e8eae6"
-        svg.setAttributeNS(null,"width","24pt")
-        svg.setAttributeNS(null,"height","24pt")
         const url = document.createElement("div")
         url.setAttribute("class","video_preview_tempData_url")
         url.innerText = value.name;
-        temp.appendChild(svg)
+        embed.src = Play
+        embed.setAttribute("style","width:30px;height:30px;")
+        temp.appendChild(embed)
         temp.appendChild(url);
-        svg.setAttributeNS(null,"viewBox","0 0 320.001 320.001")
-        svg.setAttributeNS(null,"enable-background","new 0 0 320.001 320.001")
-        svg.setAttributeNS(null,"style","display:block;margin:auto;")
-        path.setAttributeNS(null,"d","m295.84 146.049-256-144c-4.96-2.784-11.008-2.72-15.904.128-4.928 2.88-7.936 8.128-7.936 13.824v288c0 5.696 3.008 10.944 7.936 13.824 2.496 1.44 5.28 2.176 8.064 2.176 2.688 0 5.408-.672 7.84-2.048l256-144c5.024-2.848 8.16-8.16 8.16-13.952s-3.136-11.104-8.16-13.952z")
-        svg.appendChild(path)
         node.appendChild(temp)
       }
     }
@@ -86,6 +83,8 @@ class Upload extends Component {
         titleErr:null,
         contentErr:null,
       };
+      this.footer = document.querySelector(".footer")
+      this.mediaDir = props.mediaDir;
     }
     quillRef = null;
     dropzone = null;
@@ -94,14 +93,24 @@ class Upload extends Component {
 
 
     componentDidMount(){
-      this.props.request("get","/account/check/auth").then(res=>{
-        if(res.status===200 && res.data.success===false){
-          this.props.history.push("/login")
-        }
-      })
+      if(this.mediaDir==null){
+        this.props.request("get","/board/dir").then(res=>{
+          if(res.status===200 && res.data.success===false){
+            this.props.history.push("/login")
+          }else{
+            this.mediaDir=res.data.data
+          }
+        })
+      }
+      if(this.footer!=null) document.querySelector(".App").removeChild(this.footer)
       document.querySelector(".ql-mycustom").innerHTML='<svg viewBox="0 0 18 18"> <rect class="ql-stroke" height="12" width="12" x="3" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="5" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="12" y="3"></rect> <rect class="ql-fill" height="2" width="8" x="5" y="8"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="12"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="12"></rect> </svg>'
       document.querySelector(".ql-video").innerHTML='<svg height="18pt" viewBox="-21 -117 682.66672 682" width="18pt" xmlns="http://www.w3.org/2000/svg"><path d="m626.8125 64.035156c-7.375-27.417968-28.992188-49.03125-56.40625-56.414062-50.082031-13.703125-250.414062-13.703125-250.414062-13.703125s-200.324219 0-250.40625 13.183593c-26.886719 7.375-49.03125 29.519532-56.40625 56.933594-13.179688 50.078125-13.179688 153.933594-13.179688 153.933594s0 104.378906 13.179688 153.933594c7.382812 27.414062 28.992187 49.027344 56.410156 56.410156 50.605468 13.707031 250.410156 13.707031 250.410156 13.707031s200.324219 0 250.40625-13.183593c27.417969-7.378907 49.03125-28.992188 56.414062-56.40625 13.175782-50.082032 13.175782-153.933594 13.175782-153.933594s.527344-104.382813-13.183594-154.460938zm-370.601562 249.878906v-191.890624l166.585937 95.945312zm0 0"/></svg>'
     }
+
+    componentWillUnmount(){
+      if(this.footer!=null) document.querySelector(".App").appendChild(this.footer)
+    }
+    
 
     checkIsmore = () =>{
       //1. src체크 -> image든 video든 여러개면 x
@@ -114,10 +123,6 @@ class Upload extends Component {
         return true;
       }
       return false;
-    }
-
-    sendThumbnail = (elem) => {
-      
     }
 
     //blob to file list, name-> src 정해서
@@ -150,7 +155,6 @@ class Upload extends Component {
             elem.setAttribute("src","/file/get?name="+OriginalFilePath)
             this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
             ResizeThumbnailImage(blob).then(resizedImage=>{
-              console.log(resizedImage)
               this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
             })
           })
@@ -159,11 +163,11 @@ class Upload extends Component {
           //thumbnailImg만 원본FileOriginName+thumb.jpg
           await fetch(elem.src).then(r=>r.blob()).then(blob=>{
             const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
-            elem.setAttribute("src","/file/get?name="+OriginalFilePath)
+            elem.setAttribute("src","/file/get?name="+newPath+".jpg")
             if(elem.videoWidth>0){
-              this.saveFile(blob,newPath,false,"THUMBNAIL")
+              this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
             }else{
-              this.saveFile(blob,newPath,true,"THUMBNAIL")
+              this.saveFile(blob,OriginalFilePath,true,"THUMBNAIL")
             }
           })
         }
@@ -404,4 +408,4 @@ class Upload extends Component {
       )
     }
   }
-export default authWrapper(withRouter(Upload));
+export default boardWrapper(authWrapper(withRouter(Upload)));

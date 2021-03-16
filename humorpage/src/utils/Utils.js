@@ -1,10 +1,7 @@
 import sanitizeHtml from "sanitize-html-react"
 import React from "react"
 
-export const sanitizeNonNull = (dirty) =>{
-    const content = sanitize(dirty)
-    return content==="null"?"":content;
-}
+export const sanitizeNonNull = (dirty) => dirty==null?"":sanitize(dirty);
 
 export const sanitize = (dirty) => sanitizeHtml(dirty,{
     allowedTags: [
@@ -58,7 +55,7 @@ export const sanitizeHarder = (dirty) => sanitizeHtml(dirty,{
 })
 
 export const getDate = (datetime) =>{
-    return datetime.replaceAll("-",".").replace("T"," ")
+    return datetime.replaceAll("-",".").split("T")[0]
 }
 
 export const getTime = (datetime) =>{

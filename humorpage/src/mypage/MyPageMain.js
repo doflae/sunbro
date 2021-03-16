@@ -14,7 +14,9 @@ class MyPageMain extends Component{
             target:null
         }
         this.total_num = this.props.total_num
-        this.last_page = this.total_num/this.props.pagesize
+        this.last_page = Math.ceil(this.total_num/this.props.pagesize)
+
+        this.refreshPage = this.refreshPage.bind(this)
     }
     componentDidMount(){
         this.getData(1);
@@ -27,7 +29,7 @@ class MyPageMain extends Component{
                 boards:boardList[pagenum],
                 pagenum:pagenum,
             })
-        }else{
+        }else if(pagenum>0){
             const resturl = `/user/board?num=${pagenum-1}&size=${this.props.pagesize}`
             this.props.request("get", resturl).then(res=>{
                 const resData = res.data.list
@@ -48,6 +50,25 @@ class MyPageMain extends Component{
     pagnation = (pagenum) => (e) =>{
         this.getData(pagenum)
     }
+
+    refreshPage = (pagenum) =>{
+        const {boardList} = this.state;
+        const resturl = `/user/board?num=${pagenum-1}&size=${this.props.pagesize}`
+        this.props.request("get", resturl).then(res=>{
+            console.log(res)
+            const resData = res.data.list
+            if(res.data.success===true){
+                if(resData.length>0){
+                    boardList[pagenum]=[...resData]
+                    this.setState({
+                        boardList:boardList,
+                        boards:boardList[pagenum],
+                        pagenum:pagenum
+                    })
+                }
+            }
+        })
+    }
     
     goPrev = () => (e)=> {
         const {pagenum} = this.state
@@ -64,9 +85,6 @@ class MyPageMain extends Component{
 
     render(){
         const boards = this.state.boards
-        if(boards===null||boards.length===0){
-            return null
-        }
         const num_list = [];
         const now_number = this.state.pagenum
         for(let i=now_number-4;i<now_number+5;i++){
@@ -81,7 +99,7 @@ class MyPageMain extends Component{
             }
         }
         return <div className="mypage_main">
-            <MyBoardConnector boards={this.state.boards}/>
+            <MyBoardConnector boards={boards} refreshPage={this.refreshPage} pagenum={this.state.pagenum}/>
             <div className="mypage_pagnation">
                 <span className="left_triangle"></span>
                 <span className="left_subtext" onClick={this.goPrev()}>이전</span>
