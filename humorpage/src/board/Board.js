@@ -1,4 +1,4 @@
-import React, {useState, useRef} from "react"
+import React, {useState, useRef, useEffect} from "react"
 import userDefaultImg from "../static/img/user_32x.png";
 import CommentBox from "./CommentBox";
 import { useHistory, Link } from "react-router-dom";
@@ -9,7 +9,7 @@ import Axios from "axios"
 import styled from "styled-components"
 
 function Board({
-    board,...props
+    board,setRef,...props
 }){
     const [content, setContent] = useState(board.content);
     const [onOff, setOnOff] = useState(!board.more);
@@ -20,7 +20,9 @@ function Board({
     const id = board.id
     const comments_num = board.comments_num
     const thumbnail = {thumbnail:board.thumbnail,thumbnailImg:board.thumbnailImg};
-
+    useEffect(()=>{
+        if(boardRef.current) setRef(boardRef.current)
+    },[boardRef,setRef])
     const UpdateBoard = ()=>(e)=>{
         if(props.user==null) history.push("/login")
         if(props.user.usernum===board.author.usernum){
@@ -129,8 +131,7 @@ const GetDetailBtn = ({...props}) => {
             window.scrollTo({top:current.offsetTop,behavior:'smooth'})
             target.innerText="접기"
             if(props.content==null){
-                Axios({method:"get",url:`/board/detail/${props.id}`}).then((res)=>{
-                    console.log(res)
+                Axios({method:"get",url:`/board/content/${props.id}`}).then((res)=>{
                     if(res.status===200){
                         props.setContent(res.data.data)
                         props.setOnOff(true)

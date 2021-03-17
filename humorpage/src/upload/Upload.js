@@ -23,10 +23,11 @@ class CustomImage extends Image{
     return image
   }
   static sanitize(url){
-    if(url){
-      console.log(url)
-      if(url.startsWith("blob")) return URL.createObjectURL(url);
-      return url;
+    if(url!=null) {
+      if(typeof(url)==="string"){
+        return url;
+      }
+      else return URL.createObjectURL(url);
     }
     else return null;
   }
@@ -34,7 +35,7 @@ class CustomImage extends Image{
 
 CustomImage.blotName = 'image';
 
-Quill.register("formats/myimage",CustomImage,false);
+Quill.register("formats/image",CustomImage,false);
 
 class CustomVideo extends Video{
   static create(value){
@@ -68,20 +69,23 @@ class CustomVideo extends Video{
   }
 
   static sanitize(url){
-    if(url){
-      console.log(url)
-      if(url.startsWith("blob")) return URL.createObjectURL(url);
-      return url;
+    console.log(url)
+    if(url!=null) {
+      if(typeof(url)==="string"){
+        return url;
+      }
+      else return URL.createObjectURL(url);
     }
     else return null;
   }
 };
 
-CustomVideo.blotName = 'video';
+CustomVideo.blotName = 'myvideo';
 CustomVideo.className = "ql-prevideo";
 CustomVideo.tagName = "DIV";
 
-Quill.register('formats/myvideo', CustomVideo,false);
+Quill.register('formats/myvideo', CustomVideo, false);
+
 class Upload extends Component {
     constructor(props) {
       super(props)
@@ -275,7 +279,7 @@ class Upload extends Component {
 
               var blob = new Blob([ab], {type: mimeString});
               const data = {blob:blob,name:_file.name}
-              quill.insertEmbed(range.index,"video",data);
+              quill.insertEmbed(range.index,"myvideo",data,'user');
               quill.setSelection(range.index + 1);
               quill.focus();
             }
@@ -305,56 +309,60 @@ class Upload extends Component {
     };
 
     imageHandler = () => {
-      this.setState({
-        open:"image/*"
-      })
-      if (this.dropzone) this.dropzone.open();
+      const quill = this.quillRef.getEditor();
+      console.log(quill)
+      // this.setState({
+      //   open:"image/*"
+      // })
+      // if (this.dropzone) this.dropzone.open();
     };
     videoHandler = () => {
       this.setState({
         open:"video/*"
       })
       if (this.dropzone) this.dropzone.open();
-
+    }
+    youtubeHandler = () =>{
+      let url = prompt("Enter Video URL: ");
+      if(url){
+        url = this.getVideoUrl(url);
+        const quill = this.quillRef.getEditor();
+        let range = quill.getSelection();
+        if (url != null) {
+            quill.insertEmbed(range, 'video', url);
+        }
+      }
+    }
+    
+    getVideoUrl(url) {
+      let match = url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
+          url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
+          url.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
+      if (match && match[2].length === 11) {
+          return `https://www.youtube.com/embed/${match[2]}?showinfo=0`
+      }
+      if (match = url.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/)) { // eslint-disable-line no-cond-assign
+          return (match[1] || 'https') + '://player.vimeo.com/video/' + match[2] + '/';
+      }
+      return null;
     }
   
     modules = {
       toolbar: {
         container: [
-          ["bold", "italic", "underline", "strike", "blockquote"],
-          [{ size: ["small", false, "large", "huge"] }, { color: [] }],
-          [
-            { list: "ordered" },
-            { list: "bullet" },
-            { indent: "-1" },
-            { indent: "+1" },
-            { align: [] }
-          ],
-          ["link", "image", "mycustom","video"]
+          ["image", "mycustom","video"]
         ],
-        handlers: { image: this.imageHandler,
-          mycustom: this.videoHandler
+        handlers: { image : this.imageHandler,
+          mycustom : this.videoHandler
         }
       },
       clipboard: { matchVisual: false }
     };
   
     formats = [
-      "header",
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "blockquote",
-      "size",
-      "color",
-      "list",
-      "bullet",
-      "indent",
-      "link",
       "image",
       "video",
-      "align"
+      "myvideo"
     ];
 
   onChangeContents = (contents) => {

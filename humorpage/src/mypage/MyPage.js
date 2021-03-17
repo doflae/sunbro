@@ -3,7 +3,6 @@ import {withRouter} from 'react-router-dom'
 import {authWrapper} from "../auth/AuthWrapper"
 import MyHeader from "./MyHeader"
 import MyPageMain from "./MyPageMain"
-import MyLikePageMain from "./MyLikePageMain"
 
 class MyPage extends Component{
     constructor(props){
@@ -39,9 +38,10 @@ class MyPage extends Component{
                 <button className="mypage_option_btn" onClick={(e)=>{e.preventDefault();this.setState({option:0})}}>내가 쓴 글</button>
                 <button className="mypage_option_btn" onClick={(e)=>{e.preventDefault();this.setState({option:1})}}>좋아요 누른 글</button>
             </div>
-            {this.state.option===0?<MyPageMain pagesize={this.state.pagesize} total_num={this.state.userDetail.total_board_num}/>:null}
-            {this.state.option===1?<MyLikePageMain pagesize={this.state.pagesize} total_num={this.state.userDetail.total_board_likes}/>:null}
-        </span>
+                <MyPageMain pagesize={this.state.pagesize} 
+                total_num={this.state.userDetail.total_board_num}
+                option={this.state.option}/>
+            </span>
     }
 }
 

@@ -30,7 +30,15 @@ class MyPageMain extends Component{
                 pagenum:pagenum,
             })
         }else if(pagenum>0){
-            const resturl = `/user/board?num=${pagenum-1}&size=${this.props.pagesize}`
+            const option = this.props.option
+            let resturl;
+            console.log(option)
+            if(option===0){
+                resturl = `/user/board?num=${pagenum-1}&size=${this.props.pagesize}`
+            }
+            else if(option===1){
+                resturl = `/user/likes?num=${pagenum-1}&size=${this.props.pagesize}`
+            }
             this.props.request("get", resturl).then(res=>{
                 const resData = res.data.list
                 if(res.data.success===true){
@@ -53,19 +61,18 @@ class MyPageMain extends Component{
 
     refreshPage = (pagenum) =>{
         const {boardList} = this.state;
+        console.log(pagenum)
         const resturl = `/user/board?num=${pagenum-1}&size=${this.props.pagesize}`
         this.props.request("get", resturl).then(res=>{
             console.log(res)
             const resData = res.data.list
             if(res.data.success===true){
-                if(resData.length>0){
-                    boardList[pagenum]=[...resData]
-                    this.setState({
-                        boardList:boardList,
-                        boards:boardList[pagenum],
-                        pagenum:pagenum
-                    })
-                }
+                boardList[pagenum]=[...resData]
+                this.setState({
+                    boardList:boardList,
+                    boards:boardList[pagenum],
+                    pagenum:pagenum
+                })
             }
         })
     }
@@ -99,7 +106,8 @@ class MyPageMain extends Component{
             }
         }
         return <div className="mypage_main">
-            <MyBoardConnector boards={boards} refreshPage={this.refreshPage} pagenum={this.state.pagenum}/>
+            <MyBoardConnector boards={boards} refreshPage={this.refreshPage}
+             pagenum={this.state.pagenum} option={this.props.option}/>
             <div className="mypage_pagnation">
                 <span className="left_triangle"></span>
                 <span className="left_subtext" onClick={this.goPrev()}>이전</span>

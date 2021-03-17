@@ -14,17 +14,14 @@ function Header({...props}){
   }
   const imageClick = () => (e) =>{
     history.push("/boards")
-    history.go();
   }
 
   const goMypage = () => (e)=>{
     history.push("/mypage")
-    history.go();
   }
 
   const goLogin = () => (e) =>{
     history.push("/login")
-    history.go();
   }
   return <header className="head">
   <div className="head_logo" onClick={imageClick()}>

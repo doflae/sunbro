@@ -10,6 +10,7 @@ class BoardConnector extends Component{
             last_board:0,
         };
         this.boardElements = [];
+        this.registerRef = this.registerRef.bind(this)
     }
 
     registerRef = (elem) =>{
@@ -91,7 +92,7 @@ class BoardConnector extends Component{
     render(){
         const boardList = this.state.boardList;
         if(boardList.length===0) return null;
-        return boardList.map(board => <Board ref={this.registerRef} board={board} key={board.id}/>)
+        return boardList.map(board => <Board setRef={this.registerRef} board={board} key={board.id}/>)
     }
 }
 

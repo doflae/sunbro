@@ -41,10 +41,13 @@ class Update extends Component {
         if(this.boardDetail==null){
             this.props.request("get",`/board/simple/${this.props.match.params.key}`)
             .then(res=>{
-                if(res.status===200){
+                if(res.status===200 && res.data.success){
                     this.titleRef.current.value = res.data.data.title
                     this.boardDetail = res.data.data
                     this.insertBoard(this.boardDetail.content)
+                }else{
+                    alert("해당 글의 작성자가 아닙니다.")
+                    this.props.history.goBack();
                 }
             })
         }else{

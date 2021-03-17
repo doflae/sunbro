@@ -59,13 +59,17 @@ public class BoardController {
     private BoardSimpleRepository boardSimpleRepository;
 
     @GetMapping(value = "/simple/{bid}")
-    SingleResult<BoardSimple> getBoardSimple(@PathVariable Long bid){
+    SingleResult<BoardSimple> getBoardSimple(@PathVariable Long bid,
+                                             Authentication authentication){
         try {
             BoardSimple boardSimple = boardSimpleRepository.findById(bid).orElseThrow(CIdSigninFailedException::new);
-            return responseService.getSingleResult(boardSimple);
-        }catch (CIdSigninFailedException e){
+            if(boardSimple.getAuthor().equals(authentication.getPrincipal())){
+                return responseService.getSingleResult(boardSimple);
+            }
+        }catch (Exception e){
             return responseService.getFailSingleResult();
         }
+        return responseService.getFailSingleResult();
     }
 
     @GetMapping(value = "/dir")

@@ -213,7 +213,7 @@ export const ResizeThumbnailImage = (data)=>{
         }
         canvas.width = width * scale;
         canvas.height = height * scale;
-        canvas.getContext('2d').drawImage(image,0,0,width,height);
+        canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
         var dataUrl = canvas.toDataURL("image/jpeg");
         return dataUrltoBlob(dataUrl);
     }
