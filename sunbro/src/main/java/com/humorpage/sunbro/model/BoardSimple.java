@@ -26,6 +26,9 @@ public class BoardSimple {
     @JoinColumn(name = "author_num")
     private UserSimple author;
 
+    @Column(name = "thumbnailImg")
+    private String thumbnailImg;
+
     @Column(name = "media_dir")
     private String mediaDir;
 }

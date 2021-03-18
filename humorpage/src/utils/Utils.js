@@ -18,7 +18,7 @@ export const sanitize = (dirty) => sanitizeHtml(dirty,{
         a: [ 'href', 'name', 'target', 'class' ],
         div: ['class','frameborder','allowfullscreen'],
         img: ['src','class','style'],
-        video:['src','controls','type','style','class'],
+        video:['src','controls','type','style','class','tabindex','controlsList'],
         iframe:['*'],
       },
       selfClosing: [ 'img', 'br', 'hr', 'area', 'base', 'basefont', 'input', 'link', 'meta' ],
@@ -74,6 +74,7 @@ export const getDate = (datetime) =>{
 }
 
 export const getTime = (datetime) =>{
+    if(datetime==null) return null
     let t = parseInt((Date.now() - Date.parse(datetime))/1000)
     if(t<60){
         return "방금 전"

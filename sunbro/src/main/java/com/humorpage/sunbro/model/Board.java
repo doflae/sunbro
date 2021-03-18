@@ -1,20 +1,21 @@
 package com.humorpage.sunbro.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Data
 @Table(name="board")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Board implements Serializable {
 
     @Id
@@ -33,15 +34,6 @@ public class Board implements Serializable {
 
     @Column(name = "thumbnailImg")
     private String thumbnailImg;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created")
-    @CreationTimestamp
-    private LocalDateTime created;
-
-    @GeneratedValue
-    @Column(name ="updated")
-    private LocalDateTime updated;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_num")

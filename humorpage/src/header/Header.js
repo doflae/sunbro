@@ -12,16 +12,30 @@ function Header({...props}){
       }
     )
   }
+  const nowPath = history.location.pathname
+  const myPush = (target) =>{
+    const nowPathOrigin = nowPath.match(/^\/([^/.]*).*$/g)
+    const targetPathOrigin = target.match(/^\/([^/.]*).*$/g)
+    if(nowPathOrigin!=null && targetPathOrigin!=null){
+      if(nowPathOrigin[1] === targetPathOrigin[1]){
+        history.push(target);
+        history.go();
+      }
+    }
+    else{
+      history.push(target);
+    }
+  }
   const imageClick = () => (e) =>{
-    history.push("/boards")
+    myPush("/boards")
   }
 
   const goMypage = () => (e)=>{
-    history.push("/mypage")
+    myPush("/mypage")
   }
 
   const goLogin = () => (e) =>{
-    history.push("/login")
+    myPush("/login")
   }
   return <header className="head">
   <div className="head_logo" onClick={imageClick()}>

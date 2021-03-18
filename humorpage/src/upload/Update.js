@@ -5,7 +5,12 @@ import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import {boardWrapper} from "../board/BoardWrapper"
 import Axios from "axios"
-import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage, sanitizeUrl} from "../utils/Utils"
+import {getToday, 
+  getRandomGenerator,
+  isEmpty, 
+  ResizeThumbnailImage, 
+  sanitizeUrl,
+  dataUrltoBlob} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
@@ -19,8 +24,7 @@ class Update extends Component {
             titleErr:null,
             contentErr:null,
             boardDetail:props.boardDetail
-        };
-        this.footer = document.querySelector(".footer")
+        };  
         
         this.quillRef = null;
         this.dropzone = null;
@@ -30,16 +34,14 @@ class Update extends Component {
 
     insertBoard = (boardContent) =>{
       const quill = this.quillRef.getEditor();
-      const delta = quill.clipboard.convert(boardContent)
-      console.log(delta)
-      quill.updateContents(delta,'silent');
+      quill.clipboard.dangerouslyPasteHTML(boardContent)
     }
 
     componentDidMount(){
       const quill = this.quillRef.getEditor();
       const tooltip = quill.theme.tooltip;
       quill.clipboard.addMatcher("DIV",(node,delta)=>{
-        delta.insert({myvideo:node.firstElementChild.getAttribute('src')})
+        delta.insert({'myvideo':node.firstElementChild.getAttribute('src')})
         return delta;
       })
       tooltip.save = () =>{
@@ -50,30 +52,23 @@ class Update extends Component {
         }
         tooltip.hide();
       }
-      if(this.boardDetail==null){
-          this.props.request("get",`/board/simple/${this.props.match.params.key}`)
-          .then(res=>{
-              if(res.status===200 && res.data.success){
-                  this.titleRef.current.value = res.data.data.title
-                  this.boardDetail = res.data.data
-                  this.insertBoard(this.boardDetail.content)
-              }else{
-                  alert("해당 글의 작성자가 아닙니다.")
-                  this.props.history.goBack();
-              }
-          })
-      }else{
-          this.titleRef.current.value = this.boardDetail.title
-          this.insertBoard(this.boardDetail.content)
-      }
-      if(this.footer!=null) document.querySelector(".App").removeChild(this.footer)
+      this.props.request("get",`/board/simple/${this.props.match.params.key}`)
+      .then(res=>{
+          if(res.status===200 && res.data.success){
+              this.titleRef.current.value = res.data.data.title
+              this.boardDetail = res.data.data
+              quill.clipboard.dangerouslyPasteHTML(this.boardDetail.content)
+              console.log(this.boardDetail)
+          }else{
+              alert("해당 글의 작성자가 아닙니다.")
+              this.props.history.goBack();
+          }
+      })
+      
       document.querySelector(".ql-mycustom").innerHTML='<svg viewBox="0 0 18 18"> <rect class="ql-stroke" height="12" width="12" x="3" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="5" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="12" y="3"></rect> <rect class="ql-fill" height="2" width="8" x="5" y="8"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="12"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="12"></rect> </svg>'
       document.querySelector(".ql-video").innerHTML='<svg height="18pt" viewBox="-21 -117 682.66672 682" width="18pt" xmlns="http://www.w3.org/2000/svg"><path d="m626.8125 64.035156c-7.375-27.417968-28.992188-49.03125-56.40625-56.414062-50.082031-13.703125-250.414062-13.703125-250.414062-13.703125s-200.324219 0-250.40625 13.183593c-26.886719 7.375-49.03125 29.519532-56.40625 56.933594-13.179688 50.078125-13.179688 153.933594-13.179688 153.933594s0 104.378906 13.179688 153.933594c7.382812 27.414062 28.992187 49.027344 56.410156 56.410156 50.605468 13.707031 250.410156 13.707031 250.410156 13.707031s200.324219 0 250.40625-13.183593c27.417969-7.378907 49.03125-28.992188 56.414062-56.40625 13.175782-50.082032 13.175782-153.933594 13.175782-153.933594s.527344-104.382813-13.183594-154.460938zm-370.601562 249.878906v-191.890624l166.585937 95.945312zm0 0"/></svg>'
     }
 
-    componentWillUnmount(){
-      if(this.footer!=null) document.querySelector(".App").appendChild(this.footer)
-    }
     
 
     checkIsmore = () =>{
@@ -100,42 +95,43 @@ class Update extends Component {
         return
       }
       var content = document.querySelector(".ql-editor").innerHTML
-      const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+"/"
+      const filePath = "/"+getToday()+"/"+this.boardDetail.mediaDir+"/"
       // path = /240/path.jpg
-      let data = new FormData();
       const isMore = this.checkIsmore();
-      data.append('more',isMore)
       const elem = document.querySelector("#ql")
       //썸네일은 0.5배로 min height 240 max height 500
       //썸네일 저장소는 사이즈로 구분안되기 때문에 thumb/...로 변경
       if(isMore && elem!==null){
-        const newPath = filePath+getRandomGenerator(10)
-        const ResizedFilePath = newPath+"thumb.jpg";
-        if(elem.tagName==="IMG"){
-          //이미지는 원본 보내고 썸네일도 보내야함
-          //리사이징 이미지는 jpg파일로
-          await fetch(elem.src).then(r=>r.blob()).then(blob=>{
-            const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
-            elem.setAttribute("src","/file/get?name="+OriginalFilePath)
-            this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
-            ResizeThumbnailImage(blob).then(resizedImage=>{
-              this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
-            })
-          })
-        }else{
-          //비디오는 원본 보낼시 리사이징 백엔드에서 완료
-          //thumbnailImg만 원본FileOriginName+thumb.jpg
-          await fetch(elem.src).then(r=>r.blob()).then(blob=>{
-            const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
-            elem.setAttribute("src","/file/get?name="+OriginalFilePath)
-            if(elem.videoWidth>0){
+        const src = elem.getAttribute('src');
+        if(!src.startsWith("/file")){
+          const newPath = filePath+getRandomGenerator(10)
+          const ResizedFilePath = newPath+"thumb.jpg";
+          if(elem.tagName==="IMG"){
+            //이미지는 원본 보내고 썸네일도 보내야함
+            //리사이징 이미지는 jpg파일로
+            await fetch(elem.src).then(r=>r.blob()).then(blob=>{
+              const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
+              elem.setAttribute("src","/file/get?name="+OriginalFilePath)
               this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
-            }else{
-              this.saveFile(blob,OriginalFilePath,true,"THUMBNAIL")
-            }
-          })
+              ResizeThumbnailImage(blob).then(resizedImage=>{
+                this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
+              })
+            })
+          }else{
+            //비디오는 원본 보낼시 리사이징 백엔드에서 완료
+            //thumbnailImg만 원본FileOriginName+thumb.jpg
+            await fetch(elem.src).then(r=>r.blob()).then(blob=>{
+              const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
+              elem.setAttribute("src","/file/get?name="+OriginalFilePath)
+              if(elem.videoWidth>0){
+                this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
+              }else{
+                this.saveFile(blob,OriginalFilePath,true,"THUMBNAIL")
+              }
+            })
+          }
+          this.boardDetail.thumbnailImg = "/file/get?name="+ResizedFilePath;
         }
-        data.append("thumbnailImg","/file/get?name="+ResizedFilePath);
       }
       
       // NEED UPDATE : querySelector -> ref 사용 추천
@@ -165,22 +161,32 @@ class Update extends Component {
       }
       for(const elem of document.querySelectorAll(".image_preview")){
         elem.removeAttribute("class")
-        if(elem.src.startsWith("blob")){
-          await fetch(elem.src).then(r=>r.blob()).then(
+        const src = elem.src
+        if(src.startsWith("blob")){
+          await fetch(src).then(r=>r.blob()).then(
             blob=>{
               const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
               elem.setAttribute("src", "/file/get?name="+newPath)
               this.saveFile(blob,newPath,false)
             }
           )
+        }else if(src.startsWith("data")){
+          const blob = dataUrltoBlob(src);
+          const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+          elem.setAttribute("src", "/file/get?name="+newPath)
+          this.saveFile(blob,newPath,false)
         }
       }
       content = document.querySelector(".ql-editor").innerHTML
-      var real = document.querySelector(".ql-editor").innerText
-      if (!isEmpty(real) || content.search("img")!==-1||content.search("video")!==-1){
+      if (document.querySelector("#ql")!=null){
+        const data = new FormData();
         data.append('title',title)
         data.append('content',content)
-        if(isMore) data.append('thumbnail',real.slice(0,100))
+        data.append('more',isMore)
+        data.append('thumbnailImg',this.boardDetail.thumbnailImg)
+        data.append('id',this.boardDetail.id)
+        data.append('mediaDir',this.boardDetail.mediaDir)
+
         Axios.post("/board/upload",data).then(res =>{
           if (res.status ===200){
             this.props.history.push("/boards");
@@ -190,12 +196,13 @@ class Update extends Component {
         })
       }else{
         this.setState({
-          contentErr:["내용을 입력해주세요."],
+          contentErr:["미디어 파일을 포함해야 합니다."],
         })
       }
     }
 
     saveFile = (file,path,needConvert,mediaType="BOARD") => {
+      this.mediaFileSend = true
       const formData = new FormData();
       formData.append('file',file);
       formData.append('path',path);

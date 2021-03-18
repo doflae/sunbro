@@ -131,7 +131,6 @@ public class BoardController {
         }catch (NullPointerException e){
             return responseService.getDetailResult(false,-1,"Need to Login");
         }
-        System.out.println(board.toString());
         board.setAuthor(userSimple);
         boardRepository.save(board);
         return responseService.getSuccessResult();
