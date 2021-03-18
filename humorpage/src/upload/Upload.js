@@ -4,7 +4,7 @@ import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import Axios from "axios"
-import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage} from "../utils/Utils"
+import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage, sanitizeUrl} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 import Play from "../static/svg/play.svg";
 
@@ -12,17 +12,48 @@ const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 
 const Video = Quill.import('formats/video');
 const Image = Quill.import('formats/image');
+const BlockEmbed = Quill.import('blots/block/embed');
+
+class MediaBlot extends BlockEmbed{
+    static create(value){
+        const node = super.create();
+        const url = sanitizeUrl(value);
+        node.setAttribute('id',"ql");
+        node.setAttribute('frameborder', '0');
+        node.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture');
+        node.setAttribute('allowtransparency', true);
+        node.setAttribute('allowfullscreen', true);
+        node.setAttribute('scrolling', '0');
+        node.setAttribute('width', '100%');
+        node.setAttribute('height', '315px');
+        if(url!=null) node.setAttribute('src',url);
+        return node;
+    }
+
+    static sanitize(url){
+      return sanitizeUrl(url);
+    }
+
+    static value(node){
+      return node.getAttribute('src');
+    }
+}
+
+MediaBlot.blotName = "video";
+MediaBlot.tagName = "iframe";
+Quill.register("formats/video",MediaBlot,false);
+
 
 class CustomImage extends Image{
   static create(value){
     const image = document.createElement('img')
-    image.src = this.sanitize(value)
+    image.src = this.getUrl(value)
     image.setAttribute("style","max-height:100%;max-width:100%;")
     image.className="image_preview"
     image.setAttribute("id","ql")
     return image
   }
-  static sanitize(url){
+  static getUrl(url){
     if(url!=null) {
       if(typeof(url)==="string"){
         return url;
@@ -48,7 +79,7 @@ class CustomVideo extends Video{
     video.setAttribute('type',"video/mp4");
     video.setAttribute('style',"max-height:100%;max-width:100%;postion:relative;margin:3px;");
     video.setAttribute('class',"video_preview");
-    video.src = this.sanitize(value.blob)
+    video.src = this.getUrl(value.blob==null?value:value.blob)
     temp.setAttribute('class',"video_preview_tempData")
     node.appendChild(video);
     video.onloadeddata = (e) =>{
@@ -68,8 +99,11 @@ class CustomVideo extends Video{
     return node
   }
 
-  static sanitize(url){
-    console.log(url)
+  static value(node){
+    return node.firstElementChild.getAttribute('src');
+  }
+
+  static getUrl(url){
     if(url!=null) {
       if(typeof(url)==="string"){
         return url;
@@ -100,11 +134,23 @@ class Upload extends Component {
       
       this.quillRef = null;
       this.dropzone = null;
+      this.mediaFileSend = false;
       this.titleRef = createRef();
     }
 
 
     componentDidMount(){
+      const quill = this.quillRef.getEditor();
+      const tooltip = quill.theme.tooltip;
+      
+      // tooltip.save = () =>{
+      //   const url = sanitizeUrl(tooltip.textbox.value)
+      //   if(url!=null) {
+      //     const range = tooltip.quill.selection.savedRange
+      //     quill.insertEmbed(range.index+range.length,'video',url,'user');
+      //   }
+      //   tooltip.hide();
+      // }
       if(this.mediaDir==null){
         //이후 ip마다 1개씩 할당
         this.props.request("get","/board/dir").then(res=>{
@@ -152,39 +198,51 @@ class Upload extends Component {
       const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+"/"
       // path = /240/path.jpg
       let data = new FormData();
+      //썸네일 만들지 여부
       const isMore = this.checkIsmore();
       data.append('more',isMore)
-      const elem = document.querySelector("#ql")
+      const mediaElem = document.querySelector("#ql")
       //썸네일은 0.5배로 min height 240 max height 500
       //썸네일 저장소는 사이즈로 구분안되기 때문에 thumb/...로 변경
-      if(isMore && elem!==null){
+      if(isMore && mediaElem!==null){
         const newPath = filePath+getRandomGenerator(10)
         const ResizedFilePath = newPath+"thumb.jpg";
-        if(elem.tagName==="IMG"){
+        const tag = mediaElem.tagName
+        if(tag==="IMG"){
           //이미지는 원본 보내고 썸네일도 보내야함
           //리사이징 이미지는 jpg파일로
-          await fetch(elem.src).then(r=>r.blob()).then(blob=>{
+          await fetch(mediaElem.src).then(r=>r.blob()).then(blob=>{
             const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
-            elem.setAttribute("src","/file/get?name="+OriginalFilePath)
+            mediaElem.setAttribute("src","/file/get?name="+OriginalFilePath)
             this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
             ResizeThumbnailImage(blob).then(resizedImage=>{
               this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
             })
           })
-        }else{
+          data.append("thumbnailImg","/file/get?name="+ResizedFilePath);
+        }else if(tag==="VIDEO"){
           //비디오는 원본 보낼시 리사이징 백엔드에서 완료
           //thumbnailImg만 원본FileOriginName+thumb.jpg
-          await fetch(elem.src).then(r=>r.blob()).then(blob=>{
+          await fetch(mediaElem.src).then(r=>r.blob()).then(blob=>{
             const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
-            elem.setAttribute("src","/file/get?name="+OriginalFilePath)
-            if(elem.videoWidth>0){
+            mediaElem.setAttribute("src","/file/get?name="+OriginalFilePath)
+            if(mediaElem.videoWidth>0){
               this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
             }else{
               this.saveFile(blob,OriginalFilePath,true,"THUMBNAIL")
             }
           })
+          data.append("thumbnailImg","/file/get?name="+ResizedFilePath);
+        }else if(tag==="IFRAME"){
+          //youtube => https://img.youtube.com/vi/<insert-youtube-video-id-here>/sddefault.jpg
+          const youtubePattern = /.*\/([^?.]*)\?.*/g
+          const src = mediaElem.getAttribute("src");
+          const Id = youtubePattern.exec(src)
+          if(Id.length>0){
+            const thumbNailSrc = `https://img.youtube.com/vi/${Id[1]}/sddefault.jpg`
+            data.append("thumbnailImg",thumbNailSrc);
+          }
         }
-        data.append("thumbnailImg","/file/get?name="+ResizedFilePath);
       }
       
       // NEED UPDATE : querySelector -> ref 사용 추천
@@ -225,11 +283,9 @@ class Upload extends Component {
         }
       }
       content = document.querySelector(".ql-editor").innerHTML
-      var real = document.querySelector(".ql-editor").innerText
-      if (!isEmpty(real) || content.search("img")!==-1||content.search("video")!==-1){
+      if (this.mediaFileSend){
         data.append('title',title)
         data.append('content',content)
-        if(isMore) data.append('thumbnail',real.slice(0,100))
         Axios.post("/board/upload",data).then(res =>{
           if (res.status ===200){
             this.props.history.push("/boards");
@@ -239,12 +295,13 @@ class Upload extends Component {
         })
       }else{
         this.setState({
-          contentErr:["내용을 입력해주세요."],
+          contentErr:["미디어 파일을 포함해야 합니다."],
         })
       }
     }
 
     saveFile = (file,path,needConvert,mediaType="BOARD") => {
+      this.mediaFileSend = true
       const formData = new FormData();
       formData.append('file',file);
       formData.append('path',path);
@@ -311,41 +368,19 @@ class Upload extends Component {
     imageHandler = () => {
       const quill = this.quillRef.getEditor();
       console.log(quill)
+      console.log(this.quillRef)
       // this.setState({
       //   open:"image/*"
       // })
       // if (this.dropzone) this.dropzone.open();
     };
+
     videoHandler = () => {
       this.setState({
         open:"video/*"
       })
       if (this.dropzone) this.dropzone.open();
-    }
-    youtubeHandler = () =>{
-      let url = prompt("Enter Video URL: ");
-      if(url){
-        url = this.getVideoUrl(url);
-        const quill = this.quillRef.getEditor();
-        let range = quill.getSelection();
-        if (url != null) {
-            quill.insertEmbed(range, 'video', url);
-        }
-      }
-    }
-    
-    getVideoUrl(url) {
-      let match = url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
-          url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
-          url.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
-      if (match && match[2].length === 11) {
-          return `https://www.youtube.com/embed/${match[2]}?showinfo=0`
-      }
-      if (match = url.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/)) { // eslint-disable-line no-cond-assign
-          return (match[1] || 'https') + '://player.vimeo.com/video/' + match[2] + '/';
-      }
-      return null;
-    }
+    }    
   
     modules = {
       toolbar: {

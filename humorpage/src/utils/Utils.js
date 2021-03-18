@@ -2,14 +2,14 @@ import sanitizeHtml from "sanitize-html-react"
 import React from "react"
 
 export const sanitizeNonNull = (dirty) => dirty==null?"":sanitize(dirty);
-
+    
 export const sanitize = (dirty) => sanitizeHtml(dirty,{
     allowedTags: [
         "address", "article", "aside", "footer", "header", "h1", "h2", "h3", "h4",
         "h5", "h6", "hgroup", "main", "nav", "section", "blockquote", "dd", "div",
         "dl", "dt", "figcaption", "figure", "hr", "li", "main", "ol", "p", "pre",
         "ul", "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn",
-        "em", "i", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp",
+        "em", "i","iframe", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp",
         "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "caption",
         "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr","img","video"
       ],
@@ -18,7 +18,8 @@ export const sanitize = (dirty) => sanitizeHtml(dirty,{
         a: [ 'href', 'name', 'target', 'class' ],
         div: ['class','frameborder','allowfullscreen'],
         img: ['src','class','style'],
-        video:['src','controls','type','style','class']
+        video:['src','controls','type','style','class'],
+        iframe:['*'],
       },
       selfClosing: [ 'img', 'br', 'hr', 'area', 'base', 'basefont', 'input', 'link', 'meta' ],
       allowedSchemes: [ 'http', 'https', 'ftp', 'mailto', 'tel' ],
@@ -53,6 +54,20 @@ export const sanitizeHarder = (dirty) => sanitizeHtml(dirty,{
     allowProtocolRelative: true,
     enforceHtmlBoundary: false
 })
+
+export const sanitizeUrl = (url) =>{
+    if(typeof(url)!="string") return null;
+    const match = url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
+                url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
+                url.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
+    if (match && match[2].length === 11) {
+        return `https://www.youtube.com/embed/${match[2]}?showinfo=0`
+    }
+    // if (match = url.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/)) { // eslint-disable-line no-cond-assign
+    //     return (match[1] || 'https') + '://player.vimeo.com/video/' + match[2] + '/';
+    // }
+    return null;
+}
 
 export const getDate = (datetime) =>{
     return datetime.replaceAll("-",".").split("T")[0]

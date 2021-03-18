@@ -30,8 +30,6 @@ public class Board implements Serializable {
     @Column(name="content")
     private String content;
 
-    @Column(name = "thumbnail")
-    private String thumbnail;
 
     @Column(name = "thumbnailImg")
     private String thumbnailImg;

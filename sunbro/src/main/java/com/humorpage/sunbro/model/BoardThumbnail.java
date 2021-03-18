@@ -45,9 +45,6 @@ public class BoardThumbnail implements Serializable {
     @CreationTimestamp
     private LocalDateTime created;
 
-    @Column(name = "thumbnail")
-    private String thumbnail;
-
     @Column(name = "thumbnailImg")
     private String thumbnailImg;
 
@@ -76,11 +73,6 @@ public class BoardThumbnail implements Serializable {
     public String getContent() {
         if(this.isMore()) return null;
         return content;
-    }
-
-    public String getThumbnail() {
-        if(this.isMore()) return thumbnail;
-        return null;
     }
 
     public String getThumbnailImg() {

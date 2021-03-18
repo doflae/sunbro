@@ -186,15 +186,19 @@ const MainContentComponent = ({content,thumbnail,onOff}) =>{
     if(onOff===true){
         return <BoardDetailStyled dangerouslySetInnerHTML={{__html:sanitizeNonNull(content)}}></BoardDetailStyled>
     }else{
-        return <React.Fragment>
+        return <BoardThumbnailStyled>
             <BoardThumbnailImg  alt="" 
                 src={thumbnail.thumbnailImg} onError={(e)=>{
                 e.target.onError=null; e.target.style.display="none"}}/>
             <BoardThumbnailText dangerouslySetInnerHTML={{__html:sanitizeNonNull(thumbnail.thumbnail)}}>
             </BoardThumbnailText>
-        </React.Fragment>
+        </BoardThumbnailStyled>
     }
 }
+
+const BoardThumbnailStyled = styled.div`
+    text-align:center;
+`
 
 const BoardStyled = styled.div`
     padding: 3px 5px 8px 5px;
@@ -250,7 +254,8 @@ const BoardThumbnailText = styled.span`
 `
 
 const BoardThumbnailImg = styled.img`
-    width : 50%;
+    max-height:500px;
+    max-width:500px;
     margin : 5px;
     box-sizing:border-box;
 `

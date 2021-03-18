@@ -5,7 +5,7 @@ import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import {boardWrapper} from "../board/BoardWrapper"
 import Axios from "axios"
-import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage} from "../utils/Utils"
+import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage, sanitizeUrl} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
@@ -29,35 +29,46 @@ class Update extends Component {
     }
 
     insertBoard = (boardContent) =>{
-        console.log(boardContent)
-        const quill = this.quillRef.getEditor();
-        const delta = quill.clipboard.convert(boardContent);
-        console.log(delta)
-        //delta에서 src값 뽑아서 
-        quill.setContents(delta,'silent')
+      const quill = this.quillRef.getEditor();
+      const delta = quill.clipboard.convert(boardContent)
+      console.log(delta)
+      quill.updateContents(delta,'silent');
     }
 
     componentDidMount(){
-        if(this.boardDetail==null){
-            this.props.request("get",`/board/simple/${this.props.match.params.key}`)
-            .then(res=>{
-                if(res.status===200 && res.data.success){
-                    this.titleRef.current.value = res.data.data.title
-                    this.boardDetail = res.data.data
-                    this.insertBoard(this.boardDetail.content)
-                }else{
-                    alert("해당 글의 작성자가 아닙니다.")
-                    this.props.history.goBack();
-                }
-            })
-        }else{
-            this.titleRef.current.value = this.boardDetail.title
-            this.insertBoard(this.boardDetail.content)
+      const quill = this.quillRef.getEditor();
+      const tooltip = quill.theme.tooltip;
+      quill.clipboard.addMatcher("DIV",(node,delta)=>{
+        delta.insert({myvideo:node.firstElementChild.getAttribute('src')})
+        return delta;
+      })
+      tooltip.save = () =>{
+        const url = sanitizeUrl(tooltip.textbox.value)
+        if(url!=null) {
+          const range = tooltip.quill.selection.savedRange
+          quill.insertEmbed(range.index+range.length,'video',url,'user');
         }
-        if(this.footer!=null) document.querySelector(".App").removeChild(this.footer)
-        document.querySelector(".ql-mycustom").innerHTML='<svg viewBox="0 0 18 18"> <rect class="ql-stroke" height="12" width="12" x="3" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="5" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="12" y="3"></rect> <rect class="ql-fill" height="2" width="8" x="5" y="8"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="12"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="12"></rect> </svg>'
-        document.querySelector(".ql-video").innerHTML='<svg height="18pt" viewBox="-21 -117 682.66672 682" width="18pt" xmlns="http://www.w3.org/2000/svg"><path d="m626.8125 64.035156c-7.375-27.417968-28.992188-49.03125-56.40625-56.414062-50.082031-13.703125-250.414062-13.703125-250.414062-13.703125s-200.324219 0-250.40625 13.183593c-26.886719 7.375-49.03125 29.519532-56.40625 56.933594-13.179688 50.078125-13.179688 153.933594-13.179688 153.933594s0 104.378906 13.179688 153.933594c7.382812 27.414062 28.992187 49.027344 56.410156 56.410156 50.605468 13.707031 250.410156 13.707031 250.410156 13.707031s200.324219 0 250.40625-13.183593c27.417969-7.378907 49.03125-28.992188 56.414062-56.40625 13.175782-50.082032 13.175782-153.933594 13.175782-153.933594s.527344-104.382813-13.183594-154.460938zm-370.601562 249.878906v-191.890624l166.585937 95.945312zm0 0"/></svg>'
-        
+        tooltip.hide();
+      }
+      if(this.boardDetail==null){
+          this.props.request("get",`/board/simple/${this.props.match.params.key}`)
+          .then(res=>{
+              if(res.status===200 && res.data.success){
+                  this.titleRef.current.value = res.data.data.title
+                  this.boardDetail = res.data.data
+                  this.insertBoard(this.boardDetail.content)
+              }else{
+                  alert("해당 글의 작성자가 아닙니다.")
+                  this.props.history.goBack();
+              }
+          })
+      }else{
+          this.titleRef.current.value = this.boardDetail.title
+          this.insertBoard(this.boardDetail.content)
+      }
+      if(this.footer!=null) document.querySelector(".App").removeChild(this.footer)
+      document.querySelector(".ql-mycustom").innerHTML='<svg viewBox="0 0 18 18"> <rect class="ql-stroke" height="12" width="12" x="3" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="5" y="3"></rect> <rect class="ql-fill" height="12" width="1" x="12" y="3"></rect> <rect class="ql-fill" height="2" width="8" x="5" y="8"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="3" y="12"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="5"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="7"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="10"></rect> <rect class="ql-fill" height="1" width="3" x="12" y="12"></rect> </svg>'
+      document.querySelector(".ql-video").innerHTML='<svg height="18pt" viewBox="-21 -117 682.66672 682" width="18pt" xmlns="http://www.w3.org/2000/svg"><path d="m626.8125 64.035156c-7.375-27.417968-28.992188-49.03125-56.40625-56.414062-50.082031-13.703125-250.414062-13.703125-250.414062-13.703125s-200.324219 0-250.40625 13.183593c-26.886719 7.375-49.03125 29.519532-56.40625 56.933594-13.179688 50.078125-13.179688 153.933594-13.179688 153.933594s0 104.378906 13.179688 153.933594c7.382812 27.414062 28.992187 49.027344 56.410156 56.410156 50.605468 13.707031 250.410156 13.707031 250.410156 13.707031s200.324219 0 250.40625-13.183593c27.417969-7.378907 49.03125-28.992188 56.414062-56.40625 13.175782-50.082032 13.175782-153.933594 13.175782-153.933594s.527344-104.382813-13.183594-154.460938zm-370.601562 249.878906v-191.890624l166.585937 95.945312zm0 0"/></svg>'
     }
 
     componentWillUnmount(){
@@ -265,40 +276,21 @@ class Update extends Component {
     modules = {
       toolbar: {
         container: [
-          ["bold", "italic", "underline", "strike", "blockquote"],
-          [{ size: ["small", false, "large", "huge"] }, { color: [] }],
-          [
-            { list: "ordered" },
-            { list: "bullet" },
-            { indent: "-1" },
-            { indent: "+1" },
-            { align: [] }
-          ],
-          ["link", "image", "mycustom","video"]
+          ["image", "mycustom","video"]
         ],
-        handlers: { image: this.imageHandler,
-          mycustom: this.videoHandler
+        handlers: { image : this.imageHandler,
+          mycustom : this.videoHandler
         }
       },
-      clipboard: { matchVisual: false }
+      clipboard: {
+        matchVisual: false,
+       }
     };
   
     formats = [
-      "header",
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "blockquote",
-      "size",
-      "color",
-      "list",
-      "bullet",
-      "indent",
-      "link",
       "image",
       "video",
-      "align"
+      "myvideo"
     ];
 
   onChangeContents = (contents) => {
@@ -337,6 +329,7 @@ class Update extends Component {
             theme="snow"
             modules={this.modules}
             formats={this.formats}
+            onload={()=>{console.log('hi')}}
           />
           <ValidationError errors = {this.state.contentErr}/>
           <Dropzone
