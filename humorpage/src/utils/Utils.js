@@ -108,9 +108,15 @@ export const getToday = () =>{
 
     let year = today.getFullYear(); // 년도
     let month = today.getMonth() + 1;  // 월
-    let date = today.getDate();  // 날짜
-    return year + '/' + month + '/' + date
+    let day = today.getDate();  // 날짜
+    if (month < 10) 
+        month = '0' + month;
+    if (day < 10) 
+        day = '0' + day;
+
+    return year + '/' + month + '/' + day
 }
+
 const sampleString = "1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
 export const getRandomGenerator = (length) =>{
     let ret = ""

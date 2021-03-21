@@ -6,10 +6,6 @@ import com.humorpage.sunbro.utils.TemporaryFileStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.InvalidPathException;
-
 @Service
 public class ChangeProfileService {
 
@@ -27,7 +23,7 @@ public class ChangeProfileService {
     public void ChangeImage(UserSimple saveTarget, String path){
         String beforeProfileImage = saveTarget.getUserImg();
         if(!beforeProfileImage.equals(path)){
-            fileDeleteService.DeleteFiles(beforeProfileImage,MediaType.PROFILE);
+            fileDeleteService.deleteFiles(beforeProfileImage,MediaType.PROFILE);
             saveTarget.setUserImg(path);
             userSimpleRepository.save(saveTarget);
         }
@@ -38,7 +34,7 @@ public class ChangeProfileService {
         saveTarget.setName(newUserInfo.getName());
         String beforeProfileImage = saveTarget.getUserImg();
         if(!beforeProfileImage.equals(newUserInfo.getUserImg())){
-            fileDeleteService.DeleteFiles(beforeProfileImage,MediaType.PROFILE);
+            fileDeleteService.deleteFiles(beforeProfileImage,MediaType.PROFILE);
             saveTarget.setUserImg(newUserInfo.getUserImg());
         }
         userSimpleRepository.save(saveTarget);

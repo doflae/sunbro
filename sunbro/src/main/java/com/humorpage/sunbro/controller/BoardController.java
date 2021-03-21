@@ -7,7 +7,6 @@ import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.*;
-import com.humorpage.sunbro.utils.RandomGenerator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
@@ -58,6 +58,9 @@ public class BoardController {
     @Autowired
     private BoardSimpleRepository boardSimpleRepository;
 
+    @Autowired
+    private FileDeleteService fileDeleteService;
+
     @GetMapping(value = "/simple/{bid}")
     SingleResult<BoardSimple> getBoardSimple(@PathVariable Long bid,
                                              Authentication authentication){
@@ -92,7 +95,6 @@ public class BoardController {
 
     @PostMapping(value="/delete")
     CommonResult deleteBoard(@RequestParam List<Long> boardList, Authentication authentication){
-        System.out.println(boardList);
         if(authentication==null) return responseService.getFailResult();
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
@@ -101,6 +103,7 @@ public class BoardController {
                 try{
                     Board board = boardRepository.findById(bid).orElseThrow(CIdSigninFailedException::new);
                     if(board.getAuthor().getUsernum().equals(userSimple.getUsernum())){
+                        fileDeleteService.deleteDir(board.getMediaDir(), board.getId());
                         boardRepository.delete(board);
                     }
                 }catch (CIdSigninFailedException ignored){
@@ -132,6 +135,13 @@ public class BoardController {
             return responseService.getDetailResult(false,-1,"Need to Login");
         }
         board.setAuthor(userSimple);
+        if(board.getId()!=null){
+            try{
+
+            }catch (IOException ignored){
+
+            }
+        }
         boardRepository.save(board);
         return responseService.getSuccessResult();
     }
