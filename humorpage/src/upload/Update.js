@@ -32,11 +32,6 @@ class Update extends Component {
         this.titleRef = createRef();
     }
 
-    insertBoard = (boardContent) =>{
-      const quill = this.quillRef.getEditor();
-      quill.clipboard.dangerouslyPasteHTML(boardContent)
-    }
-
     componentDidMount(){
       const quill = this.quillRef.getEditor();
       const tooltip = quill.theme.tooltip;
@@ -60,7 +55,6 @@ class Update extends Component {
               this.titleRef.current.value = res.data.data.title
               this.boardDetail = res.data.data
               quill.clipboard.dangerouslyPasteHTML(this.boardDetail.content)
-              console.log(this.boardDetail)
           }else{
               alert("해당 글의 작성자가 아닙니다.")
               this.props.history.goBack();
