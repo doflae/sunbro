@@ -16,7 +16,7 @@ RestApi를 통해 Spring boot와 React를 연결하였으며 커뮤니티에서 
 [![Tech Blog Badge](http://img.shields.io/badge/-Tech%20blog-black?style=flat-square&logo=github&link=https://fri-seono.tistory.com/)](https://fri-seono.tistory.com/)
 
 
-###개발 환경
+### 개발 환경
 
 프로젝트 개발 환경은 다음과 같습니다.
 
@@ -31,7 +31,7 @@ RestApi를 통해 Spring boot와 React를 연결하였으며 커뮤니티에서 
 
 추가 외부프로그램은 FFMpeg을 사용하였습니다.
 
-###외부 설정 파일
+### 외부 설정 파일
 
 외부 설정 파일에서 다음 설정 파일은 추가로 작성해야 합니다.
 
@@ -66,6 +66,9 @@ video.ffmpeg.path = ffmpeg.exe 경로
 video.ffprobe.path = ffprobe.exe 경로
 
 ```
+
+### DB연결 및 proxy 설정
+
 MariaDB를 사용하였지만 공유 메인 디렉토리에 있는 backup.sql을 이용하여 다른 DBMS에서도 연결 가능합니다.
 
 react의 package.json파일 내 
