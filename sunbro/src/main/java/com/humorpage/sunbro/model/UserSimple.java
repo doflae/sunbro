@@ -22,8 +22,8 @@ public class UserSimple implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "usernum")
-    private Long usernum;
+    @Column(name = "userNum")
+    private Long userNum;
 
     @Column(nullable = false, unique = true, length = 30)
     @JsonIgnore

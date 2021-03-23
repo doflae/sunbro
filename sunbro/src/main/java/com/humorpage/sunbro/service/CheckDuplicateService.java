@@ -1,7 +1,6 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
-import com.humorpage.sunbro.model.UserSimple;
+import com.humorpage.sunbro.advice.exception.UserNotFoundException;
 import com.humorpage.sunbro.respository.UserSimpleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,9 +34,9 @@ public class CheckDuplicateService {
         String tmp = redisTokenService.getData(key);
         if(tmp==null){
             try{
-                userSimpleRepository.findByUid(value).orElseThrow(CIdSigninFailedException::new);
+                userSimpleRepository.findByUid(value).orElseThrow(()-> new UserNotFoundException("ID"));
                 return 2;
-            }catch (CIdSigninFailedException e){
+            }catch (UserNotFoundException e){
                 try{
                     emailAuthService.sendMailwithKey(value);
                     return 3;
@@ -65,9 +64,9 @@ public class CheckDuplicateService {
         //중복 검사한 것이 없거나 다른 닉네임으로 중복 검사한다면
         if(temp==null){
             try {
-                userSimpleRepository.findByName(value).orElseThrow(CIdSigninFailedException::new);
+                userSimpleRepository.findByName(value).orElseThrow(()-> new UserNotFoundException("Name"));
                 return false;
-            } catch (CIdSigninFailedException e) {
+            } catch (UserNotFoundException e) {
                 if(beforeTemp!=null){
                     final String beforeKey = format("%s:name:%s",DUPLICATE_CHECK_KEY,beforeTemp);
                     redisTokenService.deleteData(beforeKey);

@@ -5,7 +5,7 @@ import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import {boardWrapper} from "../board/BoardWrapper"
 import Axios from "axios"
-import {getToday, 
+import {changeDateTimeToPath,
   getRandomGenerator,
   isEmpty, 
   ResizeThumbnailImage, 
@@ -54,6 +54,7 @@ class Update extends Component {
           if(res.status===200 && res.data.success){
               this.titleRef.current.value = res.data.data.title
               this.boardDetail = res.data.data
+              console.log(this.boardDetail)
               quill.clipboard.dangerouslyPasteHTML(this.boardDetail.content)
           }else{
               alert("해당 글의 작성자가 아닙니다.")
@@ -89,7 +90,7 @@ class Update extends Component {
         return
       }
       var content = document.querySelector(".ql-editor").innerHTML
-      const filePath = "/"+getToday()+"/"+this.boardDetail.mediaDir+"/"
+      const filePath = changeDateTimeToPath(this.boardDetail.created)+this.boardDetail.mediaDir+"/"
       // path = /240/path.jpg
       const isMore = this.checkIsmore();
       const elem = document.querySelector("#ql")
@@ -103,7 +104,7 @@ class Update extends Component {
           if(elem.tagName==="IMG"){
             //이미지는 원본 보내고 썸네일도 보내야함
             //리사이징 이미지는 jpg파일로
-            await fetch(elem.src).then(r=>r.blob()).then(blob=>{
+            await fetch(src).then(r=>r.blob()).then(blob=>{
               const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
               elem.setAttribute("src","/file/get?name="+OriginalFilePath)
               this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
@@ -114,7 +115,7 @@ class Update extends Component {
           }else{
             //비디오는 원본 보낼시 리사이징 백엔드에서 완료
             //thumbnailImg만 원본FileOriginName+thumb.jpg
-            await fetch(elem.src).then(r=>r.blob()).then(blob=>{
+            await fetch(src).then(r=>r.blob()).then(blob=>{
               const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
               elem.setAttribute("src","/file/get?name="+OriginalFilePath)
               if(elem.videoWidth>0){
@@ -125,8 +126,32 @@ class Update extends Component {
             })
           }
           this.boardDetail.thumbnailImg = "/file/get?name="+ResizedFilePath;
+        }else{
+          //src가 이미 저장된 미디어 파일인경우
+          const splitSrc = src.split("/")
+          const splitThumb = this.boardDetail.thumbnailImg==null?"":this.boardDetail.thumbnailImg.split("/")
+          const srcOriginFileName = splitSrc[splitSrc.length-1].split('.')[0]
+          if(this.boardDetail.thumbnailImg==null || 
+              !splitThumb[splitThumb.length-1].startsWith(srcOriginFileName)){
+            
+            await fetch(src).then(r=>r.blob()).then(blob=>{
+              if(elem.tagName==="IMG"){
+                ResizeThumbnailImage(blob).then(resizedImage=>{
+                  this.saveFile(resizedImage,filePath+srcOriginFileName+"thumb.jpg",false,"THUMBNAIL")
+                })
+              }else{
+                if(elem.videoWidth>0){
+                  this.saveFile(blob,src.replace("/file/get?name=",""),false,"THUMBNAIL")
+                }else{
+                  this.saveFile(blob,src.replace("/file/get?name=",""),false,"THUMBNAIL")
+                }
+              }
+            })
+            this.boardDetail.thumbnailImg = "/file/get?name="+filePath+srcOriginFileName+"thumb.jpg"
+          }
         }
       }
+      
       
       // NEED UPDATE : querySelector -> ref 사용 추천
       for(const elem of document.querySelectorAll(".ql-prevideo")){
@@ -171,7 +196,7 @@ class Update extends Component {
           this.saveFile(blob,newPath,false)
         }
       }
-      content = document.querySelector(".ql-editor").innerHTML
+      content = this.quillRef.props.value
       if (document.querySelector("#ql")!=null){
         const data = new FormData();
         data.append('title',title)
@@ -231,7 +256,7 @@ class Update extends Component {
 
               var blob = new Blob([ab], {type: mimeString});
               const data = {blob:blob,name:_file.name}
-              quill.insertEmbed(range.index,"video",data);
+              quill.insertEmbed(range.index,"myvideo",data);
               quill.setSelection(range.index + 1);
               quill.focus();
             }

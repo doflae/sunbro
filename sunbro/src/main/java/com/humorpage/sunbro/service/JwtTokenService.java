@@ -46,7 +46,7 @@ public class JwtTokenService {
                 .parseClaimsJws(token)
                 .getBody();
     }
-    public Long getUsernum(String token) {
+    public Long getUserNum(String token) {
         return extractAllClaims(token).get("usernum", Long.class);
     }
 
@@ -56,11 +56,11 @@ public class JwtTokenService {
     }
 
     public String generateToken(UserSimple userSimple) {
-        return doGenerateToken(userSimple.getUsernum(), AccessTokenValidMilisecond);
+        return doGenerateToken(userSimple.getUserNum(), AccessTokenValidMilisecond);
     }
 
     public String generateRefreshToken(UserSimple userSimple) {
-        return doGenerateToken(userSimple.getUsernum(), RefreshTokenValidMilisecond);
+        return doGenerateToken(userSimple.getUserNum(), RefreshTokenValidMilisecond);
     }
 
     public String doGenerateToken(Long usernum, long expireTime) {
@@ -77,8 +77,8 @@ public class JwtTokenService {
     }
 
     public Boolean validateToken(String token, UserSimple userSimple) {
-        Long tokenNum = getUsernum(token);
-        Long userNum = userSimple.getUsernum();
+        Long tokenNum = getUserNum(token);
+        Long userNum = userSimple.getUserNum();
         return (userNum!=null && userNum.equals(tokenNum) && !isTokenExpired(token));
     }
 }

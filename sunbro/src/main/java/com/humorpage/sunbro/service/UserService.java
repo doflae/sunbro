@@ -24,8 +24,8 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
 
-    public UserSimple loadUserSimpleByUsernum(Long usernum){
-        return userSimpleRepository.findByUsernum(usernum);
+    public UserSimple findUserSimpleByUserNum(Long userNum){
+        return userSimpleRepository.findByUserNum(userNum);
     }
 
 }

@@ -39,6 +39,8 @@ public class Board implements Serializable {
     @JoinColumn(name = "author_num")
     private UserSimple author;
 
+
+
     @Column(name = "more")
     private boolean more;
 

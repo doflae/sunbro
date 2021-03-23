@@ -10,7 +10,7 @@ import java.util.Optional;
 @Component
 public interface UserSimpleRepository extends JpaRepository<UserSimple, Long> {
 
-    UserSimple findByUsernum(Long usernum);
+    UserSimple findByUserNum(Long userNum);
     Optional<UserSimple> findByUid(String uid);
     Optional<UserSimple> findByName(String name);
 

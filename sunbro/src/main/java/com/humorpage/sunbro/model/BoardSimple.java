@@ -1,9 +1,12 @@
 package com.humorpage.sunbro.model;
 
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -28,6 +31,10 @@ public class BoardSimple {
 
     @Column(name = "thumbnailImg")
     private String thumbnailImg;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "created")
+    private LocalDateTime created;
 
     @Column(name = "media_dir")
     private String mediaDir;

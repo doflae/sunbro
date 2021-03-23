@@ -42,7 +42,7 @@ public class UserController {
     SingleResult<User> myUser(Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            User user = userRepository.findByUsernum(userSimple.getUsernum());
+            User user = userRepository.findByUserNum(userSimple.getUserNum());
             return responseService.getSingleResult(user);
         }catch (Exception e){
             return responseService.getFailSingleResult();
@@ -77,7 +77,7 @@ public class UserController {
                                        Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            List<Long> boardlikesList = boardLikesRepository.findAllByUsercustom(userSimple.getUsernum());
+            List<Long> boardlikesList = boardLikesRepository.findAllByUsercustom(userSimple.getUserNum());
             List<BoardThumbnail> boardThumbnailList = boardThumbnailRepository.findByIdInOrderByIdDesc(boardlikesList,PageRequest.of(num,size));
             return responseService.getListResult(boardThumbnailList);
         }catch (NullPointerException e){

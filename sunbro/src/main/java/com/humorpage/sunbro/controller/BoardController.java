@@ -1,6 +1,7 @@
 package com.humorpage.sunbro.controller;
 
-import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
+import com.humorpage.sunbro.advice.exception.BoardNotFoundException;
+import com.humorpage.sunbro.advice.exception.UserNotFoundException;
 import com.humorpage.sunbro.model.*;
 import com.humorpage.sunbro.respository.*;
 import com.humorpage.sunbro.result.CommonResult;
@@ -65,11 +66,12 @@ public class BoardController {
     SingleResult<BoardSimple> getBoardSimple(@PathVariable Long bid,
                                              Authentication authentication){
         try {
-            BoardSimple boardSimple = boardSimpleRepository.findById(bid).orElseThrow(CIdSigninFailedException::new);
+            BoardSimple boardSimple = boardSimpleRepository
+                    .findById(bid).orElseThrow(()-> new BoardNotFoundException("BoardID"));
             if(boardSimple.getAuthor().equals(authentication.getPrincipal())){
                 return responseService.getSingleResult(boardSimple);
             }
-        }catch (Exception e){
+        }catch (BoardNotFoundException e){
             return responseService.getFailSingleResult();
         }
         return responseService.getFailSingleResult();
@@ -86,9 +88,9 @@ public class BoardController {
     @GetMapping(value = "/detail/{bid}")
     SingleResult<BoardDetail> getBoardDetail(@PathVariable Long bid){
         try {
-            BoardDetail boardDetail = boardDetailRepository.findById(bid).orElseThrow(CIdSigninFailedException::new);
+            BoardDetail boardDetail = boardDetailRepository.findById(bid).orElseThrow(()->new BoardNotFoundException("BoardID"));
             return responseService.getSingleResult(boardDetail);
-        }catch (CIdSigninFailedException e){
+        }catch (BoardNotFoundException e){
             return responseService.getFailSingleResult();
         }
     }
@@ -101,12 +103,12 @@ public class BoardController {
 
             boardList.forEach(bid->{
                 try{
-                    Board board = boardRepository.findById(bid).orElseThrow(CIdSigninFailedException::new);
-                    if(board.getAuthor().getUsernum().equals(userSimple.getUsernum())){
+                    Board board = boardRepository.findById(bid).orElseThrow(()->new BoardNotFoundException("BoardID"));
+                    if(board.getAuthor().getUserNum().equals(userSimple.getUserNum())){
                         fileDeleteService.deleteDir(board.getMediaDir(), board.getId());
                         boardRepository.delete(board);
                     }
-                }catch (CIdSigninFailedException ignored){
+                }catch (BoardNotFoundException ignored){
 
                 }
 
@@ -137,7 +139,7 @@ public class BoardController {
         board.setAuthor(userSimple);
         if(board.getId()!=null){
             try{
-
+                fileDeleteService.refreshDir(board.getContent(),board.getThumbnailImg());
             }catch (IOException ignored){
 
             }
@@ -155,7 +157,7 @@ public class BoardController {
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
         }
-        likesService.savelikeBoard(userSimple.getUsernum(),board_id);
+        likesService.saveLikeBoard(userSimple.getUserNum(),board_id);
         return responseService.getSuccessResult();
     }
 
@@ -168,7 +170,7 @@ public class BoardController {
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
         }
-        likesService.deletelikeBoard(userSimple.getUsernum(),board_id);
+        likesService.deletelikeBoard(userSimple.getUserNum(),board_id);
         return responseService.getSuccessResult();
     }
 
@@ -182,7 +184,7 @@ public class BoardController {
         }
         try {
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
+            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
             boardThumbnailList.forEach(boardThumbnail -> {
                 boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
             });
@@ -198,7 +200,7 @@ public class BoardController {
         List<BoardThumbnail> boardThumbnailList = cacheRankingService.getRanking(rankType);
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
+            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
             boardThumbnailList.forEach(boardThumbnail -> {
                 boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
             });
@@ -228,17 +230,19 @@ public class BoardController {
     ListResult<BoardThumbnail> Search(@RequestParam(required = false, defaultValue = "") String title,
                    @RequestParam(required = false, defaultValue = "") String uid,
                    @RequestParam(required = false, defaultValue = "") String content,Authentication authentication) {
-        List<BoardThumbnail> boardThumbnailList;
+        List<BoardThumbnail> boardThumbnailList=null;
         if (StringUtils.isEmpty(title) && StringUtils.isEmpty(content) && StringUtils.isEmpty(uid)) {
-            boardThumbnailList=null;
+            return responseService.getFailedListResult();
         }
-        else if(StringUtils.isEmpty(title) && StringUtils.isEmpty(content)){
+
+        if(StringUtils.isEmpty(title) && StringUtils.isEmpty(content)){
             try{
-                UserSimple target = userSimpleRepository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
-                boardThumbnailList = boardThumbnailRepository.findAllByAuthor(target.getUsernum());
+                UserSimple target = userSimpleRepository
+                        .findByUid(uid).orElseThrow(()-> new UserNotFoundException("ID"));
+                boardThumbnailList = boardThumbnailRepository.findAllByAuthor(target.getUserNum());
             }
-            catch (CIdSigninFailedException e){
-                boardThumbnailList = null;
+            catch (UserNotFoundException ignored){
+
             }
         }
         else if(StringUtils.isEmpty(title) && StringUtils.isEmpty(uid)){
@@ -248,14 +252,13 @@ public class BoardController {
             boardThumbnailList = boardThumbnailRepository.findByTitleContaining(title);
         }else if (StringUtils.isEmpty(uid)){
             boardThumbnailList = boardThumbnailRepository.findByTitleContainingOrContentContaining(title,content);
-        }else{
-            boardThumbnailList = null;
         }
+
         if (boardThumbnailList==null)
             return responseService.getListResult(null);
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
+            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
             boardThumbnailList.forEach(boardThumbnail -> {
                 boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
             });

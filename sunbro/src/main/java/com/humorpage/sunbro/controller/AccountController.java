@@ -2,7 +2,7 @@ package com.humorpage.sunbro.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
+import com.humorpage.sunbro.advice.exception.UserNotFoundException;
 import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.UserRepository;
@@ -153,10 +153,10 @@ public class AccountController {
         }
         if(userSimple!=null) {
             final String token = jwtTokenService.generateToken(userSimple);
-            final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
+            final String refreshJwt = jwtTokenService.generateRefreshToken(userSimple);
             Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token, JwtTokenService.AccessTokenValidSecond);
-            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt, JwtTokenService.RefreshTokenValidSecond);
-            redisTokenService.setDataExpire(refreshjwt, String.valueOf(userSimple.getUsernum()), JwtTokenService.RefreshTokenValidSecond);
+            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshJwt, JwtTokenService.RefreshTokenValidSecond);
+            redisTokenService.setDataExpire(refreshJwt, String.valueOf(userSimple.getUserNum()), JwtTokenService.RefreshTokenValidSecond);
             if (res.getHeader("user") == null) {
                 try{
                     res.addHeader("user", objectMapper.writeValueAsString(userSimple));
@@ -178,20 +178,22 @@ public class AccountController {
                                HttpServletResponse res) {
         UserSimple userSimple;
         try{
-            userSimple = userSimpleRepository.findByUid(uid).orElseThrow(CIdSigninFailedException::new);
-            if (!passwordEncoder.matches(password, userSimple.getPassword()))
-                throw new CIdSigninFailedException();
-            final String token = jwtTokenService.generateToken(userSimple);
-            final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
-            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token,JwtTokenService.AccessTokenValidSecond);
-            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt,JwtTokenService.RefreshTokenValidSecond);
-            redisTokenService.setDataExpire(refreshjwt,String.valueOf(userSimple.getUsernum()), JwtTokenService.RefreshTokenValidSecond);
-            if (res.getHeader("user")==null){
-                res.addHeader("user",objectMapper.writeValueAsString(userSimple));
+            userSimple = userSimpleRepository.findByUid(uid).orElseThrow(()->new UserNotFoundException("ID"));
+            if (passwordEncoder.matches(password, userSimple.getPassword())){
+                final String token = jwtTokenService.generateToken(userSimple);
+                final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
+                Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token,JwtTokenService.AccessTokenValidSecond);
+                Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt,JwtTokenService.RefreshTokenValidSecond);
+                redisTokenService.setDataExpire(refreshjwt,String.valueOf(userSimple.getUserNum()), JwtTokenService.RefreshTokenValidSecond);
+                if (res.getHeader("user")==null){
+                    res.addHeader("user",objectMapper.writeValueAsString(userSimple));
+                }
+                res.addCookie(accessToken);
+                res.addCookie(refreshToken);
+                return responseService.getSuccessResult();
+            }else{
+                return responseService.getFailResult();
             }
-            res.addCookie(accessToken);
-            res.addCookie(refreshToken);
-            return responseService.getSuccessResult();
         }catch (Exception e){
             return responseService.getFailResult();
         }

@@ -67,7 +67,7 @@ public class CommentController {
         }
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> commentlikesList= new HashSet<>(commentLikesRepository.findAllByUsercustom(userSimple.getUsernum()));
+            HashSet<Long> commentlikesList= new HashSet<>(commentLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
             assert commentList != null;
             commentList.forEach(comment -> {
                 comment.setLike(commentlikesList.contains(comment.getId()));
@@ -104,7 +104,7 @@ public class CommentController {
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
         }
-        likesService.savelikeComment(userSimple.getUsernum(),comment_id);
+        likesService.savelikeComment(userSimple.getUserNum(),comment_id);
         return responseService.getSuccessResult();
     }
 
@@ -117,7 +117,7 @@ public class CommentController {
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token expired");
         }
-        likesService.deletelikeComment(userSimple.getUsernum(),comment_id);
+        likesService.deletelikeComment(userSimple.getUserNum(),comment_id);
         return responseService.getSuccessResult();
     }
 }

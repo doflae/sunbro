@@ -73,6 +73,10 @@ export const getDate = (datetime) =>{
     return datetime.replaceAll("-",".").split("T")[0]
 }
 
+export const changeDateTimeToPath = (datetime) =>{
+    return "/"+datetime.split("T")[0].replaceAll("-","/")+"/"
+}
+
 export const getTime = (datetime) =>{
     if(datetime==null) return null
     let t = parseInt((Date.now() - Date.parse(datetime))/1000)
@@ -240,15 +244,33 @@ export const ResizeThumbnailImage = (data)=>{
         return dataUrltoBlob(dataUrl);
     }
 
-    return new Promise(function(ok, no){
-        if(!data.type.match(/image.*/)){
-            no(new Error("Not an Image"))
-            return;
-        }
+    return new Promise(function(ok){
         fileReader.onload = (readerEvent) =>{
             image.onload = () => ok(resize());
             image.src = readerEvent.target.result;
         };
         fileReader.readAsDataURL(data);
     })
+}
+
+export const copyToClipboard = (text) =>{
+    if (window.clipboardData && window.clipboardData.setData) {
+        // IE specific code path to prevent textarea being shown while dialog is visible.
+        return window.clipboardData.setData("Text", text); 
+
+    } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+        var textarea = document.createElement("textarea");
+        textarea.textContent = text;
+        textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+        } catch (ex) {
+            console.warn("Copy to clipboard failed.", ex);
+            return false;
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    }
 }

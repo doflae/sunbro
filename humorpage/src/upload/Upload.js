@@ -300,7 +300,7 @@ class Upload extends Component {
           this.saveFile(blob,newPath,false)
         }
       }
-      content = document.querySelector(".ql-editor").innerHTML
+      content = this.quillRef.props.value
       if (this.mediaFileSend){
         data.append('title',title)
         data.append('content',content)

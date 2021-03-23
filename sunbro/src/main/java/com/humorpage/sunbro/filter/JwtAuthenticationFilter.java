@@ -1,8 +1,7 @@
 package com.humorpage.sunbro.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.humorpage.sunbro.advice.exception.CIdSigninFailedException;
-import com.humorpage.sunbro.advice.exception.JwtRefreshTokenExpiredException;
+import com.humorpage.sunbro.advice.exception.UserNotFoundException;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.service.CookieService;
 import com.humorpage.sunbro.service.JwtTokenService;
@@ -50,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException, JwtRefreshTokenExpiredException {
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
         final Cookie jwtToken = cookieService.getCookie(httpServletRequest, JwtTokenService.ACCESS_TOKEN_NAME);
 
@@ -62,10 +61,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try{
             if(jwtToken != null){
                 jwt = jwtToken.getValue();
-                usernum = jwtTokenService.getUsernum(jwt);
+                usernum = jwtTokenService.getUserNum(jwt);
             }
             if(usernum!=null){
-                UserSimple userSimple = userService.loadUserSimpleByUsernum(usernum);
+                UserSimple userSimple = userService.findUserSimpleByUserNum(usernum);
                 if(userSimple!=null){
                     if(httpServletResponse.getHeader("user")==null){
                         httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
@@ -76,20 +75,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                     }
                 }
+            }else{
+                Cookie refreshToken = cookieService.getCookie(httpServletRequest, JwtTokenService.REFRESH_TOKEN_NAME);
+                if(refreshToken!=null){
+                    refreshJwt = refreshToken.getValue();
+                }
             }
         }catch (ExpiredJwtException e){
             Cookie refreshToken = cookieService.getCookie(httpServletRequest, JwtTokenService.REFRESH_TOKEN_NAME);
             if(refreshToken!=null){
                 refreshJwt = refreshToken.getValue();
             }
-        }catch(CIdSigninFailedException ignored){
+        }catch(UserNotFoundException ignored){
 
         }
         try {
             if (refreshJwt != null) {
                 refreshUnum = Long.parseLong(redisTokenService.getData(refreshJwt));
-                if (refreshUnum.equals(jwtTokenService.getUsernum(refreshJwt))) {
-                    UserSimple userSimple = userService.loadUserSimpleByUsernum(refreshUnum);
+                if (refreshUnum.equals(jwtTokenService.getUserNum(refreshJwt))) {
+                    UserSimple userSimple = userService.findUserSimpleByUserNum(refreshUnum);
                     if(userSimple!=null){
                         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple, null, userSimple.getAuthorities());
                         usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));

@@ -1,6 +1,6 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.advice.exception.CUserNotFoundException;
+import com.humorpage.sunbro.advice.exception.UserNotFoundException;
 import com.humorpage.sunbro.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,6 @@ public class CustomUserDetailService implements UserDetailsService {
     private UserRepository userRepository;
 
     public UserDetails loadUserByUsername(String userPk) {
-        return (UserDetails) userRepository.findById(Long.valueOf(userPk)).orElseThrow(CUserNotFoundException::new);
+        return (UserDetails) userRepository.findById(Long.valueOf(userPk)).orElseThrow(()->new UserNotFoundException("ID"));
     }
 }

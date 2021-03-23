@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect} from "react"
 import userDefaultImg from "../static/img/user_32x.png";
 import CommentBox from "./CommentBox";
 import { useHistory, Link } from "react-router-dom";
-import {sanitizeNonNull, getTime, convertUnitOfNum} from "../utils/Utils"
+import {sanitizeNonNull, getTime, convertUnitOfNum, copyToClipboard} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
 import {boardWrapper} from "./BoardWrapper"
 import Axios from "axios"
@@ -20,15 +20,18 @@ function Board({
     const id = board.id
     const comments_num = board.comments_num
     const thumbnail = {thumbnail:board.thumbnail,thumbnailImg:board.thumbnailImg};
+
     useEffect(()=>{
-        if(boardRef.current) setRef(boardRef.current)
+        if(setRef!=null && boardRef.current) setRef(boardRef.current)
     },[boardRef,setRef])
+
     const UpdateBoard = ()=>(e)=>{
         if(props.user==null) history.push("/login")
         if(props.user.usernum===board.author.usernum){
             history.push(`/update/${id}`)
         }
     }
+
     const DeleteBoard = ()=>(e)=>{
         if(window.confirm("삭제하시겠습니까?")){
             const formData = new FormData();
@@ -45,6 +48,7 @@ function Board({
             })
         }
     }
+
     const renderDelUpBtn = () =>{
         if(board==null||props.user==null) return null;
         if(board.author.usernum===props.user.usernum){
@@ -54,6 +58,15 @@ function Board({
             </React.Fragment>
         }
     }
+
+    const ShareBoard = () => (e) =>{
+        //배포시 변경
+        const shareUrl = "http://localhost:3000/board/"+id
+        if(copyToClipboard(shareUrl)!==false){
+            console.log("hi")
+        }
+    }
+
     if(board==null) return null;
     if(board.author==null){
         board.author = {usernum:"#",name:"@user123",userImg:""}
@@ -97,7 +110,7 @@ function Board({
                     댓글 {convertUnitOfNum(board.total_comments_num)}
                 </BoardBtn>
                 <LikeBtn id={id} like={board.like} likes={board.likes}/>
-                <BoardBtn>공유하기</BoardBtn>    
+                <BoardBtn onClick={ShareBoard()}>공유하기</BoardBtn>    
             </div>
         </div>
         <CommentBox board_id={id} comment_cnt = {comments_num} CommentBtnRef = {CommentBtnRef}/>

@@ -30,8 +30,8 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
-    @Column(name = "usernum")
-    private Long usernum;
+    @Column(name = "userNum")
+    private Long userNum;
 
     @Column(nullable = false, unique = true, length = 30)
     private String uid;
