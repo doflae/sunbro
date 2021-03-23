@@ -38,7 +38,6 @@ public class FileUploadService {
             byte[] data = file.getBytes();
             String baseDir = "C://mediaFiles";
             File dir = new File(baseDir +path);
-            System.out.println(baseDir+path);
             dir.getParentFile().mkdirs();
             Path target = Paths.get(baseDir +path);
             if(needConvert){

@@ -55,9 +55,6 @@ public class CheckDuplicateService {
         String temp = redisTokenService.getData(key);
         String beforeTemp = redisTokenService.getData(ipKey);
         //이전에 중복 검사한 닉네임와 동일한 닉네임를 검사하였다면 true
-        System.out.println(beforeTemp);
-        System.out.println(ipaddr);
-        System.out.println(value);
         if(beforeTemp!=null && beforeTemp.equals(value)){
             return true;
         }

@@ -53,18 +53,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final Cookie jwtToken = cookieService.getCookie(httpServletRequest, JwtTokenService.ACCESS_TOKEN_NAME);
 
-        Long usernum = null;
+        Long userNum = null;
         String jwt = null;
         String refreshJwt = null;
-        Long refreshUnum;
+        Long refreshUserNum;
 
         try{
             if(jwtToken != null){
                 jwt = jwtToken.getValue();
-                usernum = jwtTokenService.getUserNum(jwt);
+                userNum = jwtTokenService.getUserNum(jwt);
             }
-            if(usernum!=null){
-                UserSimple userSimple = userService.findUserSimpleByUserNum(usernum);
+            if(userNum!=null){
+                UserSimple userSimple = userService.findUserSimpleByUserNum(userNum);
                 if(userSimple!=null){
                     if(httpServletResponse.getHeader("user")==null){
                         httpServletResponse.addHeader("user",objectMapper.writeValueAsString(userSimple));
@@ -91,9 +91,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         try {
             if (refreshJwt != null) {
-                refreshUnum = Long.parseLong(redisTokenService.getData(refreshJwt));
-                if (refreshUnum.equals(jwtTokenService.getUserNum(refreshJwt))) {
-                    UserSimple userSimple = userService.findUserSimpleByUserNum(refreshUnum);
+                refreshUserNum = Long.parseLong(redisTokenService.getData(refreshJwt));
+                if (refreshUserNum.equals(jwtTokenService.getUserNum(refreshJwt))) {
+                    UserSimple userSimple = userService.findUserSimpleByUserNum(refreshUserNum);
                     if(userSimple!=null){
                         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userSimple, null, userSimple.getAuthorities());
                         usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));

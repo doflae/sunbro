@@ -42,17 +42,20 @@ export const Login = withRouter(authWrapper(class extends Component{
 		})
 	}
 
-	responseKaKao = (user) =>{
+	responseKaKao = (response) =>{
 		const formData = new FormData();
-		formData.append('uid',"K"+user.profile.id)
-		
+		const profile = response.profile
+		formData.append('uid',profile.id)
+		formData.append('platForm',"KAKAO")
+		formData.append('token',response.response.access_token)
 		this.props.request("post","/account/anologin",formData).then(res=>{
+			console.log(res)
 			if(res.data.success){
 				this.props.history.push("/boards")
 			}else{
 				const userDetail = new Set();
-				userDetail.uid = "K"+user.profile.id
-				const account = user.profile.kakao_account
+				userDetail.uid = "KAKAO"+profile.id
+				const account = profile.kakao_account
 				if(account.has_gender===true){
 					userDetail.gender = account.gender==="male"?"Male":"Female";
 				}

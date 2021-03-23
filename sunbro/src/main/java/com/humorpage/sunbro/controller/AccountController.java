@@ -3,6 +3,7 @@ package com.humorpage.sunbro.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.humorpage.sunbro.advice.exception.UserNotFoundException;
+import com.humorpage.sunbro.model.OtherUser;
 import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.UserRepository;
@@ -61,6 +62,9 @@ public class AccountController {
 
     @Autowired
     private CheckDuplicateService checkDuplicateService;
+
+    @Autowired
+    private ConnectPlatFormService connectPlatFormService;
 
     @ApiOperation(value ="id중복 체크 후 이메일 전송")
     @GetMapping(value="/checkdup/id")
@@ -134,22 +138,27 @@ public class AccountController {
 
     @ApiOperation(value = "타 플랫폼 로그인")
     @PostMapping(value = "/anologin")
-    CommonResult anologin(@ApiParam(value = "user", required = true) @ModelAttribute UserSimple user,
-                          HttpServletResponse res,
-                          HttpServletRequest req){
+    CommonResult anologin(@ModelAttribute OtherUser otherUser,
+                          HttpServletResponse res){
 
         UserSimple userSimple=null;
         try{
-            userSimple = userSimpleRepository.findByUid(user.getUid()).orElseThrow(RuntimeException::new);
+            System.out.println(otherUser.toString());
+            if(connectPlatFormService.AuthByPlatform(otherUser)){
+                userSimple = userSimpleRepository.findByUid(otherUser.getPlatForm().name()+otherUser.getUid()).orElseThrow(()->new UserNotFoundException("ID"));
+            }else{
+                responseService.getDetailResult(false,-1,otherUser.getPlatForm().name()+" Token error");
+            }
             /**
-            1. {platform}+uid값으로 조회
-            2. 조회 성공 ? => token생성
+             * access_token 확인
+             * id 확인
+             * 조회 성공시 해당 계정으로 로그인
             */
-        }catch (RuntimeException e){
+        }catch (UserNotFoundException e){
             /**
              * 조회 실패 => 플랫폼 회원가입 페이지로 이동
              */
-            return responseService.getFailResult();
+            return responseService.getDetailResult(false,-1,e.getMessage());
         }
         if(userSimple!=null) {
             final String token = jwtTokenService.generateToken(userSimple);
