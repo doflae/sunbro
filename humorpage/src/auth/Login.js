@@ -49,7 +49,6 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('platForm',"KAKAO")
 		formData.append('token',response.response.access_token)
 		this.props.request("post","/account/anologin",formData).then(res=>{
-			console.log(res)
 			if(res.data.success){
 				this.props.history.push("/boards")
 			}else{
@@ -72,13 +71,15 @@ export const Login = withRouter(authWrapper(class extends Component{
 	responseGoogle = (user) =>{
 		const formData = new FormData();
 		const id = user.profileObj.googleId
-		formData.append('uid',"G"+id)
+		formData.append('uid',id)
+		formData.append('platForm',"GOOGLE")
+		formData.append('token',user.accessToken)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
 				this.props.history.push("/boards")
 			}else{
 				const userDetail = new Set();
-				userDetail.uid = "G"+id
+				userDetail.uid = id
 				this.setState({
 					platform:true,
 					userDetail:userDetail,
@@ -89,13 +90,16 @@ export const Login = withRouter(authWrapper(class extends Component{
 
 	responseNaver = (user) =>{
 		const formData = new FormData();
-		formData.append('uid',"N"+user.id)
+		const access_token = localStorage.getItem('com.naver.nid.access_token').split('.')[1]
+		formData.append('uid',user.id)
+		formData.append('platForm',"NAVER")
+		formData.append('token',access_token)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
 				this.props.history.push("/boards")
 			}else{
 				const userDetail = new Set();
-				userDetail.uid = "N"+user.id
+				userDetail.uid = "NAVER"+user.id
 				userDetail.age = user.age!==undefined?user.age.split("-")[0]:"0"
 				if(user.gender!==undefined){
 					const gender = user.gender==="M"?"Male":"Female";
@@ -112,13 +116,16 @@ export const Login = withRouter(authWrapper(class extends Component{
 
 	responseFacebook = (user) =>{
 		const formData = new FormData();
-		formData.append('uid',"F"+user.id);
+		formData.append('uid',user.id);
+		formData.append('platForm',"FACEBOOK")
+		formData.append('token',user.accessToken)
+		console.log(user)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
 				this.props.history.push("/boards")
 			}else{
 				const userDetail = new Set();
-				userDetail.uid = "F"+user.id;
+				userDetail.uid = "FACEBOOK"+user.id;
 				this.setState({
 					platform:true,
 					userDetail:userDetail,
