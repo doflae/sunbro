@@ -24,15 +24,15 @@ function CommentUploader({...props}){
         if(cname!=null){
             content=`<span class="recomment_target">@${cname}</span>`+content
         }
-        const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+'.'+mediaFormat;
         if(!isEmpty(commentImg)){
+            const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+'.'+mediaFormat;
             saveFile(filePath)
+            data.append('media',filePath)
         }
         if(!isEmpty(content)||!isEmpty(commentImg)){
             data.append('content', content)
             data.append('board_id',board_id)
             data.append('comment_id',comment_id)
-            data.append('media',filePath)
             const blob = {};
             blob.commentImg = commentImg
             blob.commentResizedImg = commentResizedImg

@@ -23,6 +23,7 @@ const Comment = ({...props}) =>{
 		onOff:false,
 		target:null
 	})
+	const [isDeleted, setIsDeleted] = useState(false);
 	const [recommentOnId, setRecommentOnId] = useState(0);
 	const [onOffrecomment, setOnOffrecomment] = useState(false);
 	const [onOffSeeMore, setOnOffSeeMore] = useState(true);
@@ -51,6 +52,22 @@ const Comment = ({...props}) =>{
 			setKeyList(keyList)
 			if(res.list.length<10) setOnOffSeeMore(false);
 		})
+	}
+
+	const deleteHandler = () => (e) =>{
+		if(window.confirm("삭제하시겠습니까?")){
+            const formData = new FormData();
+            formData.append("comment_id",c.id)
+            Axios.post("/comment/delete",formData).then(res=>{
+                if(res.status===200) return res.data
+            }).then(res=>{
+                if(res.success){
+					setIsDeleted(true);
+                }else{
+                    alert("해당 글의 작성자가 아닙니다.");
+                }
+            })
+        }
 	}
 
 	const recommentClickHandler = (id,authorName) => {
@@ -85,6 +102,7 @@ const Comment = ({...props}) =>{
 	}
 
 	if(c==null) return null;
+	if(isDeleted) return null;
 	return <CommentStyled>
 			<CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
@@ -99,6 +117,11 @@ const Comment = ({...props}) =>{
 							<div className="comment-others">
 								{getTime(c.created)}
 							</div>
+							<DeleteCommentBtn
+								author_num={c.author.userNum}
+								user={props.user}
+								deleteHandler={deleteHandler}
+							/>
 						</div>
 						<div className="comment-right">
 							<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
@@ -223,6 +246,11 @@ export const CommentContext = ({content,media,blob}) =>{
 	</CommentContextStyled>
 }
 
+export const DeleteCommentBtn = ({author_num, deleteHandler, user}) =>{
+	if(user==null || author_num!==user.userNum) return null;
+	return <CommentDeleteBtnStyled onClick={deleteHandler()}>삭제</CommentDeleteBtnStyled>
+}
+
 export const RecommentBtn = ({recommentClick, authorName, onOff, id}) =>{
 
 	return <RecommentBtnStyled onClick={e=>{e.preventDefault();
@@ -234,6 +262,14 @@ export const CommentUserImageStyled = styled.img`
 	max-height: 32px;
 	border-radius: 16px;
 	margin: 0px 10px 10px 5px;
+`
+
+export const CommentDeleteBtnStyled = styled.button`
+	position: absolute;
+	background-color: #e8e8e8;
+	cursor: pointer;
+	border: none;
+	right: 25px;
 `
 
 const CommentStyled = styled.div`

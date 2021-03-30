@@ -68,7 +68,10 @@ function CommentBox({
 
     const CommentListRender = (commentList, board_id) => {
         if(commentList.length===0) return "첫 댓글을 달아주세요"
-        return commentList.map(c =><Comment key={c.id} comment={c} board_id={board_id}/>)
+        return commentList.map(c =>
+            <Comment key={c.id} comment={c} board_id={board_id}
+            parentKeyList={keyList} setParentKeyList={setKeyList}/>
+        )
     }
 
     if(onOff===false) return null;

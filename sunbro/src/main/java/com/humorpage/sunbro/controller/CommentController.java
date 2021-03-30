@@ -134,6 +134,8 @@ public class CommentController {
             if(comment.getAuthor().getUserNum().equals(userSimple.getUserNum())){
                 fileDeleteService.deleteFiles(comment.getMedia(), MediaType.COMMENT);
                 commentRepository.delete(comment);
+            }else{
+                return responseService.getFailResult();
             }
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
