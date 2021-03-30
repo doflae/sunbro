@@ -1,8 +1,14 @@
-import React from "react"
+import React, { useState } from "react"
 import userDefaultImg from "../static/img/user_32x.png";
 import {Link} from 'react-router-dom'
 import {getTime} from "../utils/Utils"
-import {CommentLikeBtn, CommentContext, RecommentBtn, CommentUserImageStyled} from "./Comment"
+import {authWrapper} from "../auth/AuthWrapper"
+import {CommentLikeBtn, 
+	CommentContext, 
+	RecommentBtn, 
+	CommentUserImageStyled,
+	DeleteCommentBtn} from "./Comment"
+import Axios from "axios";
 
 const RecommentConnector = ({...props}) => {
 	if(props.onOff===false) return null;
@@ -19,8 +25,25 @@ const SeeMoreBtn = ({hasMore, getData}) =>{
 	else return <button onClick={e=>{e.preventDefault();getData();}}>더보기</button>
 }
 
-const Recomment = ({c, recommentClickHandler,recommentOnId}) =>{
+const Recomment = authWrapper(({c,recommentClickHandler,recommentOnId, ...props}) =>{
+	const [isDeleted, setIsDeleted] = useState(false)
+	const deleteHandler = () => (e) =>{
+		if(window.confirm("삭제하시겠습니까?")){
+            const formData = new FormData();
+            formData.append("comment_id",c.id)
+            Axios.post("/comment/delete",formData).then(res=>{
+                if(res.status===200) return res.data
+            }).then(res=>{
+                if(res.success){
+					setIsDeleted(true);
+                }else{
+                    alert("해당 글의 작성자가 아닙니다.");
+                }
+            })
+        }
+	}
 	if(c==null) return null;
+	if(isDeleted) return null;
 	return <div className="recomment">
 			<CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
@@ -35,6 +58,11 @@ const Recomment = ({c, recommentClickHandler,recommentOnId}) =>{
 						<div className="comment-others">
 							{getTime(c.created)}
 						</div>
+						<DeleteCommentBtn
+							author_num={c.author.userNum}
+							user={props.user}
+							deleteHandler={deleteHandler}
+						/>
 					</div>
 					<div className="comment-right">
 						<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
@@ -47,5 +75,5 @@ const Recomment = ({c, recommentClickHandler,recommentOnId}) =>{
 				<CommentContext content={c.content} media={c.media} blob={c.blob}/>
 			</div>
 		</div>
-}
+})
 export default RecommentConnector;
