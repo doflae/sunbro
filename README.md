@@ -15,6 +15,7 @@ RestApi를 통해 Spring boot와 React를 연결하였으며 커뮤니티에서 
 
 [![Tech Blog Badge](http://img.shields.io/badge/-Tech%20blog-black?style=flat-square&logo=github&link=https://fri-seono.tistory.com/)](https://fri-seono.tistory.com/)
 
+[![Video Label](https://img.youtube.com/vi/qTR4-21yZHU/sddefault.jpg)](https://youtu.be/qTR4-21yZHU)
 
 ### 개발 환경
 
