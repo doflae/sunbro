@@ -1,6 +1,7 @@
 package com.humorpage.sunbro.controller;
 
 
+import com.humorpage.sunbro.advice.exception.CommentNotFoundException;
 import com.humorpage.sunbro.model.Comment;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.CommentLikesRepository;
@@ -8,9 +9,7 @@ import com.humorpage.sunbro.respository.CommentRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
-import com.humorpage.sunbro.service.CommentService;
-import com.humorpage.sunbro.service.LikesService;
-import com.humorpage.sunbro.service.ResponseService;
+import com.humorpage.sunbro.service.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +40,9 @@ public class CommentController {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private FileDeleteService fileDeleteService;
 
 
     @ApiOperation(value = "댓글 열람",notes = "게시글의 id또는 댓글의 id를 받아 해당 글의 댓글 열람")
@@ -120,5 +122,22 @@ public class CommentController {
         }
         likesService.deletelikeComment(userSimple.getUserNum(),comment_id);
         return responseService.getSuccessResult();
+    }
+
+    @PostMapping(value = "/delete")
+    CommonResult deleteComment(@RequestParam Long comment_id, Authentication authentication){
+        if(authentication==null) return responseService.getFailResult();
+        try{
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+
+            Comment comment = commentRepository.findById(comment_id).orElseThrow(()-> new CommentNotFoundException("CommentID"));
+            if(comment.getAuthor().getUserNum().equals(userSimple.getUserNum())){
+                fileDeleteService.deleteFiles(comment.getMedia(), MediaType.COMMENT);
+                commentRepository.delete(comment);
+            }
+            return responseService.getSuccessResult();
+        }catch (NullPointerException e){
+            return responseService.getFailResult();
+        }
     }
 }

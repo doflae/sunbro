@@ -26,13 +26,11 @@ public class FileDeleteService {
     @Autowired
     private TemporaryFileStore temporaryFileStore;
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("/yyyy/MM/dd/");
-
     @Autowired
     private BoardRepository boardRepository;
 
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("/yyyy/MM/dd/");
     private final String baseDir = "C://mediaFiles";
-
     private final Pattern srcPattern = Pattern.compile("\"/file/get\\?name=([^\"]*)");
 
     public void refreshDir(String contentAfter,
