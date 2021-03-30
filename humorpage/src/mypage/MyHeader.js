@@ -26,6 +26,9 @@ function MyHeader({
     const imageDelete = ()=>(e) =>{
         revoke()
         setUserImg("");
+        if(user.userImg!==""){
+            setIsChanged(true);
+        }
     }
     const saveFile = (path) =>{
         Object.keys(userImgResized).forEach(key=>{
@@ -87,19 +90,23 @@ function MyHeader({
     }
     const imageSubmit = () => (e) => {
         e.preventDefault();
+        let filePath;
         if(userImg.startsWith("blob")){
-            const filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
+            filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
             saveFile(filePath)
-            const formData = new FormData();
-            formData.append('path',filePath)
-            props.request("post","/account/update/img",formData).then(res=>{
-                console.log(res)
-                if(res.status===200 && res.data.success){
-                    profileImgRef.current.style.margin = "";
-                    setIsChanged(false)
-                }
-            })
+            
+        }else{
+            filePath = ""
         }
+        const formData = new FormData();
+        formData.append('path',filePath)
+        props.request("post","/account/update/img",formData).then(res=>{
+            console.log(res)
+            if(res.status===200 && res.data.success){
+                profileImgRef.current.style.margin = "";
+                setIsChanged(false)
+            }
+        })
     }
     if(user===null){
         return null;
