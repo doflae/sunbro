@@ -1,5 +1,5 @@
 import React, {useRef,useState} from "react"
-import Camera from "../static/svg/camera.svg"
+import {ReactComponent as Camera} from "../static/svg/camera.svg"
 import Dropzone from "react-dropzone"
 import {getToday, getRandomGenerator,isEmpty, ResizeImage, ResizeImageDefault} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
@@ -37,7 +37,10 @@ function CommentUploader({...props}){
             blob.commentImg = commentImg
             blob.commentResizedImg = commentResizedImg
             props.request('post',"/comment/upload",data).then(res=>{
+                console.log(res)
+                console.log(props)
                 if(res.status===200 && res.data.success){
+
                     if(mediaRef.current!=null) mediaRef.current.style.display="none";
                     contentRef.current.value="";
                     setImageOnOff(false)

@@ -51,7 +51,7 @@ function Board({
 
     const renderDelUpBtn = () =>{
         if(board==null||props.user==null) return null;
-        if(board.author.usernum===props.user.usernum){
+        if(board.author.userNum===props.user.userNum){
             return <React.Fragment>
                 <UpdateDeleteBtnStyled onClick={UpdateBoard()}>수정</UpdateDeleteBtnStyled>
                 <UpdateDeleteBtnStyled onClick={DeleteBoard()}>삭제</UpdateDeleteBtnStyled>

@@ -87,8 +87,9 @@ const Comment = ({...props}) =>{
 	}
 	const appendComment = (comment) =>{
 		keyList.add(comment.id)
-		setRecommentList(recommentList.concat(comment))
+		setRecommentList(recommentList.concat([comment]))
 		setKeyList(keyList)
+		setOnOffrecomment(true)
 	}
 
 	const getRecomment = () => (e) =>{
