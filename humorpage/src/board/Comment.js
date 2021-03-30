@@ -86,7 +86,7 @@ const Comment = ({...props}) =>{
 
 	if(c==null) return null;
 	return <CommentStyled>
-			<CommentUserImageStyled className="comment-userimg" src={"/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
+			<CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
 				
@@ -190,8 +190,8 @@ export const CommentContext = ({content,media,blob}) =>{
 		src_large = blob.commentImg
 	}else{
 		if(!isEmpty(media)){
-			src_small = `/file/get?name=/200${media}`
-			src_large = `/file/get?name=${media}`
+			src_small = `/api/file/get?name=/200${media}`
+			src_large = `/api/file/get?name=${media}`
 		}
 	}
 	const contentChecked = isEmpty(content)?null:sanitizeHarder(content)

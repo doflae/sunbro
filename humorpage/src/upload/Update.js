@@ -106,7 +106,7 @@ class Update extends Component {
             //리사이징 이미지는 jpg파일로
             await fetch(src).then(r=>r.blob()).then(blob=>{
               const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
-              elem.setAttribute("src","/file/get?name="+OriginalFilePath)
+              elem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
               this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
               ResizeThumbnailImage(blob).then(resizedImage=>{
                 this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
@@ -117,7 +117,7 @@ class Update extends Component {
             //thumbnailImg만 원본FileOriginName+thumb.jpg
             await fetch(src).then(r=>r.blob()).then(blob=>{
               const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
-              elem.setAttribute("src","/file/get?name="+OriginalFilePath)
+              elem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
               if(elem.videoWidth>0){
                 this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
               }else{
@@ -125,7 +125,7 @@ class Update extends Component {
               }
             })
           }
-          this.boardDetail.thumbnailImg = "/file/get?name="+ResizedFilePath;
+          this.boardDetail.thumbnailImg = "/api/file/get?name="+ResizedFilePath;
         }else{
           //src가 이미 저장된 미디어 파일인경우
           const splitSrc = src.split("/")
@@ -141,13 +141,13 @@ class Update extends Component {
                 })
               }else{
                 if(elem.videoWidth>0){
-                  this.saveFile(blob,src.replace("/file/get?name=",""),false,"THUMBNAIL")
+                  this.saveFile(blob,src.replace("/api/file/get?name=",""),false,"THUMBNAIL")
                 }else{
-                  this.saveFile(blob,src.replace("/file/get?name=",""),false,"THUMBNAIL")
+                  this.saveFile(blob,src.replace("/api/file/get?name=",""),false,"THUMBNAIL")
                 }
               }
             })
-            this.boardDetail.thumbnailImg = "/file/get?name="+filePath+srcOriginFileName+"thumb.jpg"
+            this.boardDetail.thumbnailImg = "/api/file/get?name="+filePath+srcOriginFileName+"thumb.jpg"
           }
         }
       }
@@ -168,7 +168,7 @@ class Update extends Component {
           await fetch(video.src).then(r=>r.blob()).then(
             blob=>{
               const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-              video.setAttribute("src", "/file/get?name="+newPath)
+              video.setAttribute("src", "/api/file/get?name="+newPath)
               if(video.videoWidth>0){
                 this.saveFile(blob,newPath,false)
               }else{
@@ -185,14 +185,14 @@ class Update extends Component {
           await fetch(src).then(r=>r.blob()).then(
             blob=>{
               const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-              elem.setAttribute("src", "/file/get?name="+newPath)
+              elem.setAttribute("src", "/api/file/get?name="+newPath)
               this.saveFile(blob,newPath,false)
             }
           )
         }else if(src.startsWith("data")){
           const blob = dataUrltoBlob(src);
           const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-          elem.setAttribute("src", "/file/get?name="+newPath)
+          elem.setAttribute("src", "/api/file/get?name="+newPath)
           this.saveFile(blob,newPath,false)
         }
       }

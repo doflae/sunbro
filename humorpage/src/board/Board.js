@@ -74,7 +74,7 @@ function Board({
     return <BoardStyled ref = {boardRef}>
         <BoardTop>
             <BoardTopLeft>
-            <BoardAuthorImageStyled src={"/file/get?name=/72"+board.author.userImg}
+            <BoardAuthorImageStyled src={"/api/file/get?name=/72"+board.author.userImg}
                 alt="" onError={(e)=>{
                     e.target.onError=null;e.target.src=userDefaultImg;
                 }}/>

@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom"
 import userDefaultImg from "../static/img/user_128x.png";
 import Dropzone from "react-dropzone"
 import {authWrapper} from "./AuthWrapper";
-import {ReactComponent as Pencil} from '../static/svg/pencil.svg'
+import Pencil from '../static/svg/pencil.svg'
 import {AgeSelector, getRandomGenerator, ResizeImage} from "../utils/Utils"
 import Axios from "axios";
 import { ValidationSuccess } from "../forms/ValidationSuccess";
@@ -234,7 +234,8 @@ export const MyProfileResizedImage = ({src, defaultImg})=>{
 
 const PencilStyled = styled(Pencil)`
     position: absolute;
-    right: 0;
+    right: 5px;
+    overflow:overlay!important;
     bottom: 5px;
 `
 

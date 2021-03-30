@@ -20,7 +20,8 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping("/file")
+@CrossOrigin(value = "http://localhost:3000", allowCredentials = "true")
+@RequestMapping("/api/file")
 public class FileController {
 
 

@@ -43,6 +43,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 	}
 
 	responseKaKao = (response) =>{
+		console.log(response)
 		const formData = new FormData();
 		const profile = response.profile
 		formData.append('uid',profile.id)
@@ -119,7 +120,6 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('uid',user.id);
 		formData.append('platForm',"FACEBOOK")
 		formData.append('token',user.accessToken)
-		console.log(user)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
 				this.props.history.push("/boards")
@@ -166,7 +166,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 			/>
 			<NaverLogin
 				clientId="zqxoO0A0cJnsQXAf6CVm"
-				callbackUrl="http://localhost:3000/login"
+				callbackUrl="http://3.138.119.161/login"
 				render={(props)=><NaverBtn onClick={props.onClick}>네이버 계정으로 로그인</NaverBtn>}
 				onSuccess={this.responseNaver}
 				onFailure={(result)=>console.error(result)}

@@ -11,6 +11,7 @@ import com.humorpage.sunbro.service.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
@@ -20,7 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 
 @RestController
-@RequestMapping("/board")
+@RequestMapping("/api/board")
+@CrossOrigin(value = "http://localhost:3000", allowCredentials = "true")
 public class BoardController {
 
     @Autowired
@@ -175,6 +177,7 @@ public class BoardController {
     }
 
     @GetMapping("/recently")
+    @ResponseStatus(HttpStatus.OK)
     ListResult<BoardThumbnail> recently(@RequestParam(value = "board_id",required = false) Long board_id, Authentication authentication){
         List<BoardThumbnail> boardThumbnailList;
         if(board_id==null){

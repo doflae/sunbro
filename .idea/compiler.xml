@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="sunbro" target="11" />
+      <module name="sunbro" target="15" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

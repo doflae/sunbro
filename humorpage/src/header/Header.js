@@ -12,30 +12,16 @@ function Header({...props}){
       }
     )
   }
-  const nowPath = history.location.pathname
-  const myPush = (target) =>{
-    const nowPathOrigin = nowPath.match(/^\/([^/.]*).*$/g)
-    const targetPathOrigin = target.match(/^\/([^/.]*).*$/g)
-    if(nowPathOrigin!=null && targetPathOrigin!=null){
-      if(nowPathOrigin[1] === targetPathOrigin[1]){
-        history.push(target);
-        history.go();
-      }
-    }
-    else{
-      history.push(target);
-    }
-  }
   const imageClick = () => (e) =>{
-    myPush("/boards")
+    history.push("/boards")
   }
 
   const goMypage = () => (e)=>{
-    myPush("/mypage")
+    history.push("/mypage")
   }
 
   const goLogin = () => (e) =>{
-    myPush("/login")
+    history.push("/login")
   }
   return <header className="head">
   <div className="head_logo" onClick={imageClick()}>
@@ -50,7 +36,7 @@ function Header({...props}){
 const UserImg = ({user, goMypage}) =>{
   if(user!=null){
     return <img className="head_user_img" onClick={goMypage()}
-      alt="" src={"/file/get?name=/72"+user.userImg}
+      alt="" src={"/api/file/get?name=/72"+user.userImg}
       onError={e=>{
         e.target.onerror=null; e.target.src=userDefaultImg;
       }}/>

@@ -2,7 +2,7 @@ import React, {useState,useRef} from 'react';
 import userDefaultImg from "../static/img/user_128x.png";
 import {authWrapper} from "../auth/AuthWrapper"
 import {withRouter} from 'react-router-dom'
-import {ReactComponent as Pencil} from '../static/svg/pencil.svg'
+import Pencil from '../static/svg/pencil.svg'
 import Dropzone from "react-dropzone"
 import Axios from "axios"
 import styled from "styled-components"
@@ -146,7 +146,7 @@ const UserImage = ({src, userDefaultImg}) =>{
             return <MyProfileImg src={src}
          alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>
         }else{
-            return <MyProfileImg className="myprofile_img" src={`/file/get?name=${src}`}
+            return <MyProfileImg className="myprofile_img" src={`/api/file/get?name=${src}`}
             alt=""  onError={(e)=>{e.target.onerror=null;e.target.src=userDefaultImg;}}/>   
         }   
     }

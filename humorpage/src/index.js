@@ -5,17 +5,18 @@ import App from './App';
 import * as serviceWorker from "./serviceWorker";
 import {AuthProviderImpl} from "./auth/AuthProviderImpl"
 import {BoardProviderImpl} from "./board/BoardProviderImpl"
+import axios from "axios";
+
+axios.defaults.baseURL = 'http://3.128.88.214/api'
 
 ReactDOM.render(
-  <React.StrictMode>
-    <BoardProviderImpl>    
-      <AuthProviderImpl>
-        <Router>
-          <App />
-        </Router>
-      </AuthProviderImpl>
-    </BoardProviderImpl>
-  </React.StrictMode>,
+<BoardProviderImpl>    
+  <AuthProviderImpl>
+    <Router>
+      <App/>
+    </Router>
+  </AuthProviderImpl>
+</BoardProviderImpl>,
   document.getElementById('root')
 );
 

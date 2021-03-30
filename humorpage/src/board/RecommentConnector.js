@@ -22,7 +22,7 @@ const SeeMoreBtn = ({hasMore, getData}) =>{
 const Recomment = ({c, recommentClickHandler,recommentOnId}) =>{
 	if(c==null) return null;
 	return <div className="recomment">
-			<CommentUserImageStyled className="comment-userimg" src={"/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
+			<CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
 			

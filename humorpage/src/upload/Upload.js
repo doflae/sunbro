@@ -226,25 +226,25 @@ class Upload extends Component {
             blob = await dataUrltoBlob(mediaElem.src)
           }
           const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
-          mediaElem.setAttribute("src","/file/get?name="+OriginalFilePath)
+          mediaElem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
           this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
           ResizeThumbnailImage(blob).then(resizedImage=>{
             this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
           })
-          data.append("thumbnailImg","/file/get?name="+ResizedFilePath);
+          data.append("thumbnailImg","/api/file/get?name="+ResizedFilePath);
         }else if(tag==="VIDEO"){
           //비디오는 원본 보낼시 리사이징 백엔드에서 완료
           //thumbnailImg만 원본FileOriginName+thumb.jpg
           await fetch(mediaElem.src).then(r=>r.blob()).then(blob=>{
             const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
-            mediaElem.setAttribute("src","/file/get?name="+OriginalFilePath)
+            mediaElem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
             if(mediaElem.videoWidth>0){
               this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
             }else{
               this.saveFile(blob,OriginalFilePath,true,"THUMBNAIL")
             }
           })
-          data.append("thumbnailImg","/file/get?name="+ResizedFilePath);
+          data.append("thumbnailImg","/api/file/get?name="+ResizedFilePath);
         }else if(tag==="IFRAME"){
           //youtube => https://img.youtube.com/vi/<insert-youtube-video-id-here>/sddefault.jpg
           const youtubePattern = /.*\/([^?.]*)\?.*/g
@@ -272,7 +272,7 @@ class Upload extends Component {
           await fetch(video.src).then(r=>r.blob()).then(
             blob=>{
               const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-              video.setAttribute("src", "/file/get?name="+newPath)
+              video.setAttribute("src", "/api/file/get?name="+newPath)
               if(video.videoWidth>0){
                 this.saveFile(blob,newPath,false)
               }else{
@@ -289,14 +289,14 @@ class Upload extends Component {
           await fetch(src).then(r=>r.blob()).then(
             blob=>{
               const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-              elem.setAttribute("src", "/file/get?name="+newPath)
+              elem.setAttribute("src", "/api/file/get?name="+newPath)
               this.saveFile(blob,newPath,false)
             }
           )
         }else if(src.startsWith("data")){
           const blob = dataUrltoBlob(src);
           const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-          elem.setAttribute("src", "/file/get?name="+newPath)
+          elem.setAttribute("src", "/api/file/get?name="+newPath)
           this.saveFile(blob,newPath,false)
         }
       }

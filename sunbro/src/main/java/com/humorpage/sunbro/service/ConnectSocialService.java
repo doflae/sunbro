@@ -1,6 +1,5 @@
 package com.humorpage.sunbro.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.humorpage.sunbro.model.OtherUser;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -8,14 +7,13 @@ import org.json.simple.parser.ParseException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
 @Service
-public class ConnectPlatFormService {
+public class ConnectSocialService {
 
-    public boolean AuthByPlatform(OtherUser otherUser){
+    public boolean AuthBySocial(OtherUser otherUser){
         switch (otherUser.getPlatForm()){
             case KAKAO-> {
                 RestTemplate restTemplate = new RestTemplate();

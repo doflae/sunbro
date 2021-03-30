@@ -28,7 +28,8 @@ import javax.validation.Valid;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(value = "/account")
+@CrossOrigin(value = "http://localhost:3000", allowCredentials = "true")
+@RequestMapping(value = "/api/account")
 public class AccountController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -64,25 +65,17 @@ public class AccountController {
     private CheckDuplicateService checkDuplicateService;
 
     @Autowired
-    private ConnectPlatFormService connectPlatFormService;
+    private ConnectSocialService connectSocialService;
 
     @ApiOperation(value ="id중복 체크 후 이메일 전송")
     @GetMapping(value="/checkdup/id")
     CommonResult checkId(String id){
-        switch (checkDuplicateService.checkEmail(id)){
-            case 1->{
-                return responseService.getDetailResult(true,1,"해당 메일로 인증코드를 전송하였습니다. 메일을 확인해주세요.");
-            }
-            case 2->{
-                return responseService.getDetailResult(false, 0, "이미 사용중인 계정입니다.");
-            }
-            case 3->{
-                return responseService.getDetailResult(true, 1, "메일 전송이 완료되었습니다. 메일을 확인해주세요.");
-            }
-            default -> {
-                return responseService.getDetailResult(false,0,"메일 전송에 실패하였습니다. 다시 시도해주시기 바랍니다.");
-            }
-        }
+        return switch (checkDuplicateService.checkEmail(id)) {
+            case 1 -> responseService.getDetailResult(true, 1, "해당 메일로 인증코드를 전송하였습니다. 메일을 확인해주세요.");
+            case 2 -> responseService.getDetailResult(false, 0, "이미 사용중인 계정입니다.");
+            case 3 -> responseService.getDetailResult(true, 1, "메일 전송이 완료되었습니다. 메일을 확인해주세요.");
+            default -> responseService.getDetailResult(false, 0, "메일 전송에 실패하였습니다. 다시 시도해주시기 바랍니다.");
+        };
     }
 
     @ApiOperation(value = "이메일 인증 코드 확인")
@@ -144,7 +137,7 @@ public class AccountController {
         UserSimple userSimple=null;
         try{
             System.out.println(otherUser.toString());
-            if(connectPlatFormService.AuthByPlatform(otherUser)){
+            if(connectSocialService.AuthBySocial(otherUser)){
                 userSimple = userSimpleRepository.findByUid(otherUser.getPlatForm().name()+otherUser.getUid()).orElseThrow(()->new UserNotFoundException("ID"));
             }else{
                 responseService.getDetailResult(false,-1,otherUser.getPlatForm().name()+" Token error");

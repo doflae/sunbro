@@ -21,8 +21,9 @@ import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.List;
 
-@RequestMapping("/comment")
+@RequestMapping("/api/comment")
 @RestController
+@CrossOrigin(value = "http://localhost:3000", allowCredentials = "true")
 public class CommentController {
 
 
