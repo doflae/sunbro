@@ -10,12 +10,13 @@
 페이지 이동을 최소화한 유머 커뮤니티입니다.
 RestApi를 통해 Spring boot와 React를 연결하였으며 커뮤니티에서 사용할 대부분의 기능을 구현하였습니다.
 
-자세한 이슈들은 아래 기술블로그에 정리 중입니다.
+자세한 이슈들은 아래 기술블로그에 정리 중입니다.z
 
 
 [![Tech Blog Badge](http://img.shields.io/badge/-Tech%20blog-black?style=flat-square&logo=github&link=https://fri-seono.tistory.com/)](https://fri-seono.tistory.com/)
 
-{% include video id="qTR4-21yZHU" provider="youtube" %}
+[![Video Label](![image](https://user-images.githubusercontent.com/47937302/113028395-2e396e80-91c6-11eb-9cc9-7bdadda7ca82.png)](https://youtu.be/qTR4-21yZHU)
+
 
 ### 개발 환경
 
