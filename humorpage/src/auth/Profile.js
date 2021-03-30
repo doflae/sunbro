@@ -113,21 +113,40 @@ function Profile({userDetail,...props}){
             form.append('name',name)
             form.append('gender',gender)
             form.append('age',age)
-            form.append('isPlatForm',true)
+            if(userDetail.platform==null){
+                form.append('password',userDetail.pw)
+            }
+            if(userDetail.platform!=null) form.append('isPlatForm',true)
             if(userImg.startsWith("blob")){
                 const filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
                 form.append('userImg',filePath)
                 Axios.post("/account/signup",form).then(
                     res=>{
                         if(res.data.success){
-                            const formData = new FormData();
-                            formData.append("uid",userDetail.uid);
-                            props.request("post","/account/anologin",formData).then(res=>{
-                                if(res.data.success){
-                                    saveFile(filePath)
-                                    history.push("/boards")
+                            if(userDetail.platform==null){
+                                const credentials = {
+                                    id:userDetail.uid,
+                                    password:userDetail.pw
                                 }
-                            })
+                                props.authenticate(credentials).then(res=>{
+                                    console.log(res)
+                                    if(res){
+                                        saveFile(filePath)
+                                        history.push("/boards")
+                                    }
+                                })
+                            }else{
+                                const formData = new FormData();
+                                formData.append("uid",userDetail.uid);
+                                formData.append("platform",userDetail.platform)
+                                formData.append("token",userDetail.token)
+                                props.request("post","/account/anologin",formData).then(res=>{
+                                    if(res.data.success){
+                                        saveFile(filePath)
+                                        history.push("/boards")
+                                    }
+                                })
+                            }
                         }else{
                             console.log(res)
                         }
@@ -138,13 +157,28 @@ function Profile({userDetail,...props}){
                 Axios.post("/account/signup",form).then(
                     res=>{
                         if(res.data.success){
-                            const formData = new FormData();
-                            formData.append("uid",userDetail.uid);
-                            props.request("post","/account/anologin",formData).then(res=>{
-                                if(res.data.success){
-                                    history.push("/boards")
+                            if(userDetail.platform==null){
+                                const credentials = {
+                                    id:userDetail.uid,
+                                    password:userDetail.pw
                                 }
-                            })
+                                props.authenticate(credentials).then(res=>{
+                                    console.log(res)
+                                    if(res){
+                                        history.push("/boards")
+                                    }
+                                })
+                            }else{
+                                const formData = new FormData();
+                                formData.append("uid",userDetail.uid);
+                                formData.append("platform",userDetail.platform)
+                                formData.append("token",userDetail.token)
+                                props.request("post","/account/anologin",formData).then(res=>{
+                                    if(res.data.success){
+                                        history.push("/boards")
+                                    }
+                                })
+                            }
                         }else{
                             console.log(res)
                         }

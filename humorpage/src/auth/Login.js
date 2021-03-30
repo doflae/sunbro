@@ -43,7 +43,6 @@ export const Login = withRouter(authWrapper(class extends Component{
 	}
 
 	responseKaKao = (response) =>{
-		console.log(response)
 		const formData = new FormData();
 		const profile = response.profile
 		formData.append('uid',profile.id)
@@ -62,6 +61,8 @@ export const Login = withRouter(authWrapper(class extends Component{
 				if(account.has_age_range===true){
 					userDetail.age = account.age_range.split("~")[0]
 				}
+				userDetail.platform="KAKAO"
+				userDetail.token = response.response.access_token
 				this.setState({
 					platform:true,
 					userDetail:userDetail,
@@ -81,6 +82,8 @@ export const Login = withRouter(authWrapper(class extends Component{
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = id
+				userDetail.platform = "GOOGLE"
+				userDetail.token = user.accessToken
 				this.setState({
 					platform:true,
 					userDetail:userDetail,
@@ -102,6 +105,8 @@ export const Login = withRouter(authWrapper(class extends Component{
 				const userDetail = new Set();
 				userDetail.uid = "NAVER"+user.id
 				userDetail.age = user.age!==undefined?user.age.split("-")[0]:"0"
+				userDetail.platform = "NAVER"
+				userDetail.token = access_token
 				if(user.gender!==undefined){
 					const gender = user.gender==="M"?"Male":"Female";
 					userDetail.gender = gender
@@ -126,6 +131,8 @@ export const Login = withRouter(authWrapper(class extends Component{
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "FACEBOOK"+user.id;
+				userDetail.platform = "FACEBOOK"
+				userDetail.token = user.accessToken
 				this.setState({
 					platform:true,
 					userDetail:userDetail,

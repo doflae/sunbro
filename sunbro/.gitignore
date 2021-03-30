@@ -31,13 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-
-### frontend ###
-frontend/public/
-frontend/node_modules/
-frontend/node/
-frontend/.env
-frontend/.cache/
-frontend/yarn-error.log
-frontend/analysis

@@ -31,7 +31,6 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
-    "dev-start": "react-scripts start",
     "start": "webpack-dev-server --progress --colors --config webpack.dev.js",
     "build": "cross-env NODE_ENV=production webpack -p --config webpack.prod.js",
     "test": "react-scripts test",

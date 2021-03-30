@@ -10,7 +10,7 @@ const config =  {
         historyApiFallback: true,
         compress: true,
         open: true,
-        port: 3000,
+        port: 3030,
         host: 'localhost',
         proxy: {
             '/api': 'http://localhost:8080',

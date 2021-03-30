@@ -3,7 +3,6 @@ import {withRouter} from "react-router-dom";
 import {authWrapper} from "./AuthWrapper";
 import {SignupForm} from "../forms/SignupForm";
 import Profile from "./Profile"
-import Axios from "axios";
 export const Signup = withRouter(authWrapper(class extends Component{
 
 	constructor(props){
@@ -50,17 +49,14 @@ export const Signup = withRouter(authWrapper(class extends Component{
         formData.append("uid",credentials.email)
         formData.append("password",credentials.password)
         formData.append("name",credentials.name)
-        Axios.post("/account/signup",formData).then(res=>{
-            if(res.data.success){
-				const userDetail = {};
-				userDetail.uid = credentials.email
-				userDetail.name = credentials.name
-				this.setState({
-					needProfile:true,
-					userDetail:userDetail
-				})
-            }
-        })
+        const userDetail = {};
+		userDetail.uid = credentials.email
+		userDetail.name = credentials.name
+		userDetail.pw = credentials.password
+		this.setState({
+			needProfile:true,
+			userDetail:userDetail
+		})
 	}
 
 	submitError = () =>{

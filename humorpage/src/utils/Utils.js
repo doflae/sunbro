@@ -57,15 +57,16 @@ export const sanitizeHarder = (dirty) => sanitizeHtml(dirty,{
 
 export const sanitizeUrl = (url) =>{
     if(typeof(url)!="string") return null;
-    const match = url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
+    const youtubeMatch = url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
                 url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
                 url.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
-    if (match && match[2].length === 11) {
-        return `https://www.youtube.com/embed/${match[2]}?showinfo=0`
+    if (youtubeMatch && youtubeMatch[2].length === 11) {
+        return `https://www.youtube.com/embed/${youtubeMatch[2]}?showinfo=0`
     }
-    // if (match = url.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/)) { // eslint-disable-line no-cond-assign
-    //     return (match[1] || 'https') + '://player.vimeo.com/video/' + match[2] + '/';
-    // }
+    const vimeoMatch = url.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/)
+    if (vimeoMatch) { // eslint-disable-line no-cond-assign
+        return (vimeoMatch[1] || 'https') + '://player.vimeo.com/video/' + vimeoMatch[2] + '/';
+    }
     return null;
 }
 

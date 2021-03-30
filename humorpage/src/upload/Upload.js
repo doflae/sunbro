@@ -24,7 +24,6 @@ const BlockEmbed = Quill.import('blots/block/embed');
 class MediaBlot extends BlockEmbed{
     static create(value){
         const node = super.create();
-        const url = sanitizeUrl(value);
         node.setAttribute('id',"ql");
         node.setAttribute('frameborder', '0');
         node.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture');
@@ -33,7 +32,7 @@ class MediaBlot extends BlockEmbed{
         node.setAttribute('scrolling', '0');
         node.setAttribute('width', '100%');
         node.setAttribute('height', '315px');
-        if(url!=null) node.setAttribute('src',url);
+        node.setAttribute('src',value);
         return node;
     }
 
@@ -156,6 +155,7 @@ class Upload extends Component {
       })
       tooltip.save = () =>{
         const url = sanitizeUrl(tooltip.textbox.value)
+        console.log(url)
         if(url!=null) {
           const range = tooltip.quill.selection.savedRange
           quill.insertEmbed(range.index,'video',url,'user');
@@ -301,7 +301,7 @@ class Upload extends Component {
         }
       }
       content = this.quillRef.props.value
-      if (this.mediaFileSend){
+      if (this.mediaFileSend || document.querySelector("#ql") !=null ){
         data.append('title',title)
         data.append('content',content)
         data.append('mediaDir',this.mediaDir)
