@@ -72,9 +72,9 @@ video.ffprobe.path = ffprobe.exe 경로
 
 ```
 
-### DB연결 및 proxy 설정
+### DB 및 proxy 설정
 
-MariaDB를 사용하였지만 공유 메인 디렉토리에 있는 backup.sql을 이용하여 다른 DBMS에서도 연결 가능합니다.
+최상단 디렉토리에 있는 sql 파일을 이용하여 사용 가능합니다.
 
 react의 package.json파일 내 
 ```
@@ -82,6 +82,9 @@ react의 package.json파일 내
 ```
 8080을 사용하는 spring boot의 port번호로 변경하시면 됩니다.
 
+### 배포 단계
+현재 배포 단계에 있어 cors는 spring boot 내 해결 되었으므로 proxy는 사용하지 않습니다.
+react의 index.js에서 axios.defaults.baseURL을 사용하여 백엔드 서버의 url주소와 연결하였습니다.
 
 
 
