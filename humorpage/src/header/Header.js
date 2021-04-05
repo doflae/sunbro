@@ -2,7 +2,8 @@ import React from 'react';
 import { withRouter,useHistory} from "react-router-dom";
 import { authWrapper } from '../auth/AuthWrapper';
 import logo from "../static/img/logo.jpg"
-import userDefaultImg from "../static/img/user_32x.png";
+import Search from "../static/svg/search.svg"
+import styled from "styled-components";
 
 function Header({...props}){
   let history = useHistory();
@@ -16,41 +17,108 @@ function Header({...props}){
     history.push("/boards")
   }
 
-  const goMypage = () => (e)=>{
-    history.push("/mypage")
-  }
-
   const goLogin = () => (e) =>{
     history.push("/login")
   }
-  return <header className="head">
-  <div className="head_logo" onClick={imageClick()}>
-    <img src={logo} className="head_logo_img" alt=""/>
-    <div className="head_logo_text">Nogary</div>
-  </div>
-  <UserImg user={props.user} goMypage={goMypage}/>
-  <LogBtn user={props.user} Logout={Logout} goLogin={goLogin}/>
-  </header>
-}
 
-const UserImg = ({user, goMypage}) =>{
-  if(user!=null){
-    return <img className="head_user_img" onClick={goMypage()}
-      alt="" src={"/api/file/get?name=/72"+user.userImg}
-      onError={e=>{
-        e.target.onerror=null; e.target.src=userDefaultImg;
-      }}/>
-  }
-  return <img className="head_user_img" onClick={goMypage()}
-    alt="" src={userDefaultImg}/>
+  return <HeadStyled>
+  <HeadLogoStyled onClick={imageClick()}>
+    <HeadLogoImgStyled src={logo} alt=""/>
+  </HeadLogoStyled>
+  <SearchZoneStyled>
+    <SearchInputStyled type="text" className="search-input"></SearchInputStyled>
+    <SearchStyled width="30px" height="30"/>
+  </SearchZoneStyled>
+  <LogBtn user = {props.user} Logout = {Logout} goLogin = {goLogin}/>
+  </HeadStyled>
 }
 
 const LogBtn = ({user, Logout, goLogin}) =>{
   if(user!=null){
-    return <div className="head_sign" onClick={Logout()}>Logout</div>
+    return <SignBtnStyled onClick={Logout()}>로그아웃</SignBtnStyled>
   }else{
-    return <div className="head_sign" onClick={goLogin()}>Login</div>
+    return <SignBtnStyled onClick={goLogin()}>로그인</SignBtnStyled>
   }
 }
+
+const SearchZoneStyled = styled.div`
+  background-color: #dfdede;
+  line-height: 200%;
+  width: 50%;
+  max-width:500px;
+  border-radius: 7px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  display: flex;
+`
+
+const SearchInputStyled = styled.input`
+  background-color: #dfdede;
+	border-radius: 7px;
+	border: 0px;
+	width: 100%;
+	padding-left: 20px;
+  &:focus{
+	  outline: none;
+  }
+`
+
+
+const SignBtnStyled = styled.div`
+  text-align: center;
+  line-height: 200%;
+  border-radius: 5px;
+  font-size:1.1em;
+  font-weight:800;
+  background-color: #ec4646;
+  color:#ffffff;
+  width: 80px;
+  cursor: pointer;
+  height: 80%;
+  margin-right: 10px;
+  margin-left: 10px;
+  margin-top: auto;
+  margin-bottom: auto;
+`
+
+const SearchStyled = styled(Search)`
+  cursor: pointer;
+  margin-bottom: auto;
+  margin-top: auto;
+  margin-right: 10px;
+  opacity: 0.2;
+  &:hover{
+    opacity: 0.7;
+  }
+`
+
+const HeadLogoImgStyled = styled.img`
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  margin-right: 5px;
+  margin-top: 5px;
+`
+
+const HeadLogoStyled = styled.div`
+  line-height: 250%;
+  height: 100%;
+  font-size: 1.2rem;
+  margin-left:30px;
+  font-weight: 800;
+`
+
+const HeadStyled = styled.header`
+  width: 100%;
+  max-height: 50px;
+  background-color : #fff;
+  border-bottom: solid black 1px;
+  display: flex;
+  min-width:500px;
+  flex-direction: row;
+  justify-content: space-between;
+  position:fixed;
+`
 
 export default withRouter(authWrapper(Header))

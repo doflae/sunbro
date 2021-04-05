@@ -1,10 +1,9 @@
 .App{
 	min-height: 100vh;
-	min-width: 483px;
-	max-width: 559px;
 	width:100%;
 	margin-left: auto;
 	margin-right: auto;
+	background-color: #dfdede;
 }
 body{
 	margin:0px;
@@ -30,56 +29,6 @@ a{
 button:focus{
     border: none;
     outline: none;
-}
-.head{
-	width: 100%;
-	max-height: 50px;
-	background-color: #dfdede;
-	border-bottom: solid rgb(190, 190, 190) 1px;
-	display: flex;
-	flex-direction: row;
-}
-.head_logo{
-	display: flex;
-	margin-right: auto;
-	line-height: 250%;
-	height: 100%;
-	margin-left: 10px;
-	font-size: 1.2rem;
-	font-weight: 800;
-}
-.head_logo_text{
-	cursor: pointer;
-}
-.head_user_img{
-	cursor: pointer;
-	max-height: 40px;
-	max-width: 40px;
-	border-radius: 20px;
-	position: relative;
-	top:6px;
-}
-.head_logo_img{
-	cursor: pointer;
-	max-width: 40px;
-	max-height: 40px;
-	border-radius: 20px;
-	margin-right: 5px;
-	margin-top: 5px;
-}
-.head_sign{
-	text-align: center;
-	line-height: 200%;
-	border-radius: 5px;
-	background-color: #ec4646;
-	color:#ffffff;
-	width: 10%;
-	cursor: pointer;
-	height: 80%;
-	margin-right: 10px;
-	margin-left: 10px;
-	margin-top: auto;
-	margin-bottom: auto;
 }
 .footer{
 	position: fixed;

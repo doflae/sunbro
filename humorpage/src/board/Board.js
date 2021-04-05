@@ -204,10 +204,14 @@ const BoardThumbnailStyled = styled.div`
 
 const BoardStyled = styled.div`
     padding: 3px 5px 8px 5px;
-    border-bottom:1px solid rgba(94,93,93,0.418);
-    margin-top:4px;
-    margin-bottom:4px;
-    box-shadow:rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
+    min-width: 500px;
+    max-width: 700px;
+    border-radius:10px;
+    margin-left:auto;
+    background-color: #fff;
+    border-bottom: 1px solid rgba(94,93,93,0.418);
+    margin-bottom: 4px;
+    box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
 `
 
 const UpdateDeleteBtnStyled = styled.button`

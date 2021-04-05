@@ -1,5 +1,5 @@
 import React, {useRef,useState} from "react"
-import {ReactComponent as Camera} from "../static/svg/camera.svg"
+import Camera from "../static/svg/camera.svg"
 import Dropzone from "react-dropzone"
 import {getToday, getRandomGenerator,isEmpty, ResizeImage, ResizeImageDefault} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"

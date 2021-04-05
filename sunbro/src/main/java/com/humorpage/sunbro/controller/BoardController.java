@@ -127,6 +127,7 @@ public class BoardController {
      *                title 제목
      *                content 내용
      *                thumbnail 썸네일에 들어갈 텍스트
+     *                board의 id가 존재 할 경우 해당 글 수정
      */
     @PostMapping(value = "/upload")
     CommonResult postForm(@ModelAttribute Board board,
@@ -177,7 +178,6 @@ public class BoardController {
     }
 
     @GetMapping("/recently")
-    @ResponseStatus(HttpStatus.OK)
     ListResult<BoardThumbnail> recently(@RequestParam(value = "board_id",required = false) Long board_id, Authentication authentication){
         List<BoardThumbnail> boardThumbnailList;
         if(board_id==null){
