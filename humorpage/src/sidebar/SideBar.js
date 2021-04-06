@@ -1,6 +1,7 @@
 import React, { useEffect, useState,useRef } from 'react';
 import styled from "styled-components";
 import {authWrapper} from "../auth/AuthWrapper";
+import MyPage from "../mypage/MyPage"
 
 export const SideBar = () =>{
     let sidebarRef = useRef();
@@ -25,7 +26,13 @@ const UserBox = authWrapper(({...props})=>{
     useEffect(()=>{
         setUser(props.user);
     },props.user)
-    return <UserBoxStyled>{user}</UserBoxStyled>
+
+    const renderUserPage = () =>{
+        if(user==null) return null;
+        return <MyPage/>
+    }
+
+    return <UserBoxStyled>{renderUserPage()}</UserBoxStyled>
 })
 
 const AdminBox = () =>{

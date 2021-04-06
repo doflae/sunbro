@@ -13,15 +13,15 @@ class UserPage extends Component{
     }
     componentDidMount(){
         this.getData();
-        var foot = document.querySelector(".footer")
-        var godownbtn = document.createElement("p")
-        godownbtn.className = "goNext"
-        godownbtn.innerText = "다음글"
-        godownbtn.addEventListener('click',this.gotoNext())
-        foot.appendChild(godownbtn)
+        // var foot = document.querySelector(".footer")
+        // var godownbtn = document.createElement("p")
+        // godownbtn.className = "goNext"
+        // godownbtn.innerText = "다음글"
+        // godownbtn.addEventListener('click',this.gotoNext())
+        // foot.appendChild(godownbtn)
         this.setState({
             lastElementid:0,
-            erazeTarget:godownbtn,
+            //erazeTarget:godownbtn,
         })
         window.addEventListener('scroll',this.infiniteScroll);
     }

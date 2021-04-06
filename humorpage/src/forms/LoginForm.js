@@ -1,6 +1,7 @@
 import React, {Component} from "react"
 import {ValidationError} from "./ValidationError"
 import {GetMessages} from "./ValidationMessages"
+import styled from "styled-components"
 
 export class LoginForm extends Component{
 
@@ -39,31 +40,54 @@ export class LoginForm extends Component{
 
 	renderElement = (modelItem) => {
 		const name = modelItem.name || modelItem.label.toLowerCase();
-		return <div className="form-group" key={modelItem.label}>
-			<label>{modelItem.label}</label>
-			<input className="form-control" name={name} ref={this.registerRef}
+		return <FormGroupStyled key={modelItem.label}>
+			<FormInputControlStyled className="form-control" 
+			placeholder = {`${modelItem.label}를 입력해주세요.`}
+			name={name} ref={this.registerRef}
 			{...this.props.defaultAttrs}{...modelItem.attrs} />
 			<ValidationError errors={this.state.validationErrors[name]}/>
-		</div>
+		</FormGroupStyled>
 	}
-
 	render(){
 		return <React.Fragment>
 			{this.props.formModel.map(m=> this.renderElement(m))}
 			{this.props.errorMessage!= null &&
 				<p>{this.props.errorMessage}</p>
 			}
-			<div className="text-center">
-				<button className="btn btn-secondary m-1"
-				onClick={this.props.cancelCallback}>
-					{this.props.cancelText || "Cancel"}
-				</button>
-				<button className="btn btn-primary m-1"
-				onClick={this.handleSubmit}>
-					{this.props.submitText || "Submit"}
-				</button>
-			</div>
+			<LoginBtnStyled onClick={this.handleSubmit}>
+				{this.props.submitText || "로그인"}
+			</LoginBtnStyled>
 		</React.Fragment>
 	}
-
 }
+
+
+const LoginBtnStyled = styled.div`
+	width: 100%;
+	text-align: center;
+	margin-top:5px;
+	border-radius: 5px;
+	margin-bottom: 5px;
+	padding: 5px;
+	font-size: 1.1em;
+	font-weight: 800;
+	cursor: pointer;
+	background-color: #ec4646;
+	color: #ffffff;
+`
+
+export const FormGroupStyled = styled.div`
+	margin-bottom:8px
+`
+export const FormInputControlStyled = styled.input`
+	margin-top: 5px;
+	border: solid 1px rgb(0,0,0,32%);
+	border-radius:3px;
+	padding:10px;
+	&:focus{
+		outline:none;
+		box-shadow: 0px 0px 5px 2px rgb(21, 151, 187);
+	}
+
+	width:${props=>props.theme.width||"100%"};
+`

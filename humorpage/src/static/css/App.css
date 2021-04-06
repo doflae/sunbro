@@ -5,6 +5,9 @@
 	margin-right: auto;
 	background-color: #dfdede;
 }
+*{
+	box-sizing: border-box;
+}
 body{
 	margin:0px;
 }

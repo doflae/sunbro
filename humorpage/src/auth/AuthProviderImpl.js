@@ -6,8 +6,16 @@ export class AuthProviderImpl extends Component{
         super(props);
         this.state={
             user:null,
+            pageOption:0,
         }
     }
+
+    setPageOption = (option) =>{
+        this.setState({
+            pageOption:option,
+        })
+    }
+
     request = (method, url, data=null, params=null) =>{
         const{user} = this.state
         return Axios({method,url,data,params,withCredentials:true})
@@ -37,7 +45,7 @@ export class AuthProviderImpl extends Component{
                     user:JSON.parse(response.headers['user']),
                 })
             }else {
-                throw new Error("Invalid Credential");
+                throw new Error("잘못된 아이디 또는 비밀번호입니다.");
             }
             return response
         })
@@ -56,7 +64,8 @@ export class AuthProviderImpl extends Component{
 
     render = () =>
         <AuthContext.Provider value={{...this.state,
-        authenticate:this.authenticate, signout:this.signout, request:this.request}}>
+        authenticate:this.authenticate, signout:this.signout, request:this.request,
+        setPageOption:this.setPageOption}}>
             {this.props.children}
         </AuthContext.Provider>
 }

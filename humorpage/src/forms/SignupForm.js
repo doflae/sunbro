@@ -3,7 +3,9 @@ import {ValidationError} from "./ValidationError"
 import {GetMessages} from "./ValidationMessages"
 import {ValidationSuccess} from "./ValidationSuccess"
 import Axios from "axios"
-import {ValidationEmail} from "./ValidationEmail";
+import {FormGroupStyled, FormInputControlStyled} from "./LoginForm";
+import styled from 'styled-components';
+
 
 export class SignupForm extends Component{
 
@@ -104,9 +106,18 @@ export class SignupForm extends Component{
 
 	checkEmail = (targetName) => (e) =>{
 		let target = e.target
-		const value = target.previousElementSibling.value
+		const elem = target.previousElementSibling
 		const {validationErrors, validationSuccess} = this.state
-		Axios.get(`/account/checkdup/id?id=${value}`).then(res=>{
+		if(!elem.checkValidity()){
+			validationErrors[targetName] = GetMessages(elem);
+			validationSuccess[targetName] = null;
+			this.setState({
+				validationErrors:validationErrors,
+				validationSuccess:validationSuccess
+			})
+			return;
+		}
+		Axios.get(`/account/checkdup/id?id=${elem.value}`).then(res=>{
 			if(res.data.success){
                 validationSuccess[targetName] = `${res.data.msg}`
                 validationErrors[targetName] = null
@@ -114,7 +125,7 @@ export class SignupForm extends Component{
 					validationErrors:validationErrors,
 					validationSuccess:validationSuccess,
 					validationEmail:this.checkCode,
-					email:value
+					email:elem.value
 				})
             }
             else{
@@ -124,7 +135,7 @@ export class SignupForm extends Component{
 					validationErrors:validationErrors,
 					validationSuccess:validationSuccess,
 					validationEmail:null,
-					email:value
+					email:elem.value
 				})
             }
             
@@ -133,11 +144,15 @@ export class SignupForm extends Component{
 
 	checkDuplicate = (targetName) => (e)=>{
 		let target = e.target
-		const value = target.previousElementSibling.value
-		if(value!==this.name){
+		const elem = target.previousElementSibling
+		const {validationErrors, validationSuccess} = this.state
+		if(!elem.checkValidity()){
+			validationErrors[targetName] = GetMessages(elem);
+			validationSuccess[targetName] = null;
+		}
+		else if(elem.value!==this.name){
 			this.name = value;
-			const {validationErrors,validationSuccess} = this.state
-			Axios.get(`/account/checkdup/${targetName}?${targetName}=${value}`).then(res=>{
+			Axios.get(`/account/checkdup/${targetName}?${targetName}=${elem.value}`).then(res=>{
 				if(res.status===200 && res.data.success){
 					validationSuccess[targetName] = `사용 가능한 ${targetName.toUpperCase()} 입니다.`
 					validationErrors[targetName] = null
@@ -146,31 +161,33 @@ export class SignupForm extends Component{
 					validationErrors[targetName] = [`${targetName.toUpperCase()} 중복입니다.`]
 					validationSuccess[targetName] = null
 				}
-				this.setState({
-					validationErrors:validationErrors,
-					validationSuccess:validationSuccess
-				})
 			})
-		}   
+		}
+		this.setState({
+			validationErrors:validationErrors,
+			validationSuccess:validationSuccess
+		})
 	}
 
 	renderElement = (modelItem) => {
 		const name = modelItem.name || modelItem.label.toLowerCase();
 		const EmailValidator = name==="email"?(<React.Fragment>
-			<button onClick={this.checkEmail(name)}>이메일 인증</button>
+			<CheckBtnStyled onClick={this.checkEmail(name)}>이메일 인증</CheckBtnStyled>
 			<ValidationEmail onClick={this.state.validationEmail} checkClear={this.state.isChecked}/>
 			</React.Fragment>):null
-		const DuplicateChecker = name==="name"?<button onClick={this.checkDuplicate(name)}>중복 확인</button>:null
-		return <div className="form-group" key={modelItem.label}>
-					<label>{modelItem.label}</label>
-					<input className="form-control" name={name} ref={this.registerRef}
+		const DuplicateChecker = name==="name"?
+		<CheckBtnStyled onClick={this.checkDuplicate(name)}>중복 확인</CheckBtnStyled>:null
+		
+		return <FormGroupStyled key={modelItem.label}>
+					<FormLabelStyled>{modelItem.label}</FormLabelStyled>
+					<FormInputControlStyled className="form-control" name={name} ref={this.registerRef}
 					{...this.props.defaultAttrs}{...modelItem.attrs} 
 					onChange={modelItem.onChange?this.validateOnchange(name,modelItem.onChange):null}/>
 					{EmailValidator}
 					{DuplicateChecker}
 					<ValidationError errors={this.state.validationErrors[name]}/>
 					<ValidationSuccess success={this.state.validationSuccess[name]}/>
-				</div>
+				</FormGroupStyled>
 		
 	}
 
@@ -180,17 +197,111 @@ export class SignupForm extends Component{
 			{this.props.errorMessage!= null &&
 				<p>{this.props.errorMessage}</p>
 			}
-			<div className="text-center">
-				<button className="btn btn-secondary m-1"
-				onClick={this.props.cancelCallback}>
-					{this.props.cancelText || "Cancel"}
-				</button>
-				<button className="btn btn-primary m-1"
+			<SignUpBtnZoneStlyed>
+				<BtnStyled 
+				theme={{color:"#fff",
+						bgcolor:"#ec4646"}}
 				onClick={this.handleSubmit}>
-					{this.props.submitText || "Submit"}
-				</button>
-			</div>
+					{this.props.submitText || "회원 가입"}
+				</BtnStyled>
+				<BtnStyled 
+				theme={{color:"#aaa",
+						bgcolor:"#ddd"}}
+				onClick={this.props.cancelCallback}>
+					{this.props.cancelText || "로그인"}
+				</BtnStyled>
+			</SignUpBtnZoneStlyed>
 		</React.Fragment>
 	}
-
 }
+
+
+class ValidationEmail extends Component{
+    render(){
+        if(this.props.checkClear!==null && this.props.checkClear===false){
+            return <div>
+                <input type="text" placeholder="이메일 인증 코드를 입력해주세요."></input>
+                <CheckBtnStyled onClick={e=>{
+					e.preventDefault();
+					this.props.onClick(e.target.previousElementSibling.value)
+				}}>
+						코드 인증
+				</CheckBtnStyled>
+                <EmailAuthFailed>이메일 인증에 실패하였습니다. 코드를 다시 확인해주세요.</EmailAuthFailed>
+            </div>
+        }
+        else if(this.props.onClick){
+            return <FlexDivStlyed>
+                <FormInputControlStyled 
+				theme={{width:"70%"}}
+				type="text" placeholder="코드 입력"/>
+                <CheckBtnStyled onClick={e=>{
+					e.preventDefault(); 
+					this.props.onClick(e.target.previousElementSibling.value)
+				}}>
+						코드 인증
+				</CheckBtnStyled>
+            </FlexDivStlyed>
+        }else if(this.props.checkClear){
+            return <EmailAuthSuccess>
+                이메일 인증에 성공하였습니다.
+            </EmailAuthSuccess>
+        }
+        return null;
+    }
+}
+
+const FlexDivStlyed = styled.div`
+	display:flex;
+	justify-content:space-between;
+`
+
+const EmailAuthSuccess = styled.div`
+    color : #54e346;
+`
+const EmailAuthFailed = styled.div`
+    color : #f05454;
+`
+
+const FormLabelStyled = styled.div`
+	font-size:1.1em;
+	font-weight:800;
+	opacity:0.6;
+`
+
+const CheckBtnStyled = styled.div`
+	width: fit-content;
+	text-align: center;
+	margin-top: 5px;
+	border-radius: 5px;
+	margin-bottom: 5px;
+	padding: 5px;
+	font-size: 1.1em;
+	border: 1px solid;
+	opacity: 0.3;
+	font-weight: 800;
+	cursor: pointer;
+`
+
+const SignUpBtnZoneStlyed = styled.div`
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+`
+
+const BtnStyled = styled.div`
+	width:50%;
+	margin:0px 2px 0px 2px;
+	text-align: center;
+	margin-top:5px;
+	border-radius: 5px;
+	margin-bottom: 5px;
+	padding: 5px;
+	font-size: 1.1em;
+	font-weight: 800;
+	cursor: pointer;
+	
+	color: ${props=>props.theme.color};
+	background-color:${props=>props.theme.bgcolor};
+
+`

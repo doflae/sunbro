@@ -8,17 +8,13 @@ import styled from "styled-components";
 function Header({...props}){
   let history = useHistory();
   const Logout = () => (e) =>{
-    props.signout().then(res=>{
-        history.push("/boards");
-      }
-    )
+    props.signout()
   }
   const imageClick = () => (e) =>{
     history.push("/boards")
   }
-
   const goLogin = () => (e) =>{
-    history.push("/login")
+    props.setPageOption(0);
   }
 
   return <HeadStyled>
@@ -113,7 +109,7 @@ const HeadStyled = styled.header`
   width: 100%;
   max-height: 50px;
   background-color : #fff;
-  border-bottom: solid black 1px;
+  border-bottom: solid 1px rgb(0 0 0 / 36%);
   display: flex;
   min-width:500px;
   flex-direction: row;

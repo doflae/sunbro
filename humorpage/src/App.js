@@ -14,9 +14,7 @@ import Header from "./header/Header"
 import {Login} from "./auth/Login"
 import {Provider} from "react-redux"
 import {HumorDataStore} from "./data/DataStore"
-import MyPage from "./mypage/MyPage";
 import UserPage from "./userpage/UserPage"
-import {Signup} from "./auth/Signup"
 import BoardSingleConnector from './board/BoardSingleConnector';
 import styled from 'styled-components';
 import {SideBar} from "./sidebar/SideBar";
@@ -31,14 +29,12 @@ class App extends Component{
                 <BoardBoxStyled>
                 <Route exact path="/" component={BoardConnector}/>
                 <Route path="/upload" component={Upload}/>
-                <Route path="/login" component={Login}/>
                 <Route path="/boards" component={BoardConnector}/>
-                <Route path="/mypage" component={MyPage}/>
-                <Route path="/signup" component={Signup}/>
                 <Route path="/update/:key" component={Update}/>
                 <Route path="/userpage/:key" component={UserPage}/>
                 <Route path="/board/:key" component={BoardSingleConnector}/>
                 </BoardBoxStyled>
+                <Login/>
                 <SideBar/>
               </MainBoxStyled>
             </Switch>

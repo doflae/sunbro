@@ -21,8 +21,6 @@ class MyPage extends Component{
                     userDetail:res.data.data,
                     loading:false
                 })
-            }else{
-                this.props.history.push("/login")
             }
         })
     }
