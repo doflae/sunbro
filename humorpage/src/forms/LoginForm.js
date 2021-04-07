@@ -32,6 +32,22 @@ export class LoginForm extends Component{
 		});
 	}
 
+	
+	componentDidMount(){
+		window.addEventListener("keydown",e=>{
+			if(e.key==="Enter"){
+				this.handleSubmit();
+			}
+		})
+	}
+	componentWillUnmount(){
+		window.removeEventListener("keydown",e=>{
+			if(e.key==="Enter"){
+				this.handleSubmit();
+			}
+		})
+	}
+
 	registerRef = (element) => {
 		if(element !== null) {
 			this.formElements[element.name] = element;

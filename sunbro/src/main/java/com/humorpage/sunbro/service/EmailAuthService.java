@@ -52,16 +52,20 @@ public class EmailAuthService {
     //redis에 expire time 정해서 보냄
     @Async("emailAuthExecutor")
     public void sendMailwithKey(String email) throws Exception{
-        String key = RandomGenerator.RandomnameGenerate(8);
-        try{
-            redisTokenService.setDataExpire(email,key,JwtTokenService.EmailAuthValidSecond);
-            Date expires = new Date(System.currentTimeMillis()+JwtTokenService.EmailAuthValidMilisecond);
-            MimeMessage message = createAuthMessage(email,key,emailTimeFormat.format(expires));
-            emailSender.send(message);
-        }catch (Exception e){
-            e.printStackTrace();
-            redisTokenService.deleteData(email);
-            throw e;
+        String key;
+        key = redisTokenService.getData(email);
+        if(key==null){
+            key = RandomGenerator.RandomnameGenerate(8);
+            try{
+                redisTokenService.setDataExpire(email,key,JwtTokenService.EmailAuthValidSecond);
+                Date expires = new Date(System.currentTimeMillis()+JwtTokenService.EmailAuthValidMilisecond);
+                MimeMessage message = createAuthMessage(email,key,emailTimeFormat.format(expires));
+                emailSender.send(message);
+            }catch (Exception e){
+                e.printStackTrace();
+                redisTokenService.deleteData(email);
+                throw e;
+            }
         }
     }
 }

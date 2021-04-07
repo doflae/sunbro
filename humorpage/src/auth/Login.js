@@ -9,6 +9,7 @@ import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props
 import styled from 'styled-components'
 import Profile from "./Profile";
 import {Signup} from './Signup';
+import {FindPassword} from "./FindPassword";
 
 export const Login = withRouter(authWrapper(class extends Component{
 
@@ -22,16 +23,17 @@ export const Login = withRouter(authWrapper(class extends Component{
 		}
 		this.defaultAttrs = {required:true};
 		this.formModel = [
-			{label: "아이디", attrs:{type:"text"}},
-			{label: "비밀번호", attrs: {type: "password"}},
+			{label: "아이디", name:"id", attrs:{type:"text"}},
+			{label: "비밀번호", name:"password", attrs: {type: "password"}},
 		];
 	}
+
 
 
 	authenticate = (credentials) => {
 		this.props.authenticate(credentials)
 		.then((res)=>{
-			this.props.history.push("/boards");
+			this.props.setPageOption(-1);
 		})
 		.catch(err => {
 			this.setState({errorMessage:err.message})
@@ -52,7 +54,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',response.response.access_token)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.history.push("/boards")
+				this.props.setPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "KAKAO"+profile.id
@@ -80,7 +82,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',user.accessToken)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.history.push("/boards")
+				this.props.setPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = id
@@ -102,7 +104,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',access_token)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.history.push("/boards")
+				this.props.setPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "NAVER"+user.id
@@ -129,7 +131,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',user.accessToken)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.history.push("/boards")
+				this.props.setPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "FACEBOOK"+user.id;
@@ -150,8 +152,12 @@ export const Login = withRouter(authWrapper(class extends Component{
 	DeletePage = () =>(e) =>{
 		this.props.setPageOption(-1);
 	}
+	FindPw = () => (e) =>{
+		this.props.setPageOption(3);
+	}
 
 	renderPage = () =>{
+		if(this.props.pageOption==3) return <FindPassword/>
 		if(this.props.pageOption==2) return <Profile userDetail={this.state.userDetail}/>
 		if(this.props.pageOption==1) return <Signup/>
 		return <div>
@@ -165,8 +171,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 			/>
 			<UserServiceZoneStyled>
 				<UserServiceBtnStyled onClick={this.SignUpBtn()}>회원가입</UserServiceBtnStyled>
-				<UserServiceBtnStyled onClick={this.SignUpBtn()}>아이디 찾기</UserServiceBtnStyled>
-				<UserServiceBtnStyled onClick={this.SignUpBtn()}>비밀번호 찾기</UserServiceBtnStyled>
+				<UserServiceBtnStyled onClick={this.FindPw()}>비밀번호 찾기</UserServiceBtnStyled>
 			</UserServiceZoneStyled>
 			</LoginFormZoneStlyed>
 			<KaKaoLogin
@@ -206,7 +211,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 	render = () => {
 		if(this.props.pageOption<0) return null;
 		return <AuthBoxStyled>
-			<CancelBtnStyled/>
+			<CancelBtnStyled onClick={()=>{this.props.setPageOption(-1)}}/>
 			{this.renderPage()}
 		</AuthBoxStyled>
 	}
@@ -214,9 +219,9 @@ export const Login = withRouter(authWrapper(class extends Component{
 
 const UserServiceZoneStyled = styled.div`
 	display:flex;
-	justify-content: space-between;
+	justify-content: space-around;
 	margin:20px 0px 20px 0px;
-`
+`	
 
 
 const UserServiceBtnStyled = styled.div`

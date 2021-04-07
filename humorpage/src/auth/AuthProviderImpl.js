@@ -6,7 +6,7 @@ export class AuthProviderImpl extends Component{
         super(props);
         this.state={
             user:null,
-            pageOption:0,
+            pageOption:-1,
         }
     }
 
@@ -18,7 +18,7 @@ export class AuthProviderImpl extends Component{
 
     request = (method, url, data=null, params=null) =>{
         const{user} = this.state
-        return Axios({method,url,data,params,withCredentials:true})
+        return Axios({method,url,data,params})
         .then((res)=>{
             if("user" in res.headers){
                 if(user===null){

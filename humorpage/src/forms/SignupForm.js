@@ -151,7 +151,7 @@ export class SignupForm extends Component{
 			validationSuccess[targetName] = null;
 		}
 		else if(elem.value!==this.name){
-			this.name = value;
+			this.name = elem.value;
 			Axios.get(`/account/checkdup/${targetName}?${targetName}=${elem.value}`).then(res=>{
 				if(res.status===200 && res.data.success){
 					validationSuccess[targetName] = `사용 가능한 ${targetName.toUpperCase()} 입니다.`
@@ -180,7 +180,7 @@ export class SignupForm extends Component{
 		
 		return <FormGroupStyled key={modelItem.label}>
 					<FormLabelStyled>{modelItem.label}</FormLabelStyled>
-					<FormInputControlStyled className="form-control" name={name} ref={this.registerRef}
+					<FormInputControlStyled name={name} ref={this.registerRef}
 					{...this.props.defaultAttrs}{...modelItem.attrs} 
 					onChange={modelItem.onChange?this.validateOnchange(name,modelItem.onChange):null}/>
 					{EmailValidator}
@@ -263,7 +263,7 @@ const EmailAuthFailed = styled.div`
     color : #f05454;
 `
 
-const FormLabelStyled = styled.div`
+export const FormLabelStyled = styled.div`
 	font-size:1.1em;
 	font-weight:800;
 	opacity:0.6;
@@ -289,7 +289,7 @@ const SignUpBtnZoneStlyed = styled.div`
 	justify-content: space-between;
 `
 
-const BtnStyled = styled.div`
+export const BtnStyled = styled.div`
 	width:50%;
 	margin:0px 2px 0px 2px;
 	text-align: center;

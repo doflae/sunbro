@@ -4,7 +4,7 @@ import {authWrapper} from "../auth/AuthWrapper";
 import MyPage from "../mypage/MyPage"
 
 export const SideBar = () =>{
-    let sidebarRef = useRef();
+    let sidebarRef = useRef(null);
     useEffect(()=>{
         function StickSideBarTop(){
             sidebarRef.current.style.marginTop = `${document.scrollingElement.scrollTop}px`
@@ -25,7 +25,7 @@ const UserBox = authWrapper(({...props})=>{
     const [user, setUser] = useState(props.user==null?null:props.user);
     useEffect(()=>{
         setUser(props.user);
-    },props.user)
+    },[props.user])
 
     const renderUserPage = () =>{
         if(user==null) return null;
@@ -48,8 +48,7 @@ const SideBarStyled = styled.div`
 `
 
 const UserBoxStyled = styled.div`
-    height:300px;
-    max-width: 300px;
+    width: 300px;
     border-radius:10px;
     margin-left:20px;
     background-color: #fff;
@@ -60,7 +59,7 @@ const UserBoxStyled = styled.div`
 const AdsBoxStyled = styled.div`
     margin-top:20px;
     height:400px;
-    max-width: 300px;
+    width: 300px;
     margin-left:20px;
     border-radius:10px;
     background-color: #fff;
@@ -71,7 +70,7 @@ const AdsBoxStyled = styled.div`
 const AdminBoxStyled = styled.div`
     padding:30px;
     box-sizing:border-box;
-    max-width: 300px;
+    width: 300px;
     margin-top:20px;
     margin-left:20px;
     height:100px;

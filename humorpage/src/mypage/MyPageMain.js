@@ -7,7 +7,7 @@ class MyPageMain extends Component{
         super(props);
 
         this.state = {
-            boardList:[],
+            boardList:{0:[],1:[]},
             checkedBox:new Set(),
             boards:null,
             pagenum:1,
@@ -15,22 +15,25 @@ class MyPageMain extends Component{
         }
         this.total_num = this.props.total_num
         this.last_page = Math.ceil(this.total_num/this.props.pagesize)
+        this.goNext = this.goNext.bind(this)
+        this.goPrev = this.goPrev.bind(this)
 
         this.refreshPage = this.refreshPage.bind(this)
     }
     componentDidMount(){
         this.getData(1);
+        console.log(this.last_page)
     }
 
     getData = (pagenum) => {
         const {boardList} = this.state;
+        const option = this.props.option;
         if(boardList.includes(pagenum)){
             this.setState({
-                boards:boardList[pagenum],
+                boards:boardList[option][pagenum],
                 pagenum:pagenum,
             })
         }else if(pagenum>0){
-            const option = this.props.option
             let resturl;
             console.log(option)
             if(option===0){
@@ -43,10 +46,10 @@ class MyPageMain extends Component{
                 const resData = res.data.list
                 if(res.data.success===true){
                     if(resData.length>0){
-                        boardList[pagenum]=[...resData]
+                        boardList[option][pagenum]=[...resData]
                         this.setState({
                             boardList:boardList,
-                            boards:boardList[pagenum],
+                            boards:boardList[option][pagenum],
                             pagenum:pagenum
                         })
                     }
@@ -61,7 +64,6 @@ class MyPageMain extends Component{
 
     refreshPage = (pagenum) =>{
         const {boardList} = this.state;
-        console.log(pagenum)
         const resturl = `/user/board?num=${pagenum-1}&size=${this.props.pagesize}`
         this.props.request("get", resturl).then(res=>{
             console.log(res)
@@ -107,14 +109,9 @@ class MyPageMain extends Component{
         }
         return <div className="mypage_main">
             <MyBoardConnector boards={boards} refreshPage={this.refreshPage}
-             pagenum={this.state.pagenum} option={this.props.option}/>
-            <div className="mypage_pagnation">
-                <span className="left_triangle"></span>
-                <span className="left_subtext" onClick={this.goPrev()}>이전</span>
-                {num_list}
-                <span className="right_subtext" onClick={this.goNext()}>다음</span>
-                <span className="right_triangle"></span>
-            </div>
+             pagenum={this.state.pagenum} option={this.props.option}
+             goNext={this.goNext} goPrev={this.goPrev}
+             num_list={num_list}/>
         </div>
     }
 }

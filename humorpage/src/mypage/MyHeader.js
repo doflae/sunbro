@@ -2,7 +2,7 @@ import React, {useState,useRef} from 'react';
 import userDefaultImg from "../static/img/user_128x.png";
 import {authWrapper} from "../auth/AuthWrapper"
 import {withRouter} from 'react-router-dom'
-import Pencil from '../static/svg/pencil.svg'
+import Pencil from "../static/img/pencil.png"
 import Dropzone from "react-dropzone"
 import Axios from "axios"
 import styled from "styled-components"
@@ -115,19 +115,22 @@ function MyHeader({
         <MyProfile>
             <MyProfileImgZone>
                 <ProfileImgDelete onClick={imageDelete()}></ProfileImgDelete>
-                <div ref={profileImgRef} onClick={imageHandler()}>
+                <ImagePartStyled ref={profileImgRef} onClick={imageHandler()}>
                     <UserImage src={userImg} userDefaultImg={userDefaultImg}/>
-                    <PencilStyled width="20" height="20"/>
-                </div>
+                    <PencilStyled src={Pencil}/>
+                </ImagePartStyled>
             </MyProfileImgZone>
             <SubmitImageBtn isChanged = {isChanged} onClick={imageSubmit}/>
         </MyProfile>
-    <span>
+    <MyProfileTextZone>
         <MyPageUserName>{user.name}</MyPageUserName>
-        <div>
-            게시물 {user.total_board_num} 개  댓글 {user.total_comment_num} 개
-        </div>
-    </span>
+        <MyProfileLogStlyed>
+            게시물 {user.total_board_num} 개
+        </MyProfileLogStlyed>
+        <MyProfileLogStlyed>
+            댓글 {user.total_comment_num} 개
+        </MyProfileLogStlyed>
+    </MyProfileTextZone>
 
     <Dropzone
         ref = {dropzoneRef}
@@ -165,24 +168,39 @@ const SubmitImageBtn = ({isChanged, onClick}) => {
     else return null;
 }
 
+
+const MyProfileTextZone = styled.span`
+    width:220px;
+`
+
 const MyProfileImg = styled.img`
-    width: 120px;
-    height: 120px;
-    border-radius: 75px;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
 `
 
 const MyProfileImgZone = styled.div`
     position: relative;
     cursor: pointer;
-    width: min-content;
+    width: 60px;
+    height: 60px;
     border: solid 1px #dddddd;
     margin: 10px;
 `
 
-const PencilStyled = styled(Pencil)`
+const ImagePartStyled = styled.div`
+    text-align: center;
+    padding: 5px;
+`
+
+const PencilStyled = styled.img`
     position: absolute;
-    right: 0;
-    bottom: 5px;
+    right: 0px;
+    bottom: 0px;
+    opacity: 0.5;
+    ${ImagePartStyled}:hover &{
+        opacity:1.0;
+    }
 `
 
 const MyPageHeader = styled.div`
@@ -192,40 +210,47 @@ const MyPageHeader = styled.div`
 const MyProfile = styled.div`
     position:relative;
     display:flex;
+    padding: 4px;
+`
+
+const MyProfileLogStlyed = styled.div`
+    font-size:0.9em;
 `
 
 const MyPageUserName = styled.div`
-    font-size:1.3em;
-    margin:20px;
-    font-weight:700;
+    font-size: 1.2em;
+    margin: 10px 0px 10px 0px;
+    font-weight: 700;
 `
 
 const SubmitImageBtnStyled = styled.button`
-    width:80px;
-    height:30px;
-    font-size:0.8em;
-    position:absolute;
+    width: 50px;
+    height: 20px;
+    font-size: 0.5em;
+    padding: 0px;
+    position: absolute;
 `
 
 const ProfileImgDelete = styled.button`
-    position:absolute;
-    top:-10px;
-    right:-10px;
-    width: 24px;
-    height: 24px;
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 16px;
+    height: 16px;
     border-radius: 18px;
     border: 0px;
-    opacity: 0.6;
+    opacity: 0.4;
     z-index: 1;
+    background-color: #fff;
     &:hover{
         opacity:1;
     }
     &::before, &::after{
-        position:absolute;
-        left: 11px;
-        bottom: 0px;
+        position: absolute;
+        left: 13px;
+        bottom: 6px;
         content: ' ';
-        height: 24px;
+        height: 16px;
         width: 2px;
         background-color: #333;
     }

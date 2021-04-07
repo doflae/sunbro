@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { withRouter,useHistory} from "react-router-dom";
 import { authWrapper } from '../auth/AuthWrapper';
 import logo from "../static/img/logo.jpg"
@@ -7,6 +7,7 @@ import styled from "styled-components";
 
 function Header({...props}){
   let history = useHistory();
+  const [user,setUser] = useState(props.user);
   const Logout = () => (e) =>{
     props.signout()
   }
@@ -16,6 +17,9 @@ function Header({...props}){
   const goLogin = () => (e) =>{
     props.setPageOption(0);
   }
+  useEffect(()=>{
+    setUser(props.user);
+  },[props.user,user])
 
   return <HeadStyled>
   <HeadLogoStyled onClick={imageClick()}>
@@ -25,7 +29,7 @@ function Header({...props}){
     <SearchInputStyled type="text" className="search-input"></SearchInputStyled>
     <SearchStyled width="30px" height="30"/>
   </SearchZoneStyled>
-  <LogBtn user = {props.user} Logout = {Logout} goLogin = {goLogin}/>
+  <LogBtn user = {user} Logout = {Logout} goLogin = {goLogin}/>
   </HeadStyled>
 }
 

@@ -72,10 +72,10 @@ export const Signup = withRouter(authWrapper(class extends Component{
 				defaultAttrs={this.defaultAttrs}
 				submitErrorCallback={this.submitError}
 				submitCallback={this.authenticate}
-				submitText="Signup"
+				submitText="회원가입"
 				errorMessage={this.state.errorMessage}
 				cancelCallback={()=> this.props.setPageOption(0)}
-				cancelText="Cancel"
+				cancelText="취소"
 				/>
 		</div>
 	}

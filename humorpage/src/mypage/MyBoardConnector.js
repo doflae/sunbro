@@ -5,7 +5,7 @@ import Axios from "axios";
 import { useHistory } from "react-router";
 
 function MyBoardConnector({
-    boards,refreshPage,pagenum,option
+    boards,refreshPage,pagenum,option,...props
 }){
     const [checkedBox, setCheckedBox] = useState([]);
     let history = useHistory();
@@ -57,9 +57,9 @@ function MyBoardConnector({
     }
 
     if(boards==null||boards.length===0){
-        return <h5 className="p-2">No boards</h5>
+        return null;
     }
-    return<div>
+    return <React.Fragment>
         <MyBoardTableHeader>
             {btnRender()}
         </MyBoardTableHeader>
@@ -82,7 +82,14 @@ function MyBoardConnector({
                 })}
             </tbody>
             </MyBoardTable>
+        <div className="mypage_pagnation">
+            <span className="left_triangle"></span>
+            <span className="left_subtext" onClick={props.goPrev()}>이전</span>
+            {props.num_list}
+            <span className="right_subtext" onClick={props.goNext()}>다음</span>
+            <span className="right_triangle"></span>
         </div>
+        </React.Fragment>
 }
 
 const DeleteBtn = ({deleteChecked}) =>{

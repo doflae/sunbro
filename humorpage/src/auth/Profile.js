@@ -8,6 +8,8 @@ import {AgeSelector, getRandomGenerator, ResizeImage} from "../utils/Utils"
 import Axios from "axios";
 import { ValidationSuccess } from "../forms/ValidationSuccess";
 import styled from "styled-components"
+import {FormLabelStyled, BtnStyled} from "../forms/SignupForm";
+
 
 function Profile({userDetail,...props}){
     const [userImg,setUserImg] = useState(userDetail.userImg==null?"":userDetail.userImg)
@@ -132,7 +134,7 @@ function Profile({userDetail,...props}){
                                     console.log(res)
                                     if(res){
                                         saveFile(filePath)
-                                        history.push("/boards")
+                                        props.setPageOption(-1);
                                     }
                                 })
                             }else{
@@ -143,7 +145,7 @@ function Profile({userDetail,...props}){
                                 props.request("post","/account/anologin",formData).then(res=>{
                                     if(res.data.success){
                                         saveFile(filePath)
-                                        history.push("/boards")
+                                        props.setPageOption(-1);
                                     }
                                 })
                             }
@@ -163,9 +165,8 @@ function Profile({userDetail,...props}){
                                     password:userDetail.pw
                                 }
                                 props.authenticate(credentials).then(res=>{
-                                    console.log(res)
                                     if(res){
-                                        history.push("/boards")
+                                        props.setPageOption(-1);
                                     }
                                 })
                             }else{
@@ -175,7 +176,7 @@ function Profile({userDetail,...props}){
                                 formData.append("token",userDetail.token)
                                 props.request("post","/account/anologin",formData).then(res=>{
                                     if(res.data.success){
-                                        history.push("/boards")
+                                        props.setPageOption(-1);
                                     }
                                 })
                             }
@@ -211,19 +212,22 @@ function Profile({userDetail,...props}){
                 setName={setName}
                 checkDuplicate={checkDuplicate}/><br/>
             <ValidationSuccess success={canSubmit}/>
-            <label><input type="checkbox" name="gender" value="Male"
-            checked={gender==="Male"?true:false}
-            onChange={genderHandler()}></input>남성</label>
-            <label><input type="checkbox" name="gender" value="Female"
-            checked={gender==="Female"?true:false}
-            onChange={genderHandler()}></input>여성</label><br/>
-            <label>생년
-                <select name="age" value={age} onChange={e=>{e.preventDefault();setAge(e.target.value);}}>
-                <AgeSelector/>
-            </select></label>
-            <br/>
-            <button onClick={submit()}>작성 완료</button>
-            <button onClick={(e)=>{e.preventDefault();history.goBack();}}>취소</button>
+            <SelectZoneStyled>
+                <FormLabelStyled>남성</FormLabelStyled>
+                <GenderCheckBoxStyled type="checkbox" name="gender" value="Male"
+                checked={gender==="Male"?true:false}
+                onChange={genderHandler()}/>
+                <FormLabelStyled>여성</FormLabelStyled>
+                <GenderCheckBoxStyled type="checkbox" name="gender" value="Female"
+                checked={gender==="Female"?true:false}
+                onChange={genderHandler()}/>
+            </SelectZoneStyled>
+            <SelectZoneStyled>
+            <FormLabelStyled>나이</FormLabelStyled>
+                <AgeSelectStyled name="age" value={age} onChange={e=>{e.preventDefault();setAge(e.target.value);}}>
+                    <AgeSelector/>
+                </AgeSelectStyled>
+            </SelectZoneStyled>
             <Dropzone
             ref = {dropzoneRef}
             accept = "image/*"
@@ -240,6 +244,20 @@ function Profile({userDetail,...props}){
             )}
             </Dropzone>
         </SignupDiv>
+        <ProfileBtnZoneStyled>
+            <BtnStyled 
+                theme={{color:"#fff",
+                        bgcolor:"#ec4646"}}
+                onClick={submit()}>
+                    작성 완료
+            </BtnStyled>
+            <BtnStyled
+                theme={{color:"#aaa",
+                        bgcolor:"#ddd"}} 
+                onClick={(e)=>{e.preventDefault();props.setPageOption(0);}}>
+                    취소
+            </BtnStyled>
+        </ProfileBtnZoneStyled>
     </React.Fragment>
 }
 
@@ -265,6 +283,25 @@ export const MyProfileResizedImage = ({src, defaultImg})=>{
     src={src} 
     onError={e=>{e.target.onError=null;e.target.src=defaultImg}}/>
 }
+
+const ProfileBtnZoneStyled = styled.div`
+    width:100%;
+    display:flex;
+    justify-content: space-between;
+`
+
+const AgeSelectStyled = styled.select`
+    margin-left:2px;
+`
+
+const GenderCheckBoxStyled = styled.input`
+    align-self: center;
+    margin:0px 3px 0px 2px;
+`
+const SelectZoneStyled = styled.div`
+    display:flex;
+    margin:5px 0px 5px 0px;
+`
 
 const PencilStyled = styled(Pencil)`
     position: absolute;
@@ -293,7 +330,8 @@ const TopDiv = styled.div`
     border-bottom: 1px solid black;
 `
 const SignupDiv = styled.div`
-    padding:20px
+    padding:20px;
+    min-height: 345px;
 `
 
 const MyProfileStyledImage = styled.img`
