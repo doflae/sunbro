@@ -33,10 +33,6 @@
     border-top: 8px solid transparent;
     border-bottom: 8px solid  transparent;
 }
-.mypage_main{
-    position: relative;
-    margin-top: 20px;
-}
 .mypage_pagnation{
     display: flex;
     margin-top: 30px;

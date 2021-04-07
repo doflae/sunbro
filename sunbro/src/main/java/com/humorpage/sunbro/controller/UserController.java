@@ -1,6 +1,7 @@
 package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.model.*;
+import com.humorpage.sunbro.respository.BoardForTableRepository;
 import com.humorpage.sunbro.respository.BoardLikesRepository;
 import com.humorpage.sunbro.respository.BoardThumbnailRepository;
 import com.humorpage.sunbro.respository.UserRepository;
@@ -27,7 +28,7 @@ public class UserController {
     private BoardLikesRepository boardLikesRepository;
 
     @Autowired
-    private BoardThumbnailRepository boardThumbnailRepository;
+    private BoardForTableRepository boardForTableRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -53,13 +54,13 @@ public class UserController {
             notes = "token에 저장되어있는 로그인 정보를 사용"
     )
     @GetMapping("/board")
-    ListResult<BoardThumbnail> myboard(@RequestParam(required = false, defaultValue = "10") int size,
+    ListResult<BoardForTable> myboard(@RequestParam(required = false, defaultValue = "10") int size,
                                        @RequestParam int num,
                                        Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            List<BoardThumbnail> boardThumbnailList = boardThumbnailRepository.findByAuthorOrderByIdDesc(userSimple, PageRequest.of(num,size));
-            return responseService.getListResult(boardThumbnailList);
+            List<BoardForTable> boardList = boardForTableRepository.findByAuthorOrderByIdDesc(userSimple, PageRequest.of(num,size));
+            return responseService.getListResult(boardList);
         }catch (NullPointerException e){
             return responseService.getFailedListResult();
         }
@@ -70,14 +71,14 @@ public class UserController {
             notes = "token에 저장되어있는 로그인 정보를 사용"
     )
     @GetMapping("/likes")
-    ListResult<BoardThumbnail> myLikes(@RequestParam(required = false, defaultValue = "10") int size,
+    ListResult<BoardForTable> myLikes(@RequestParam(required = false, defaultValue = "10") int size,
                                        @RequestParam int num,
                                        Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            List<Long> boardlikesList = boardLikesRepository.findAllByUsercustom(userSimple.getUserNum());
-            List<BoardThumbnail> boardThumbnailList = boardThumbnailRepository.findByIdInOrderByIdDesc(boardlikesList,PageRequest.of(num,size));
-            return responseService.getListResult(boardThumbnailList);
+            List<Long> boardLikesList = boardLikesRepository.findAllByUsercustom(userSimple.getUserNum());
+            List<BoardForTable> boardList = boardForTableRepository.findByIdInOrderByIdDesc(boardLikesList,PageRequest.of(num,size));
+            return responseService.getListResult(boardList);
         }catch (NullPointerException e){
             return responseService.getFailedListResult();
         }

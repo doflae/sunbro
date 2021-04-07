@@ -26,13 +26,10 @@ const UserBox = authWrapper(({...props})=>{
     useEffect(()=>{
         setUser(props.user);
     },[props.user])
-
-    const renderUserPage = () =>{
-        if(user==null) return null;
-        return <MyPage/>
-    }
-
-    return <UserBoxStyled>{renderUserPage()}</UserBoxStyled>
+    if (user==null) return null;
+    return <UserBoxStyled>
+        <MyPage/>
+        </UserBoxStyled>
 })
 
 const AdminBox = () =>{

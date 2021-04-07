@@ -68,7 +68,7 @@ public class User implements UserDetails {
     private int total_comment_num;
 
     @Formula("(select count(*) from boardlikes bl where bl.user_num=user_num)")
-    private int total_board_likes;
+    private int total_like_num;
 
     @Override
     @JsonIgnore

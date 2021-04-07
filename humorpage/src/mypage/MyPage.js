@@ -45,7 +45,8 @@ class MyPage extends Component{
                     내가 쓴 글</PageOptionBtnStyled>
             </MyPageOptionZone>
                 <MyPageMain pagesize={this.state.pagesize} 
-                total_num={this.state.userDetail.total_board_num}
+                total_board_num={this.state.userDetail.total_board_num}
+                total_like_num={this.state.userDetail.total_like_num}
                 option={this.state.option}/>
             </span>
     }
