@@ -15,7 +15,7 @@ function CommentBox({
     const commentCnt = props.comment_cnt
 
     useEffect(()=>{
-        const target = props.CommentBtnRef.current
+        const target = props.commentBtnRef.current
         target.onclick = () =>{
             if(commentList.length===0){
                 getData();

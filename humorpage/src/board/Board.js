@@ -14,8 +14,9 @@ function Board({
     const [content, setContent] = useState(board.content);
     const [onOff, setOnOff] = useState(!board.more);
     const [offset, setOffset] = useState(null);
+    const [dUpBtnOnOff, setDUpBtnOnOff] = useState(false);
     const boardRef = useRef();
-    const CommentBtnRef = useRef();
+    const commentBtnRef = useRef();
     let history = useHistory();
     const id = board.id
     const comments_num = board.comments_num
@@ -49,18 +50,9 @@ function Board({
         }
     }
 
-    const renderDelUpBtn = () =>{
-        if(board==null||props.user==null) return null;
-        if(board.author.userNum===props.user.userNum){
-            return <React.Fragment>
-                <UpdateDeleteBtnStyled onClick={UpdateBoard()}>수정</UpdateDeleteBtnStyled>
-                <UpdateDeleteBtnStyled onClick={DeleteBoard()}>삭제</UpdateDeleteBtnStyled>
-            </React.Fragment>
-        }
-    }
 
     const ShareBoard = () => (e) =>{
-        //배포시 변경
+        //todo:배포시 변경
         const shareUrl = "http://localhost:3000/board/"+id
         if(copyToClipboard(shareUrl)!==false){
             console.log("hi")
@@ -69,8 +61,9 @@ function Board({
 
     if(board==null) return null;
     if(board.author==null){
-        board.author = {usernum:"#",name:"@user123",userImg:""}
+        board.author = {userNum:"#",name:"@user123",userImg:""}
     }
+    const isAuthor = props.user!=null && board.author.userNum===props.user.userNum;
     return <BoardStyled ref = {boardRef}>
         <BoardTop>
             <BoardTopLeft>
@@ -84,7 +77,16 @@ function Board({
                 <Created className="created">{getTime(board.created)}</Created>
             </BoardTopCenter>
             <BoardTopRight>
-                {renderDelUpBtn()}
+                <BoardControlBtn
+                    setDUpBtnOnOff={setDUpBtnOnOff}
+                    dUpBtnOnOff={dUpBtnOnOff}
+                />
+                <BoardControls
+                    btnOnOff={dUpBtnOnOff}
+                    isAuthor={isAuthor}
+                    UpdateBoard={UpdateBoard}
+                    DeleteBoard={DeleteBoard}
+                />
             </BoardTopRight>
         </BoardTop>
         <BoardTitleStyled>
@@ -108,7 +110,7 @@ function Board({
             <BoardBottomButtons>
                 <BoardBtnStyled
                 theme={{borderBottom:"0px 10px"}}
-                ref={CommentBtnRef}>
+                ref={commentBtnRef}>
                     댓글 {convertUnitOfNum(board.total_comments_num)}
                 </BoardBtnStyled>
                 <LikeBtn id={id} like={board.like} likes={board.likes}/>
@@ -117,7 +119,7 @@ function Board({
                 onClick={ShareBoard()}>공유하기</BoardBtnStyled>    
             </BoardBottomButtons>
         </div>
-        <CommentBox board_id={id} comment_cnt = {comments_num} CommentBtnRef = {CommentBtnRef}/>
+        <CommentBox board_id={id} comment_cnt = {comments_num} commentBtnRef = {commentBtnRef}/>
     </BoardStyled>
 }
 
@@ -194,6 +196,29 @@ const LikeBtn = ({id,like,likes}) =>{
     }
 }
 
+const BoardControlBtn = ({setDUpBtnOnOff, dUpBtnOnOff}) =>{
+    return <BoardControlBtnStlyed 
+            tabIndex = {0}
+            onClick={()=>{
+                setDUpBtnOnOff(!dUpBtnOnOff)
+            }}
+            onBlur={()=>{
+                setTimeout(()=>setDUpBtnOnOff(false),100);
+            }}>
+        <DotIconStyled/>
+    </BoardControlBtnStlyed>
+}
+
+const BoardControls = ({btnOnOff, isAuthor, UpdateBoard, DeleteBoard}) =>{
+    if(isAuthor && btnOnOff){
+        return <BoardControlsStlyed>
+            <UpdateDeleteBtnStyled onClick={UpdateBoard()}>수정</UpdateDeleteBtnStyled>
+            <UpdateDeleteBtnStyled onClick={DeleteBoard()}>삭제</UpdateDeleteBtnStyled>
+        </BoardControlsStlyed>
+    }
+    return null;
+}
+
 const MainContentComponent = ({content,thumbnail,onOff}) =>{
     if(onOff===true){
         return <BoardDetailStyled dangerouslySetInnerHTML={{__html:sanitizeNonNull(content)}}></BoardDetailStyled>
@@ -208,6 +233,62 @@ const MainContentComponent = ({content,thumbnail,onOff}) =>{
     }
 }
 
+
+const BoardControlsStlyed = styled.div`
+    position: absolute;
+    top: 44px;
+    right: 8px;
+    background-color: #fff;
+    padding:5px 15px;
+    box-shadow:0px 0px 2px 1px rgb(0,0,0,24%);
+    &::after {
+        content: "";
+        position: absolute;
+        border-top: 0px solid transparent;
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        border-bottom: 8px solid #fff;
+        right: 6px;
+        top: -8px;
+    }
+`
+
+const BoardControlBtnStlyed = styled.div`
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    cursor:pointer;
+    &:hover {
+        background-color:rgb(0,0,0,7%);
+    }
+`
+const DotIconStyled = styled.div`
+    background-color:#000;
+    width:5px;
+    height:5px;
+    position:relative;
+    border-radius:50%;
+    top:12.5px;
+    margin:auto;
+    &::before, &::after{
+        background-color:#000;
+        content:" ";
+        position:absolute;
+        display:inline-block;
+        width:5px;
+        height:5px;
+        border-radius:50%;
+    }
+
+    &::before{
+        top:12px;
+    }
+
+    &::after{
+        top:6px;
+    }
+`
+
 const BoardBottomButtons = styled.div`
     display:flex;
     justify-content:space-between;
@@ -218,24 +299,21 @@ const BoardThumbnailStyled = styled.div`
 `
 
 const BoardStyled = styled.div`
-    min-width: 500px;
+    min-width: 496px;
     max-width: 700px;
     border-radius:10px;
     margin-left:auto;
-    background-color: #fff;
+    background-color: #f9f9f9;
     border-bottom: 1px solid rgba(94,93,93,0.418);
     margin-bottom: 4px;
     box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
 `
 
-const UpdateDeleteBtnStyled = styled.button`
-    background-color:#fff;
-    border:1px solid rgb(0 0 0 / 24%);
-    margin:3px;
-    border-radius:3px;
-    &:focus{
-        border:1px solid rgb(0 0 0 / 24%);
-    }
+const UpdateDeleteBtnStyled = styled.div`
+    border-bottom:1px solid rgb(0 0 0 / 24%);
+    width: max-content;
+    cursor:pointer;
+    margin-bottom:5px;
 `
 
 const AuthorName = styled.p`
@@ -263,8 +341,9 @@ const BoardTopCenter = styled.div`
 
 const BoardTopRight = styled.div`
     display:inline-block;
+    position:relative;  
     float:right;
-    margin-top:5px;
+    margin:-7px -2px 0px 0px;
 `
 
 const BoardThumbnailText = styled.span`
@@ -294,7 +373,7 @@ const BoardTitleStyled = styled.div`
     padding-left: 10px;
     font-size: 1.5rem;
     font-weight: normal;
-    border-bottom: 1px solid rgba(94, 93, 93, 0.418);
+    border-bottom: 1px solid rgba(94, 93, 93, 0.15);
     line-height:200%;
 `
 

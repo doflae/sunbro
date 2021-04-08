@@ -60,7 +60,7 @@ const BoardBoxStyled = styled.div`
 const MainBoxStyled = styled.div`
   margin-bottom: 50px;
   background-color: #dfdede;
-  padding-top: 80px;
+  padding-top: 60px;
   margin-left: auto;
   margin-right: auto;
   display:flex;

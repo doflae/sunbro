@@ -193,7 +193,9 @@
   svg:not(:root) {
     overflow: hidden;
   }
-  
+  *:focus{
+    outline: none!important;
+  }
   /* Grouping content
      ========================================================================== */
   
