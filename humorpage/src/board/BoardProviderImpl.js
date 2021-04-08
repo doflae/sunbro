@@ -6,7 +6,13 @@ export class BoardProviderImpl extends Component{
         super(props)
         this.state={
             boardDetail:null,
+            boardPageOption:-1
         }
+    }
+    setBoardPageOption = (option) =>{
+        this.setState({
+            boardPageOption:option,
+        })
     }
     setBoard = (board) =>{
         this.setState({
@@ -15,7 +21,8 @@ export class BoardProviderImpl extends Component{
     }
     render = () =>
         <BoardContext.Provider value={{...this.state,
-        setBoard:this.setBoard}}>
+        setBoard:this.setBoard,
+        setBoardPageOption:this.setBoardPageOption}}>
             {this.props.children}
         </BoardContext.Provider>
 }

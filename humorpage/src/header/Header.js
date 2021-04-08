@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { withRouter,useHistory} from "react-router-dom";
 import { authWrapper } from '../auth/AuthWrapper';
+import { boardWrapper} from "../board/BoardWrapper";
 import logo from "../static/img/logo.jpg"
 import Search from "../static/svg/search.svg"
 import styled from "styled-components";
+import Pencil from "../static/img/pencil_32px.png";
 
 function Header({...props}){
   let history = useHistory();
@@ -12,10 +14,13 @@ function Header({...props}){
     props.signout()
   }
   const imageClick = () => (e) =>{
-    history.push("/boards")
+    history.push("/")
   }
   const goLogin = () => (e) =>{
-    props.setPageOption(0);
+    props.setAuthPageOption(0);
+  }
+  const goUpload = () => (e) =>{
+    props.setBoardPageOption(0);
   }
   useEffect(()=>{
     setUser(props.user);
@@ -29,6 +34,7 @@ function Header({...props}){
     <SearchInputStyled type="text" className="search-input"></SearchInputStyled>
     <SearchStyled width="30px" height="30"/>
   </SearchZoneStyled>
+  <PencilStyled src={Pencil} alt="" onClick={goUpload()}/>
   <LogBtn user = {user} Logout = {Logout} goLogin = {goLogin}/>
   </HeadStyled>
 }
@@ -40,6 +46,18 @@ const LogBtn = ({user, Logout, goLogin}) =>{
     return <SignBtnStyled onClick={goLogin()}>로그인</SignBtnStyled>
   }
 }
+
+const PencilStyled = styled.img`
+  width: 30px;
+  height: 30px;
+  align-self: center;
+  cursor:pointer;
+  filter: invert(37%) sepia(90%) saturate(577%) hue-rotate(
+  185deg
+  ) brightness(98%) contrast(85%);
+  position: absolute;
+  right: 100px;
+`
 
 const SearchZoneStyled = styled.div`
   background-color: #dfdede;
@@ -122,4 +140,4 @@ const HeadStyled = styled.header`
   position:fixed;
 `
 
-export default withRouter(authWrapper(Header))
+export default withRouter(boardWrapper(authWrapper(Header)))

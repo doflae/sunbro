@@ -13,7 +13,7 @@ export const FindPassword = authWrapper(({...props}) =>{
         setValidationEmail("임시 비밀번호를 전송하였습니다. 이메일을 확인해주세요.");
     }
     const goToLogin = () => (e) =>{
-        props.setPageOption(0);
+        props.setAuthPageOption(0);
     }
     return <div>
         <FormLabelStyled>아이디</FormLabelStyled>

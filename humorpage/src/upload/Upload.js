@@ -3,15 +3,18 @@ import React,{Component,createRef} from "react"
 import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
+import {boardWrapper} from "../board/BoardWrapper"
 import Axios from "axios"
 import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage, sanitizeUrl, dataUrltoBlob} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 import Film from "../static/svg/film.svg";
 import Play from "../static/svg/play.svg";
 import Youtube from "../static/svg/youtube.svg";
+import * as Styled from "./Styled";
+
 const icons = Quill.import('ui/icons')
-icons['mycustom'] = `<img src=${Film} alt="videoIcon" className="ql-mycustom"/>`
-icons['video'] = `<img src=${Youtube} alt="youtubeIcon" className="ql-mycustom"/>`
+icons['mycustom'] = `<img src=${Film} alt="" className="ql-mycustom"/>`
+icons['video'] = `<img src=${Youtube} alt="" className="ql-mycustom"/>`
 
 
 
@@ -419,43 +422,46 @@ class Upload extends Component {
       })
     }
   }
-    render() {
-      return (
-        <div className="main-panel">
-          <div className="editor_navbar">
-            <input type="text" className="editor_title" ref={this.titleRef} onChange={e=>{e.preventDefault(); this.onChangeTitle(e.target.value)}}></input>
-            <ValidationError errors={this.state.titleErr}/>
-          </div>
-          <div className="main-content">
-          <ReactQuill
-            ref={(el)=>(this.quillRef = el)}
-            value={this.state.contents}
-            onChange={this.onChangeContents}
-            theme="snow"
-            modules={this.modules}
-            formats={this.formats}
-          />
-          <ValidationError errors = {this.state.contentErr}/>
-          <Dropzone
-            ref = {(el)=>(this.dropzone = el)}
-            accept = {this.state.open}
-            onDrop = {this.onDrop}
-            styles={{dropzone:{width:0,height:0}}}
-          >
-            {({getRootProps, getInputProps}) =>(
-              <section>
-                <div {...getRootProps()}>
-                  <input {...getInputProps()}/>
-                </div>
-              </section>
-            )}
-          </Dropzone>
+  render() {
+    return (
+      <Styled.UploadBoxStyled>
+        <Styled.DeleteBtnStyled/>
+        <Styled.TitleZoneStyled>
+          <input type="text" className="editor_title" ref={this.titleRef} onChange={e=>{e.preventDefault(); this.onChangeTitle(e.target.value)}}></input>
+          <ValidationError errors={this.state.titleErr}/>
+        </Styled.TitleZoneStyled>
+        <div className="main-content">
+        <ReactQuill
+          ref={(el)=>(this.quillRef = el)}
+          value={this.state.contents}
+          onChange={this.onChangeContents}
+          theme="snow"
+          modules={this.modules}
+          formats={this.formats}
+        />
+        <ValidationError errors = {this.state.contentErr}/>
+        <Dropzone
+          ref = {(el)=>(this.dropzone = el)}
+          accept = {this.state.open}
+          onDrop = {this.onDrop}
+          styles={{dropzone:{width:0,height:0}}}
+        >
+          {({getRootProps, getInputProps}) =>(
+            <section>
+              <div {...getRootProps()}>
+                <input {...getInputProps()}/>
+              </div>
+            </section>
+          )}
+        </Dropzone>
+      </div>
+        <div className="submitbar">
+          <button type="submit" onClick={this.submit()} className="editor_submit">저장</button>
         </div>
-          <div className="submitbar">
-            <button type="submit" onClick={this.submit()} className="editor_submit">저장</button>
-          </div>
-        </div>
-      )
-    }
+      </Styled.UploadBoxStyled>
+    )
   }
-export default authWrapper(withRouter(Upload));
+}
+
+
+export default boardWrapper(authWrapper(withRouter(Upload)));

@@ -6,13 +6,14 @@ export class AuthProviderImpl extends Component{
         super(props);
         this.state={
             user:null,
-            pageOption:-1,
+            authPageOption:-1,
         }
     }
 
-    setPageOption = (option) =>{
+    //pageOption 0~3 : Auth
+    setAuthPageOption = (option) =>{
         this.setState({
-            pageOption:option,
+            authPageOption:option,
         })
     }
 
@@ -40,6 +41,7 @@ export class AuthProviderImpl extends Component{
         credential_form.append('uid',credentials['id'])
         credential_form.append('password',credentials['password'])
         return Axios.post("/account/login",credential_form).then(response =>{
+            console.log(response)
             if ("user" in response.headers){
                 this.setState({
                     user:JSON.parse(response.headers['user']),
@@ -65,7 +67,7 @@ export class AuthProviderImpl extends Component{
     render = () =>
         <AuthContext.Provider value={{...this.state,
         authenticate:this.authenticate, signout:this.signout, request:this.request,
-        setPageOption:this.setPageOption}}>
+        setAuthPageOption:this.setAuthPageOption}}>
             {this.props.children}
         </AuthContext.Provider>
 }

@@ -74,7 +74,7 @@ export const Signup = withRouter(authWrapper(class extends Component{
 				submitCallback={this.authenticate}
 				submitText="회원가입"
 				errorMessage={this.state.errorMessage}
-				cancelCallback={()=> this.props.setPageOption(0)}
+				cancelCallback={()=> this.props.setAuthPageOption(0)}
 				cancelText="취소"
 				/>
 		</div>

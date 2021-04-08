@@ -134,7 +134,7 @@ function Profile({userDetail,...props}){
                                     console.log(res)
                                     if(res){
                                         saveFile(filePath)
-                                        props.setPageOption(-1);
+                                        props.setAuthPageOption(-1);
                                     }
                                 })
                             }else{
@@ -145,7 +145,7 @@ function Profile({userDetail,...props}){
                                 props.request("post","/account/anologin",formData).then(res=>{
                                     if(res.data.success){
                                         saveFile(filePath)
-                                        props.setPageOption(-1);
+                                        props.setAuthPageOption(-1);
                                     }
                                 })
                             }
@@ -166,7 +166,7 @@ function Profile({userDetail,...props}){
                                 }
                                 props.authenticate(credentials).then(res=>{
                                     if(res){
-                                        props.setPageOption(-1);
+                                        props.setAuthPageOption(-1);
                                     }
                                 })
                             }else{
@@ -176,7 +176,7 @@ function Profile({userDetail,...props}){
                                 formData.append("token",userDetail.token)
                                 props.request("post","/account/anologin",formData).then(res=>{
                                     if(res.data.success){
-                                        props.setPageOption(-1);
+                                        props.setAuthPageOption(-1);
                                     }
                                 })
                             }
@@ -254,7 +254,7 @@ function Profile({userDetail,...props}){
             <BtnStyled
                 theme={{color:"#aaa",
                         bgcolor:"#ddd"}} 
-                onClick={(e)=>{e.preventDefault();props.setPageOption(0);}}>
+                onClick={(e)=>{e.preventDefault();props.setAuthPageOption(0);}}>
                     취소
             </BtnStyled>
         </ProfileBtnZoneStyled>

@@ -33,7 +33,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 	authenticate = (credentials) => {
 		this.props.authenticate(credentials)
 		.then((res)=>{
-			this.props.setPageOption(-1);
+			this.props.setAuthPageOption(-1);
 		})
 		.catch(err => {
 			this.setState({errorMessage:err.message})
@@ -54,7 +54,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',response.response.access_token)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.setPageOption(-1);
+				this.props.setAuthPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "KAKAO"+profile.id
@@ -70,7 +70,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 				this.setState({
 					userDetail:userDetail,
 				})
-				this.props.setPageOptions(2);
+				this.props.setAuthPageOptions(2);
 			}
 		})
 	}
@@ -82,7 +82,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',user.accessToken)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.setPageOption(-1);
+				this.props.setAuthPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = id
@@ -91,7 +91,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 				this.setState({
 					userDetail:userDetail,
 				})
-				this.props.setPageOptions(2);
+				this.props.setAuthPageOptions(2);
 			}
 		})
 	}
@@ -104,7 +104,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',access_token)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.setPageOption(-1);
+				this.props.setAuthPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "NAVER"+user.id
@@ -118,7 +118,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 				this.setState({
 					userDetail:userDetail,
 				})
-				this.props.setPageOptions(2);
+				this.props.setAuthPageOptions(2);
 			}
 		})
 		
@@ -131,7 +131,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',user.accessToken)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.setPageOption(-1);
+				this.props.setAuthPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "FACEBOOK"+user.id;
@@ -140,26 +140,26 @@ export const Login = withRouter(authWrapper(class extends Component{
 				this.setState({
 					userDetail:userDetail,
 				})
-				this.props.setPageOptions(2);
+				this.props.setAuthPageOptions(2);
 			}
 		})
 	}
 
 	SignUpBtn = () => (e) =>{
-		this.props.setPageOption(1);
+		this.props.setAuthPageOption(1);
 	}
 
 	DeletePage = () =>(e) =>{
-		this.props.setPageOption(-1);
+		this.props.setAuthPageOption(-1);
 	}
 	FindPw = () => (e) =>{
-		this.props.setPageOption(3);
+		this.props.setAuthPageOption(3);
 	}
 
 	renderPage = () =>{
-		if(this.props.pageOption==3) return <FindPassword/>
-		if(this.props.pageOption==2) return <Profile userDetail={this.state.userDetail}/>
-		if(this.props.pageOption==1) return <Signup/>
+		if(this.props.authPageOption==3) return <FindPassword/>
+		if(this.props.authPageOption==2) return <Profile userDetail={this.state.userDetail}/>
+		if(this.props.authPageOption==1) return <Signup/>
 		return <div>
 			<LoginFormZoneStlyed>
 			<LoginForm formModel={this.formModel}
@@ -209,9 +209,9 @@ export const Login = withRouter(authWrapper(class extends Component{
 	}
 
 	render = () => {
-		if(this.props.pageOption<0) return null;
+		if(this.props.authPageOption<0) return null;
 		return <AuthBoxStyled>
-			<CancelBtnStyled onClick={()=>{this.props.setPageOption(-1)}}/>
+			<CancelBtnStyled onClick={()=>{this.props.setAuthPageOption(-1)}}/>
 			{this.renderPage()}
 		</AuthBoxStyled>
 	}
@@ -265,6 +265,7 @@ const CancelBtnStyled = styled.button`
 `
 
 const AuthBoxStyled = styled.div`
+	z-index:1;
 	position: fixed;
 	left: calc(50% - 175px);
 	width: 350px;

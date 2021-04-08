@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component} from 'react';
 import './static/css/Normalize.css'
 import './static/css/App.css';
 import './static/css/Board.css'
@@ -8,8 +8,7 @@ import './static/css/Editor.css'
 import './static/css/Mypage.css'
 import {Route, Switch} from "react-router-dom"
 import BoardConnector from "./board/BoardConnector"
-import Upload from "./upload/Upload"
-import Update from "./upload/Update"
+import UploadConnector from "./upload/UploadConnector"
 import Header from "./header/Header"
 import {Login} from "./auth/Login"
 import {Provider} from "react-redux"
@@ -22,15 +21,12 @@ import {SideBar} from "./sidebar/SideBar";
 class App extends Component{
   render(){
     return<Provider store = {HumorDataStore}>
-            <AppStyled>
+            <AppStyled ref={this.AppRef}>
               <Header/>
             <Switch>
               <MainBoxStyled>
                 <BoardBoxStyled>
                 <Route exact path="/" component={BoardConnector}/>
-                <Route path="/upload" component={Upload}/>
-                <Route path="/boards" component={BoardConnector}/>
-                <Route path="/update/:key" component={Update}/>
                 <Route path="/userpage/:key" component={UserPage}/>
                 <Route path="/board/:key" component={BoardSingleConnector}/>
                 </BoardBoxStyled>
@@ -39,6 +35,7 @@ class App extends Component{
               </MainBoxStyled>
             </Switch>
           </AppStyled>
+          <UploadConnector/>
           </Provider>
   }
 }
