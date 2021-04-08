@@ -28,3 +28,17 @@
 #ql{
     margin-bottom: 5px;
 }
+.boardIframeZone{
+    position: relative;
+    padding-top: 56.25%;
+    width: 100%;
+}
+.boardIframe{
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+}

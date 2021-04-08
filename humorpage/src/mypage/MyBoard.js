@@ -2,6 +2,8 @@ import React from "react"
 import {convertUnitOfNum} from "../utils/Utils"
 import styled from "styled-components"
 import { useHistory } from "react-router"
+
+
 function MyBoard({
     board,
     checkedBox,
@@ -36,8 +38,9 @@ const CheckBox = ({id,checkedBox,selectSingleHandler})=>{
 }
 
 const TitleStyled = styled.div`
-    max-width: 200px;
-    overflow: hidden;
+    text-overflow: ellipsis;
+    overflow: hidden; 
+    max-width: 190px;
     white-space: nowrap;
 `
 

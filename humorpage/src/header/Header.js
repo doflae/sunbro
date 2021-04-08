@@ -110,6 +110,7 @@ const HeadLogoStyled = styled.div`
 `
 
 const HeadStyled = styled.header`
+  z-index:1;
   width: 100%;
   max-height: 50px;
   background-color : #fff;

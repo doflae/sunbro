@@ -93,8 +93,8 @@ function Board({
         <div className="board_main">
             <MainContentComponent content={content} thumbnail={thumbnail} onOff={onOff}></MainContentComponent>
         </div>
-        <div className="board_bottom">
-            <GetDetailBtn 
+        <div>
+            <GetDetailBtn
                 id = {id}
                 isMore={board.more}
                 onOff={onOff}
@@ -105,32 +105,41 @@ function Board({
                 setContent={setContent}
                 content={content}
                 />
-            <div className="buttons">
-                <BoardBtn ref={CommentBtnRef}>
+            <BoardBottomButtons>
+                <BoardBtnStyled
+                theme={{borderBottom:"0px 10px"}}
+                ref={CommentBtnRef}>
                     댓글 {convertUnitOfNum(board.total_comments_num)}
-                </BoardBtn>
+                </BoardBtnStyled>
                 <LikeBtn id={id} like={board.like} likes={board.likes}/>
-                <BoardBtn onClick={ShareBoard()}>공유하기</BoardBtn>    
-            </div>
+                <BoardBtnStyled
+                theme={{borderBottom:"10px 0px"}}
+                onClick={ShareBoard()}>공유하기</BoardBtnStyled>    
+            </BoardBottomButtons>
         </div>
         <CommentBox board_id={id} comment_cnt = {comments_num} CommentBtnRef = {CommentBtnRef}/>
     </BoardStyled>
 }
 
 const GetDetailBtn = ({...props}) => {
+    let detailBtnRef = useRef();
+
     const getDetail = () => async (e) =>{
         let target = e.target
         if(props.onOff){
             //접기
             target.innerText="펼치기"
+            detailBtnRef.current.style.marginTop = "-35px";
             props.setOnOff(false)
             window.scrollTo({top:props.offset,behavior:'smooth'})
         }else{
             //펼치기
             //펼치기 전에 아래글의 offsetTop 저장
             const current = props.boardRef.current
-            props.setOffset(current.offsetTop + current.offsetHeight)
-            window.scrollTo({top:current.offsetTop,behavior:'smooth'})
+            detailBtnRef.current.style.marginTop = "0px";
+            //header height 감안
+            props.setOffset(current.offsetTop + current.offsetHeight - 50)
+            window.scrollTo({top:current.offsetTop-50,behavior:'smooth'})
             target.innerText="접기"
             if(props.content==null){
                 Axios({method:"get",url:`/board/content/${props.id}`}).then((res)=>{
@@ -145,7 +154,8 @@ const GetDetailBtn = ({...props}) => {
         }
     }
     if(!props.isMore) return null;
-    else return <GetDetailBtnStyled onClick={getDetail()}>펼치기</GetDetailBtnStyled>
+    else return <GetDetailBtnStyled ref = {detailBtnRef}
+        onClick={getDetail()}>더 보기(more)</GetDetailBtnStyled>
 }
 
 const LikeBtn = ({id,like,likes}) =>{
@@ -198,12 +208,16 @@ const MainContentComponent = ({content,thumbnail,onOff}) =>{
     }
 }
 
+const BoardBottomButtons = styled.div`
+    display:flex;
+    justify-content:space-between;
+`
+
 const BoardThumbnailStyled = styled.div`
     text-align:center;
 `
 
 const BoardStyled = styled.div`
-    padding: 3px 5px 8px 5px;
     min-width: 500px;
     max-width: 700px;
     border-radius:10px;
@@ -235,7 +249,7 @@ const Created = styled.p`
 `
 
 const BoardTop = styled.div`
-    margin-top:10px;
+    padding:15px 10px 0px 10px;
 `
 
 const BoardTopLeft = styled.div`
@@ -273,10 +287,11 @@ const BoardAuthorImageStyled = styled.img`
 `
 
 const BoardTitleStyled = styled.div`
-    border:0px 0px 1px 0px;
-    margin: 10px 0 10px 0;
-    padding-left:5px;
-    padding-right:5px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    margin: 10px 5px;
+    padding-left: 10px;
     font-size: 1.5rem;
     font-weight: normal;
     border-bottom: 1px solid rgba(94, 93, 93, 0.418);
@@ -284,16 +299,27 @@ const BoardTitleStyled = styled.div`
 `
 
 const BoardDetailStyled = styled.div`
-    padding:10px;
     min-height:300px;
 `
 
-const GetDetailBtnStyled = styled.button`
-    width: 100%;
-    border: 0px;
+const GetDetailBtnStyled = styled.div`
+    cursor:pointer;
+    position: relative;
+    width: 230px;
+    border-radius: 9px;
+    margin: -30px auto 5px auto;
+    text-align: center;
+    color: #fff;
+    background-color: rgb(92, 164, 214);
+    font-size: 1.1em;
+    font-weight: 700;
+    transition: transform .3s ease-out;
+    &:hover{
+        transform: translate(0, -5px);
+    }
 `;
 
-const BoardBtn = styled.button`
+const BoardBtnStyled = styled.button`
     display: flex;
     justify-content: space-evenly;
     width: 33%;
@@ -303,6 +329,7 @@ const BoardBtn = styled.button`
     &:hover{
         background-color: #aaaaaa;
     }
+    border-radius: 0px 0px ${props=>props.theme.borderBottom};
 `;
 
 

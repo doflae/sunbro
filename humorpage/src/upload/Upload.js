@@ -24,16 +24,18 @@ const BlockEmbed = Quill.import('blots/block/embed');
 class MediaBlot extends BlockEmbed{
     static create(value){
         const node = super.create();
+        const div = document.createElement("div")
+        div.className="boardIframeZone";
         node.setAttribute('id',"ql");
+        node.className="boardIframe";
         node.setAttribute('frameborder', '0');
         node.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture');
         node.setAttribute('allowtransparency', true);
         node.setAttribute('allowfullscreen', true);
         node.setAttribute('scrolling', '0');
-        node.setAttribute('width', '100%');
-        node.setAttribute('height', '315px');
         node.setAttribute('src',value);
-        return node;
+        div.appendChild(node);
+        return div;
     }
 
     static sanitize(url){
