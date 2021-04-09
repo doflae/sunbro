@@ -2,7 +2,7 @@ import React from "react"
 
 export const BoardContext = React.createContext({
     boardDetail:null,
-    boardPageOption:-1,
-    setBoardPageOption:(option)=>{},
+    boardKey:null,
+    setBoardKey: (key)=>{},
     setBoard:(bid)=>{}
 })

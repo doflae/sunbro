@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { withRouter,useHistory} from "react-router-dom";
 import { authWrapper } from '../auth/AuthWrapper';
-import { boardWrapper} from "../board/BoardWrapper";
+import { uploadWrapper} from "../upload/UploadWrapper";
 import logo from "../static/img/logo.jpg"
 import Search from "../static/svg/search.svg"
 import styled from "styled-components";
@@ -20,7 +20,7 @@ function Header({...props}){
     props.setAuthPageOption(0);
   }
   const goUpload = () => (e) =>{
-    props.setBoardPageOption(0);
+    props.onOffUploadPage(0);
   }
   useEffect(()=>{
     setUser(props.user);
@@ -140,4 +140,4 @@ const HeadStyled = styled.header`
   position:fixed;
 `
 
-export default withRouter(boardWrapper(authWrapper(Header)))
+export default withRouter(uploadWrapper(authWrapper(Header)))

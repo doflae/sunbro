@@ -3,7 +3,7 @@ import React,{Component,createRef} from "react"
 import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
-import {boardWrapper} from "../board/BoardWrapper"
+import {uploadWrapper} from "./UploadWrapper";
 import Axios from "axios"
 import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage, sanitizeUrl, dataUrltoBlob} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
@@ -150,14 +150,25 @@ class Upload extends Component {
       this.titleRef = createRef();
     }
 
-
     componentDidMount(){
       const quill = this.quillRef.getEditor();      
       const tooltip = quill.theme.tooltip;
-      quill.clipboard.addMatcher("DIV",(node,delta)=>{
-        delta.insert({'myvideo':node.firstElementChild.getAttribute('src')})
-        return delta;
-      })
+      const bgTarget = this.props.bgRef.current
+      //Background click event
+      if(bgTarget) bgTarget.addEventListener('click',this.hiddenPage());
+      //이전 hidden 함수에 의한 display 변경 복구
+      const ref = this.props.uploadPageRef
+      // if(ref) {
+      //   console.log(ref.style);
+      //   ref.style.display="";
+      // }else{
+      //   console.log(ref)
+      // }
+      //
+      // quill.clipboard.addMatcher("DIV",(node,delta)=>{
+      //   delta.insert({'myvideo':node.firstElementChild.getAttribute('src')})
+      //   return delta;
+      // })
       tooltip.save = () =>{
         const url = sanitizeUrl(tooltip.textbox.value)
         console.log(url)
@@ -422,10 +433,16 @@ class Upload extends Component {
       })
     }
   }
+
+  hiddenPage = () => (e) =>{
+    const bgTarget = this.props.uploadPageRef.current
+    if(bgTarget) bgTarget.style.display = "none";
+  }
+
   render() {
     return (
       <Styled.UploadBoxStyled>
-        <Styled.DeleteBtnStyled/>
+        <Styled.DeleteBtnStyled onClick={this.hiddenPage()}/>
         <Styled.TitleZoneStyled>
           <input type="text" className="editor_title" ref={this.titleRef} onChange={e=>{e.preventDefault(); this.onChangeTitle(e.target.value)}}></input>
           <ValidationError errors={this.state.titleErr}/>
@@ -464,4 +481,4 @@ class Upload extends Component {
 }
 
 
-export default boardWrapper(authWrapper(withRouter(Upload)));
+export default uploadWrapper(authWrapper(withRouter(Upload)));

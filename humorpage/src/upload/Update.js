@@ -4,6 +4,7 @@ import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import {boardWrapper} from "../board/BoardWrapper"
+import {uploadWrapper} from "./UploadWrapper"
 import Axios from "axios"
 import {changeDateTimeToPath,
   getRandomGenerator,
@@ -12,7 +13,7 @@ import {changeDateTimeToPath,
   sanitizeUrl,
   dataUrltoBlob} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
-
+import * as Styled from "./Styled";
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 
 class Update extends Component {
@@ -35,6 +36,10 @@ class Update extends Component {
     componentDidMount(){
       const quill = this.quillRef.getEditor();
       const tooltip = quill.theme.tooltip;
+      const bgTarget = this.props.bgRef.current
+      if(bgTarget){
+        bgTarget.addEventListener('click',this.hiddenPage());
+      }
       quill.clipboard.addMatcher("DIV",(node,delta)=>{
         delta.insert({'myvideo':node.firstElementChild.getAttribute('src')})
         return delta;
@@ -49,22 +54,29 @@ class Update extends Component {
         }
         tooltip.hide();
       }
-      this.props.request("get",`/board/simple/${this.props.match.params.key}`)
+      this.getBoardDetail();
+    }
+
+    componentDidUpdate(prevProps){
+      if(this.props.boardKey!==prevProps.boardKey){
+        this.getBoardDetail();
+      }
+    }
+
+    getBoardDetail = () =>{
+      const quill = this.quillRef.getEditor();
+      this.props.request("get",`/board/simple/${this.props.boardKey}`)
       .then(res=>{
           if(res.status===200 && res.data.success){
               this.titleRef.current.value = res.data.data.title
               this.boardDetail = res.data.data
-              console.log(this.boardDetail)
               quill.clipboard.dangerouslyPasteHTML(this.boardDetail.content)
           }else{
               alert("해당 글의 작성자가 아닙니다.")
               this.props.history.goBack();
           }
       })
-      
     }
-
-    
 
     checkIsmore = () =>{
       //1. src체크 -> image든 video든 여러개면 x
@@ -340,44 +352,49 @@ class Update extends Component {
       })
     }
   }
-    render() {
-      return (
-        <div className="main-panel">
-          <div className="editor_navbar">
-            <input type="text" className="editor_title" ref={this.titleRef} onChange={e=>{e.preventDefault(); this.onChangeTitle(e.target.value)}}></input>
-            <ValidationError errors={this.state.titleErr}/>
-          </div>
-          <div className="main-content">
-          <ReactQuill
-            ref={(el)=>(this.quillRef = el)}
-            value={this.state.contents}
-            onChange={this.onChangeContents}
-            theme="snow"
-            modules={this.modules}
-            formats={this.formats}
-            onload={()=>{console.log('hi')}}
-          />
-          <ValidationError errors = {this.state.contentErr}/>
-          <Dropzone
-            ref = {(el)=>(this.dropzone = el)}
-            accept = {this.state.open}
-            onDrop = {this.onDrop}
-            styles={{dropzone:{width:0,height:0}}}
-          >
-            {({getRootProps, getInputProps}) =>(
-              <section>
-                <div {...getRootProps()}>
-                  <input {...getInputProps()}/>
-                </div>
-              </section>
-            )}
-          </Dropzone>
-        </div>
-          <div className="submitbar">
-            <button type="submit" onClick={this.submit()} className="editor_submit">저장</button>
-          </div>
-        </div>
-      )
-    }
+  hiddenPage = () => (e) =>{
+    const bgTarget = this.props.updatePageRef.current
+    if(bgTarget) bgTarget.style.display = "none";
   }
-export default boardWrapper(authWrapper(withRouter(Update)));
+
+  render() {
+    return (
+      <Styled.UploadBoxStyled>
+        <Styled.DeleteBtnStyled onClick={this.hiddenPage()}/>
+        <Styled.TitleZoneStyled>
+          <input type="text" className="editor_title" ref={this.titleRef} onChange={e=>{e.preventDefault(); this.onChangeTitle(e.target.value)}}></input>
+          <ValidationError errors={this.state.titleErr}/>
+        </Styled.TitleZoneStyled>
+        <div className="main-content">
+        <ReactQuill
+          ref={(el)=>(this.quillRef = el)}
+          value={this.state.contents}
+          onChange={this.onChangeContents}
+          theme="snow"
+          modules={this.modules}
+          formats={this.formats}
+        />
+        <ValidationError errors = {this.state.contentErr}/>
+        <Dropzone
+          ref = {(el)=>(this.dropzone = el)}
+          accept = {this.state.open}
+          onDrop = {this.onDrop}
+          styles={{dropzone:{width:0,height:0}}}
+        >
+          {({getRootProps, getInputProps}) =>(
+            <section>
+              <div {...getRootProps()}>
+                <input {...getInputProps()}/>
+              </div>
+            </section>
+          )}
+        </Dropzone>
+      </div>
+        <div className="submitbar">
+          <button type="submit" onClick={this.submit()} className="editor_submit">저장</button>
+        </div>
+      </Styled.UploadBoxStyled>
+    )
+  }
+}
+export default uploadWrapper(boardWrapper(authWrapper(withRouter(Update))));

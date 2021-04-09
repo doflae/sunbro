@@ -1,10 +1,11 @@
 import React, {useState, useRef, useEffect} from "react"
 import userDefaultImg from "../static/img/user_32x.png";
 import CommentBox from "./CommentBox";
-import { useHistory, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {sanitizeNonNull, getTime, convertUnitOfNum, copyToClipboard} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
 import {boardWrapper} from "./BoardWrapper"
+import {uploadWrapper} from "../upload/UploadWrapper"
 import Axios from "axios"
 import styled from "styled-components"
 
@@ -15,9 +16,9 @@ function Board({
     const [onOff, setOnOff] = useState(!board.more);
     const [offset, setOffset] = useState(null);
     const [dUpBtnOnOff, setDUpBtnOnOff] = useState(false);
+    const [isDeleted, setIsDeleted] = useState(false);
     const boardRef = useRef();
     const commentBtnRef = useRef();
-    let history = useHistory();
     const id = board.id
     const comments_num = board.comments_num
     const thumbnail = {thumbnail:board.thumbnail,thumbnailImg:board.thumbnailImg};
@@ -26,11 +27,10 @@ function Board({
         if(setRef!=null && boardRef.current) setRef(boardRef.current)
     },[boardRef,setRef])
 
-    const UpdateBoard = ()=>(e)=>{
-        if(props.user==null) history.push("/login")
-        if(props.user.usernum===board.author.usernum){
-            history.push(`/update/${id}`)
-        }
+    const UpdateBoard = ()=> async (e)=>{
+        props.setBoardKey(id).then(()=>{
+            props.onOffUploadPage(1)
+        })
     }
 
     const DeleteBoard = ()=>(e)=>{
@@ -41,8 +41,7 @@ function Board({
                 if(res.status===200) return res.data
             }).then(res=>{
                 if(res.success){
-                    history.push("/boards");
-                    history.go();
+                    setIsDeleted(true);
                 }else{
                     alert("해당 글의 작성자가 아닙니다.");
                 }
@@ -64,6 +63,7 @@ function Board({
         board.author = {userNum:"#",name:"@user123",userImg:""}
     }
     const isAuthor = props.user!=null && board.author.userNum===props.user.userNum;
+    if(isDeleted) return null;
     return <BoardStyled ref = {boardRef}>
         <BoardTop>
             <BoardTopLeft>
@@ -160,17 +160,16 @@ const GetDetailBtn = ({...props}) => {
         onClick={getDetail()}>더 보기(more)</GetDetailBtnStyled>
 }
 
-const LikeBtn = ({id,like,likes}) =>{
+const LikeBtn = authWrapper(({id,like,likes,...props}) =>{
     const [onOffLike, setOnOffLike] = useState({
         onOff:like,
         likeCnt:likes
     })
-    let history = useHistory();
     const likeHandler = ()=>(e) =>{
         if(onOffLike.onOff){
             Axios.get(`/board/likeoff?id=${id}`).then(res=>{
                 if (!res.data.success){
-                    history.push("/login")
+                    props.setAuthPageOption(0);
                 }
             })
             setOnOffLike({
@@ -180,7 +179,7 @@ const LikeBtn = ({id,like,likes}) =>{
         }else{
             Axios.get(`/board/likeon?id=${id}`).then(res=>{
                 if (!res.data.success){
-                    history.push("/login")
+                    props.setAuthPageOption(0);
                 }
             })
             setOnOffLike({
@@ -194,7 +193,7 @@ const LikeBtn = ({id,like,likes}) =>{
     }else{
         return <LikeOffBtnStyled onClick={likeHandler()}>좋아요 <span>{convertUnitOfNum(onOffLike.likeCnt)}</span></LikeOffBtnStyled>
     }
-}
+})
 
 const BoardControlBtn = ({setDUpBtnOnOff, dUpBtnOnOff}) =>{
     return <BoardControlBtnStlyed 
@@ -434,4 +433,4 @@ const LikeOffBtnStyled = styled.button`
 `
 
 
-export default boardWrapper(authWrapper(Board));
+export default uploadWrapper(boardWrapper(authWrapper(Board)));

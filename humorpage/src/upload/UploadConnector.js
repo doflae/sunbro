@@ -1,30 +1,30 @@
-import React from "react";
+import React,{useRef} from "react";
 import { authWrapper } from "../auth/AuthWrapper";
-import { boardWrapper } from "../board/BoardWrapper";
+import { uploadWrapper } from "./UploadWrapper";
 import {BlurBackGroundStlyed} from "./Styled"
 import Upload from "./Upload";
 import Update from "./Update";
-const UploadConnector = boardWrapper(authWrapper(({...props}) =>{
-    if(props.boardPageOption>-1 && props.user==null){
-        props.setBoardPageOption(-1);
+const UploadConnector = uploadWrapper(authWrapper(({...props}) =>{
+    let bgRef = useRef();
+    const option = props.uploadPageOption
+    if(option>-1 && props.user==null){
+        props.onOffUploadPage(-1);
         props.setAuthPageOption(0);
         return null;
     }
-    if(props.boardPageOption===0){
+    if(option<0) return null;
+    if(option%2===0){
         // const bg = props.backgroundRef
         // if(bg.current) bg.current.style.filter = "brightness(0.35)";
-        return <React.Fragment>
-            <BlurBackGroundStlyed/>
-            <Upload/>
-        </React.Fragment>
+        return <div ref={props.uploadPageRef}>
+                <BlurBackGroundStlyed ref={bgRef}/>
+                <Upload bgRef={bgRef}/>
+            </div>
     } 
-    if(props.boardPageOption===1) {
-        return <React.Fragment>
-        <BlurBackGroundStlyed/>
-        <Update/>
-    </React.Fragment>
-    }
-    return null;
+    return <div ref={props.updatePageRef}>
+        <BlurBackGroundStlyed ref={bgRef}/>
+        <Update bgRef = {bgRef}/>
+        </div>
 }))
 
 export default UploadConnector;

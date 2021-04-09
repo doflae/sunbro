@@ -6,12 +6,15 @@ export class BoardProviderImpl extends Component{
         super(props)
         this.state={
             boardDetail:null,
-            boardPageOption:-1
+            boardKey:null,
         }
     }
-    setBoardPageOption = (option) =>{
-        this.setState({
-            boardPageOption:option,
+    setBoardKey = (key) =>{
+        const setKey = () =>{
+            this.setState({boardKey:key});
+        }
+        return new Promise(function(resolve){
+            resolve(setKey());
         })
     }
     setBoard = (board) =>{
@@ -22,7 +25,7 @@ export class BoardProviderImpl extends Component{
     render = () =>
         <BoardContext.Provider value={{...this.state,
         setBoard:this.setBoard,
-        setBoardPageOption:this.setBoardPageOption}}>
+        setBoardKey:this.setBoardKey}}>
             {this.props.children}
         </BoardContext.Provider>
 }
