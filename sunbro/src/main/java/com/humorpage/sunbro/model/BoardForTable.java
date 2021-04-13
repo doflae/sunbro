@@ -17,6 +17,9 @@ public class BoardForTable {
     @Column(name="id")
     private Long id;
 
+    @Column(name="author_num")
+    private Long authorNum;
+
     @NotBlank
     @Column(name="title")
     private String title;

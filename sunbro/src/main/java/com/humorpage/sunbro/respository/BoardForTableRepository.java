@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface BoardForTableRepository extends JpaRepository<BoardForTable, Long> {
-    List<BoardForTable> findByAuthorOrderByIdDesc(UserSimple author, Pageable pageable);
+    List<BoardForTable> findByAuthorNumOrderByIdDesc(Long authorId, Pageable pageable);
     List<BoardForTable> findByIdInOrderByIdDesc(List<Long> ids,Pageable pageable);
 
 }

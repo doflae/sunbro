@@ -59,7 +59,7 @@ public class UserController {
                                        Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            List<BoardForTable> boardList = boardForTableRepository.findByAuthorOrderByIdDesc(userSimple, PageRequest.of(num,size));
+            List<BoardForTable> boardList = boardForTableRepository.findByAuthorNumOrderByIdDesc(userSimple.getUserNum(), PageRequest.of(num,size));
             return responseService.getListResult(boardList);
         }catch (NullPointerException e){
             return responseService.getFailedListResult();
