@@ -10,9 +10,6 @@ import org.springframework.stereotype.Service;
 public class ChangeProfileService {
 
     @Autowired
-    TemporaryFileStore temporaryFileStore;
-
-    @Autowired
     UserSimpleRepository userSimpleRepository;
 
     @Autowired
