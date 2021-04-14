@@ -132,8 +132,7 @@ public class CommentController {
 
             Comment comment = commentRepository.findById(comment_id).orElseThrow(()-> new CommentNotFoundException("CommentID"));
             if(comment.getAuthor().getUserNum().equals(userSimple.getUserNum())){
-                fileDeleteService.deleteFiles(comment.getMedia(), MediaType.COMMENT);
-                commentRepository.delete(comment);
+                commentService.delete(comment);
             }else{
                 return responseService.getFailResult();
             }
