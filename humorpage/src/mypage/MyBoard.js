@@ -28,7 +28,7 @@ function MyBoard({
             <TitleStyled>{board.title}</TitleStyled> 
             <CommentNumStyled>{convertUnitOfNum(board.total_comments_num)}</CommentNumStyled>
         </TitleZoneStyled>
-        <td align="center">{convertUnitOfNum(board.likes)}</td>
+        <td align="center">{convertUnitOfNum(board.total_likes_num)}</td>
     </tr>
     </React.Fragment>
 }

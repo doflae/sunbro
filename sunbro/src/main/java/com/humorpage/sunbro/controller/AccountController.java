@@ -194,9 +194,11 @@ public class AccountController {
                 res.addCookie(refreshToken);
                 return responseService.getSuccessResult();
             }else{
+
                 return responseService.getFailResult();
             }
         }catch (Exception e){
+            e.printStackTrace();
             return responseService.getFailResult();
         }
     }

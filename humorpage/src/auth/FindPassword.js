@@ -10,6 +10,7 @@ export const FindPassword = authWrapper(({...props}) =>{
     const [validationEmail, setValidationEmail] = useState(null);
     const findPassword = ()=>(e) =>{
         console.log(emailRef.current.value);
+        //todo Backend에 기능 추가 후 연결
         setValidationEmail("임시 비밀번호를 전송하였습니다. 이메일을 확인해주세요.");
     }
     const goToLogin = () => (e) =>{

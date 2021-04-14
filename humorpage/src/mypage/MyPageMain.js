@@ -29,6 +29,7 @@ const MyPageMain = ({...props}) =>{
             }
             props.request("get", resturl).then(res=>{
                 if(res.data.success===true){
+                    console.log(res)
                     const resData = res.data.list
                     if(resData.length>0){
                         boardList[option][pagenum]=[...resData]
