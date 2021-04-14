@@ -7,14 +7,11 @@ import {uploadWrapper} from "./UploadWrapper";
 import Axios from "axios"
 import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage, sanitizeUrl, dataUrltoBlob} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
-import Film from "../static/svg/film.svg";
-import Play from "../static/svg/play.svg";
-import Youtube from "../static/svg/youtube.svg";
 import * as Styled from "./Styled";
 
 const icons = Quill.import('ui/icons')
-icons['mycustom'] = `<img src=${Film} alt="" className="ql-mycustom"/>`
-icons['video'] = `<img src=${Youtube} alt="" className="ql-mycustom"/>`
+icons['mycustom'] = `<img src="/film.svg" alt="" className="ql-mycustom"/>`
+icons['video'] = `<img src="/youtube.svg" alt="" className="ql-mycustom"/>`
 
 
 
@@ -101,7 +98,7 @@ class CustomVideo extends Video{
         const url = document.createElement("div")
         url.setAttribute("class","video_preview_tempData_url")
         url.innerText = value.name;
-        embed.src = Play
+        embed.src = "/play.svg"
         embed.setAttribute("style","width:30px;height:30px;")
         temp.appendChild(embed)
         temp.appendChild(url);

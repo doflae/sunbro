@@ -18,7 +18,6 @@ display: none;
 .ql-editor .ql-prevideo{
     position: relative;
     height: 500px;
-    width: 500px;
     display: flex;
     justify-content: center;
     background: black;
