@@ -1,5 +1,5 @@
 import React, {useRef,useState} from "react"
-import Camera from "../static/svg/camera.svg"
+import Merge from "../static/img/merge.png"
 import Dropzone from "react-dropzone"
 import {getToday, getRandomGenerator,isEmpty, ResizeImage, ResizeImageDefault} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
@@ -114,19 +114,23 @@ function CommentUploader({...props}){
         if(dropzoneRef) dropzoneRef.current.open();
     }
     if(props.onOff===false) return null;
-    return <div className="comment-input">
-        {props.cname?<span className="recomment_target_preview">@{props.cname}</span>:null}
-        <textarea ref={contentRef} className="comment_textarea"></textarea>
-        <div className="comment_preimgzone">
+    return <CommentUploaderStyled>
+        {props.cname?<RecommentTargetStyled>@{props.cname}</RecommentTargetStyled>:null}
+        <CommentTextAreaStyled ref={contentRef}></CommentTextAreaStyled>
+        <CommentPreImgZoneStyled>
             <ImageResized src={commentImg}
                 mediaRef={mediaRef}
                 setImageOnOff={setImageOnOff}/>
             <ImageDeleteBtn onOff={imageOnOff} imageDelete={imageDelete}></ImageDeleteBtn>
-        </div>
-        <div className="comment_bottom">
-            <CameraStyled width="30" height="30" onClick={imageHandler()}/>
-        <button className="comment_btn" onClick={submitComment(props.board_id, props.comment_id, props.cname)} type="submit">등록</button>
-        </div>
+        </CommentPreImgZoneStyled>
+        <CommentBottomStyled>
+            <CameraStyled onClick={imageHandler()}/>
+        <CommentBtnStyled 
+        onClick={submitComment(props.board_id, props.comment_id, props.cname)}
+        type="submit">
+            등록
+        </CommentBtnStyled>
+        </CommentBottomStyled>
         <Dropzone
             ref = {dropzoneRef}
             accept = "image/*"
@@ -142,7 +146,7 @@ function CommentUploader({...props}){
             </section>
             )}
         </Dropzone>
-    </div>
+    </CommentUploaderStyled>
 }
 
 const ImageResized = ({src,mediaRef, setImageOnOff}) =>{
@@ -156,19 +160,68 @@ const ImageResized = ({src,mediaRef, setImageOnOff}) =>{
     return null;
 }
 
-
-const CameraStyled = styled(Camera)`
-    cursor: pointer;
-    float: left;
-    position: relative;
-    z-index: 1;
-    padding: 10px;
-`
-
 const ImageDeleteBtn = ({onOff, imageDelete}) => {
     if(onOff) return <ImageDeleteBtnStyled onClick={imageDelete()}></ImageDeleteBtnStyled>
     else return null;
 }
+
+const RecommentTargetStyled = styled.span`
+    margin: 5px;
+    margin-bottom: 10px;
+    font-size: 1em;
+    font-weight: 700;
+`
+
+const CommentUploaderStyled = styled.div`
+    position: relative;
+    width: 90%;
+    margin: auto;
+    background-color: #ffffff;
+    margin-top: 20px;
+    padding:10px;
+`
+
+const CommentTextAreaStyled = styled.textarea`
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px 0px 5px 20px;
+    height: 100px;
+    border-style: none;
+    resize: none;
+`
+
+const CommentPreImgZoneStyled = styled.div`
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+`
+const CommentBottomStyled = styled.div`
+    height:50px;
+    display:flex;
+`
+
+const CommentBtnStyled = styled.button`
+    cursor: pointer;
+    float: right;
+    right: 10px;
+    position: relative;
+    z-index: 1;
+    color: antiquewhite;
+    background: #f05454;
+    border: solid #d8d8d8 1px;
+    padding: 10px;
+`
+
+
+const CameraStyled = styled.div`
+    width:32px;
+    height:32px;
+    background-image:url(${Merge});
+	background-repeat: no-repeat;
+	background-position: -32px 0px;
+    cursor: pointer;
+    margin:10px 5px;
+`
 
 const ImageDeleteBtnStyled = styled.button`
     position:absolute;

@@ -1,9 +1,10 @@
 import React, { useState,createRef} from "react"
 import { useHistory } from "react-router-dom"
-import userDefaultImg from "../static/img/user_128x.png";
+import userDefaultImg from "../static/img/userDefault.png";
 import Dropzone from "react-dropzone"
 import {authWrapper} from "./AuthWrapper";
-import Pencil from '../static/svg/pencil.svg'
+//todo png icon으로 통합
+import Merge from "../static/img/merge.png"
 import {AgeSelector, getRandomGenerator, ResizeImage} from "../utils/Utils"
 import Axios from "axios";
 import { ValidationSuccess } from "../forms/ValidationSuccess";
@@ -203,7 +204,7 @@ function Profile({userDetail,...props}){
                     <ImageDeleteBtnStyled onClick={imageDelete()}></ImageDeleteBtnStyled>
                     <div onClick={imageHandler()}>
                         <MyProfileResizedImage src={userImg} defaultImg = {userDefaultImg}/>
-                        <PencilStyled width="20" height="20"/>
+                        <PencilStyled/>
                     </div>
                 </MyProfileImageZoneStyled>
             </MyProfileStyled>
@@ -303,10 +304,14 @@ const SelectZoneStyled = styled.div`
     margin:5px 0px 5px 0px;
 `
 
-const PencilStyled = styled(Pencil)`
+const PencilStyled = styled.div`
+    width:16px;
+    height:16px;
+	background-image:url(${Merge});
+	background-repeat: no-repeat;
+	background-position: -128px 0px;
     position: absolute;
     right: 5px;
-    overflow:overlay!important;
     bottom: 5px;
 `
 

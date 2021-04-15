@@ -147,3 +147,6 @@ buildNumber.properties
 
 ### jwt token key ###
 *.properties
+
+### testCode not yet ###
+TestCode/

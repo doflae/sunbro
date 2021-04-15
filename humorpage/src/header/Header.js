@@ -3,9 +3,8 @@ import { withRouter,useHistory} from "react-router-dom";
 import { authWrapper } from '../auth/AuthWrapper';
 import { uploadWrapper} from "../upload/UploadWrapper";
 import logo from "../static/img/logo.jpg"
-import Search from "../static/svg/search.svg"
+import Merge from "../static/img/merge.png";
 import styled from "styled-components";
-import Pencil from "../static/img/pencil_32px.png";
 
 function Header({...props}){
   let history = useHistory();
@@ -32,9 +31,9 @@ function Header({...props}){
   </HeadLogoStyled>
   <SearchZoneStyled>
     <SearchInputStyled type="text" className="search-input"></SearchInputStyled>
-    <SearchStyled width="30px" height="30"/>
+    <SearchStyled/>
   </SearchZoneStyled>
-  <PencilStyled src={Pencil} alt="" onClick={goUpload()}/>
+  <PencilStyled onClick={goUpload()}/>
   <LogBtn user = {user} Logout = {Logout} goLogin = {goLogin}/>
   </HeadStyled>
 }
@@ -47,9 +46,12 @@ const LogBtn = ({user, Logout, goLogin}) =>{
   }
 }
 
-const PencilStyled = styled.img`
-  width: 30px;
-  height: 30px;
+const PencilStyled = styled.div`
+  width:32px;
+  height:32px;
+  background-image:url(${Merge});
+  background-repeat: no-repeat;
+  background-position-y: -32px;
   align-self: center;
   cursor:pointer;
   filter: invert(37%) sepia(90%) saturate(577%) hue-rotate(
@@ -99,8 +101,13 @@ const SignBtnStyled = styled.div`
   margin-bottom: auto;
 `
 
-const SearchStyled = styled(Search)`
+const SearchStyled = styled.div`
   cursor: pointer;
+  width:35px;
+  height:32px;
+  background-image:url(${Merge});
+  background-repeat: no-repeat;
+  background-position-x: -96px;
   margin-bottom: auto;
   margin-top: auto;
   margin-right: 10px;

@@ -82,7 +82,6 @@ class CustomVideo extends Video{
     const video = document.createElement('video')
     video.setAttribute("id","ql")
     const temp = document.createElement('div')
-    const embed = document.createElement('embed')
     video.setAttribute('controls',true);
     video.setAttribute('type',"video/mp4");
     video.setAttribute('controlslist','nodownload');
@@ -96,11 +95,11 @@ class CustomVideo extends Video{
         video.removeAttribute("controls")
         node.style.backgroundColor = "#e8eae6"
         const url = document.createElement("div")
+        const play = document.createElement("div")
+        play.className = "playBtn";
         url.setAttribute("class","video_preview_tempData_url")
         url.innerText = value.name;
-        embed.src = "/play.svg"
-        embed.setAttribute("style","width:30px;height:30px;")
-        temp.appendChild(embed)
+        temp.appendChild(play)
         temp.appendChild(url);
         node.appendChild(temp)
       }

@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import userDefaultImg from "../static/img/user_32x.png";
+import userDefaultImg from "../static/img/userDefault.png";
 import {Link} from 'react-router-dom'
 import {getTime} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"

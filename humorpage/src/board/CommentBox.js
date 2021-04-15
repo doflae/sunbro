@@ -3,6 +3,7 @@ import Comment from './Comment'
 import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import CommentUploader from "./CommentUploader"
+import styled from "styled-components"
 
 function CommentBox({
     ...props
@@ -74,18 +75,26 @@ function CommentBox({
     }
 
     if(onOff===false) return null;
-    return <div className = "comment-box">
+    return <CommentBoxStyled>
         {CommentListRender(commentList,props.board_id)}
         <SeeMoreBtn on={onOffSeeMore} seeMore={seeMore}/>
         <CommentUploader board_id={props.board_id}
                     comment_id={0}
                     appendComment={appendComment}/>
-    </div>
+    </CommentBoxStyled>
 }
 
 const SeeMoreBtn = ({on, seeMore}) =>{
     if(on===true) return <div><button onClick={seeMore()}>더보기</button></div>
     else return null
 }
+
+const CommentBoxStyled = styled.div`
+    background: #e8e8e8;
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+`
 
 export default authWrapper(withRouter(CommentBox));

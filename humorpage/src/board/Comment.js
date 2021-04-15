@@ -1,8 +1,6 @@
 import React, {useState, useRef} from "react";
-import userDefaultImg from "../static/img/user_32x.png";
-import {faHeart as rHeart} from "@fortawesome/free-regular-svg-icons"
-import {faHeart as sHeart} from "@fortawesome/free-solid-svg-icons"
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
+import userDefaultImg from "../static/img/userDefault.png";
+import Merge from "../static/img/merge.png";
 import {authWrapper} from "../auth/AuthWrapper"
 import {withRouter, Link, useHistory} from "react-router-dom"
 import {sanitizeHarder, 
@@ -105,33 +103,33 @@ const Comment = ({...props}) =>{
 	if(c==null) return null;
 	if(isDeleted) return null;
 	return <CommentStyled>
-			<CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
+			<CommentUserImageStyled src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
 				
-				<div className="comment-main">
-					<div className="comment-subscript">
-						<div className="comment-left">
-							<div className="comment-author">
+				<CommentMainStyled>
+					<CommentSubsciprtStyled>
+						<CommentLeftStyled>
+							<CommentAuthorStyled>
 								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
-							</div>
-							<div className="comment-others">
+								</CommentAuthorStyled>
+							<div>
 								{getTime(c.created)}
 							</div>
-							<DeleteCommentBtn
-								author_num={c.author.userNum}
-								user={props.user}
-								deleteHandler={deleteHandler}
-							/>
-						</div>
-						<div className="comment-right">
+						</CommentLeftStyled>
+						<CommentRightStlyed>
 							<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
 							<RecommentBtn recommentClick={recommentClickHandler}
 								authorName={c.author.name}
 								id={c.id}
 								onOff={recommentOnId===c.id}/>
-						</div>
-					</div>
+							<DeleteCommentBtn
+								author_num={c.author.userNum}
+								user={props.user}
+								deleteHandler={deleteHandler}
+							/>
+						</CommentRightStlyed>
+					</CommentSubsciprtStyled>
 					<CommentContext 
 						content={c.content} 
 						media={c.media}
@@ -151,7 +149,7 @@ const Comment = ({...props}) =>{
 						board_id={props.board_id}
 						comment_id={c.id}
 						appendComment={appendComment}/>
-			</div>
+			</CommentMainStyled>
 	</CommentStyled>
 }
 
@@ -170,6 +168,7 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 	let history = useHistory();
 
 	const likeHandler = () => (e) => {
+		const target = likeBtnRef.current
 		if(likeCnt.like){
 			Axios.get(`/comment/likeoff?id=${id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
@@ -180,6 +179,7 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 				like:!likeCnt.like,
 				cnt:likeCnt.cnt-1
 			})
+			target.style.removeAttribute('filter');
 		}else{
 			Axios.get(`/comment/likeon?id=${id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
@@ -190,17 +190,16 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 				like:!likeCnt.like,
 				cnt:likeCnt.cnt+1
 			})
+			//todo:color filter
 		}
 	}
 
-	const renderHeartIcon = () =>{
-		return <FontAwesomeIcon icon={likeCnt.like?sHeart:rHeart} color="red" size="lg"/>
-	}
-
-	return <button className="comment-like" ref = {likeBtnRef} onClick={likeHandler()}>
-		좋아요 <span>{convertUnitOfNum(likeCnt.cnt)} </span>
-		{renderHeartIcon()}
-	</button>
+	return <React.Fragment>
+		<CommentLikeBtnStyled  onClick={likeHandler()}>
+			좋아요 {convertUnitOfNum(likeCnt.cnt)}
+		</CommentLikeBtnStyled>
+		<LikeBtn ref = {likeBtnRef} onClick={likeHandler()}/>
+	</React.Fragment>
 }
 
 export const CommentContext = ({content,media,blob}) =>{
@@ -266,11 +265,52 @@ export const CommentUserImageStyled = styled.img`
 `
 
 export const CommentDeleteBtnStyled = styled.button`
-	position: absolute;
 	background-color: #e8e8e8;
 	cursor: pointer;
 	border: none;
-	right: 25px;
+	margin-left:5px;
+`
+
+const CommentMainStyled = styled.div`
+	width: 100%;
+`
+
+const CommentSubsciprtStyled = styled.div`
+	font-size: 0.8em;
+	padding-top: 2px;
+	display:flex;
+`
+
+const CommentLeftStyled = styled.div`
+	display:flex;
+	position:relative;
+`
+
+const CommentAuthorStyled = styled.div`
+	font-weight: 500;
+	margin-right: 10px;
+`
+
+const CommentRightStlyed = styled.div`
+	right: 0;
+	float: right;
+	margin-left: auto;
+	display:flex;
+`
+
+const CommentLikeBtnStyled = styled.button`
+	background-color: #e8e8e8;
+	display:flex;
+	position:relative;
+	border: none;
+`
+//todo:colorfilterneed
+const LikeBtn = styled.div`
+	width:24px;
+	height:24px;
+	background-image:url(${Merge});
+	background-repeat: no-repeat;
+	background-position: -32px -32px;
 `
 
 const CommentStyled = styled.div`
@@ -283,9 +323,6 @@ const CommentStyled = styled.div`
 `
 
 const RecommentBtnStyled = styled.button`
-
-	margin-left: auto;
-	margin-right: 20px;
 	background-color: #e8e8e8;
 	cursor: pointer;
 	border: none;
