@@ -3,8 +3,8 @@ import { withRouter,useHistory} from "react-router-dom";
 import { authWrapper } from '../auth/AuthWrapper';
 import { uploadWrapper} from "../upload/UploadWrapper";
 import logo from "../static/img/logo.jpg"
-import Merge from "../static/img/merge.png";
 import styled from "styled-components";
+import {IconStyled} from "../MainStyled";
 
 function Header({...props}){
   let history = useHistory();
@@ -31,9 +31,11 @@ function Header({...props}){
   </HeadLogoStyled>
   <SearchZoneStyled>
     <SearchInputStyled type="text" className="search-input"></SearchInputStyled>
-    <SearchStyled/>
+    <SearchStyled theme="search_lg"/>
   </SearchZoneStyled>
-  <PencilStyled onClick={goUpload()}/>
+  <PencilStyled 
+    theme="pencil_lg"
+    onClick={goUpload()}/>
   <LogBtn user = {user} Logout = {Logout} goLogin = {goLogin}/>
   </HeadStyled>
 }
@@ -46,12 +48,7 @@ const LogBtn = ({user, Logout, goLogin}) =>{
   }
 }
 
-const PencilStyled = styled.div`
-  width:32px;
-  height:32px;
-  background-image:url(${Merge});
-  background-repeat: no-repeat;
-  background-position-y: -32px;
+const PencilStyled = styled(IconStyled)`
   align-self: center;
   cursor:pointer;
   filter: invert(37%) sepia(90%) saturate(577%) hue-rotate(
@@ -101,13 +98,7 @@ const SignBtnStyled = styled.div`
   margin-bottom: auto;
 `
 
-const SearchStyled = styled.div`
-  cursor: pointer;
-  width:35px;
-  height:32px;
-  background-image:url(${Merge});
-  background-repeat: no-repeat;
-  background-position-x: -96px;
+const SearchStyled = styled(IconStyled)`
   margin-bottom: auto;
   margin-top: auto;
   margin-right: 10px;
@@ -135,7 +126,7 @@ const HeadLogoStyled = styled.div`
 `
 
 const HeadStyled = styled.header`
-  z-index:1;
+  z-index:2;
   width: 100%;
   max-height: 50px;
   background-color : #fff;

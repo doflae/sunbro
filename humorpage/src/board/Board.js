@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect} from "react"
 import userDefaultImg from "../static/img/userDefault.png";
-import CommentBox from "./CommentBox";
+import CommentBox from "../comment/CommentBox";
 import { Link } from "react-router-dom";
 import {sanitizeNonNull, getTime, convertUnitOfNum, copyToClipboard} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
@@ -8,6 +8,7 @@ import {boardWrapper} from "./BoardWrapper"
 import {uploadWrapper} from "../upload/UploadWrapper"
 import Axios from "axios"
 import styled from "styled-components"
+import {IconStyled} from "../MainStyled"
 
 function Board({
     board,setRef,...props
@@ -107,21 +108,27 @@ function Board({
                 setContent={setContent}
                 content={content}
                 />
-            <BoardBottomButtons>
-                <BoardBtnStyled
-                theme={{borderBottom:"0px 10px"}}
-                ref={commentBtnRef}>
-                    댓글 {convertUnitOfNum(board.total_comments_num)}
-                </BoardBtnStyled>
+            <BoardBottomButtonStyled>
                 <LikeBtn id={id} like={board.like} likes={board.likes}/>
-                <BoardBtnStyled
-                theme={{borderBottom:"10px 0px"}}
-                onClick={ShareBoard()}>공유하기</BoardBtnStyled>    
-            </BoardBottomButtons>
+                <CommentBtnStyled
+                    ref={commentBtnRef}>
+                    <CommentIconStlyed
+                        theme="comment_lg"/>
+                    <NumberStyled>
+                        {convertUnitOfNum(board.total_comments_num)}
+                    </NumberStyled>
+                </CommentBtnStyled>
+                <ShareBtnStyled>
+                    <IconStyled
+                    theme="share_lg"
+                    onClick={ShareBoard()}/>
+                </ShareBtnStyled>   
+            </BoardBottomButtonStyled>
         </div>
         <CommentBox board_id={id} comment_cnt = {comments_num} commentBtnRef = {commentBtnRef}/>
     </BoardStyled>
 }
+
 
 const GetDetailBtn = ({...props}) => {
     let detailBtnRef = useRef();
@@ -189,9 +196,23 @@ const LikeBtn = authWrapper(({id,like,likes,...props}) =>{
         }
     }
     if(onOffLike.onOff===true){
-        return <LikeOnBtnStyled onClick={likeHandler()}>좋아요 <span>{convertUnitOfNum(onOffLike.likeCnt)}</span></LikeOnBtnStyled>
+        return <LikeStyled
+            onClick={likeHandler()}>
+                <LikeBtnStyled 
+                theme="like_lg"
+                color="invert(34%) sepia(88%) saturate(862%) hue-rotate(329deg) brightness(98%) contrast(98%)"/>
+            <NumberStyled>
+                {convertUnitOfNum(onOffLike.likeCnt)}
+            </NumberStyled>
+        </LikeStyled>
     }else{
-        return <LikeOffBtnStyled onClick={likeHandler()}>좋아요 <span>{convertUnitOfNum(onOffLike.likeCnt)}</span></LikeOffBtnStyled>
+        return <LikeStyled 
+            onClick={likeHandler()}>
+            <LikeBtnStyled theme="like_lg"/>
+            <NumberStyled>
+                {convertUnitOfNum(onOffLike.likeCnt)}
+            </NumberStyled>
+        </LikeStyled>
     }
 })
 
@@ -288,9 +309,8 @@ const DotIconStyled = styled.div`
     }
 `
 
-const BoardBottomButtons = styled.div`
+const BoardBottomButtonStyled = styled.div`
     display:flex;
-    justify-content:space-between;
 `
 
 const BoardThumbnailStyled = styled.div`
@@ -397,39 +417,36 @@ const GetDetailBtnStyled = styled.div`
     }
 `;
 
-const BoardBtnStyled = styled.button`
-    display: flex;
-    justify-content: space-evenly;
-    width: 33%;
-    height: 100%;
-    border: 0px;
-    background-color:#f5f4f4;
-    &:hover{
-        background-color: #aaaaaa;
-    }
-    border-radius: 0px 0px ${props=>props.theme.borderBottom};
-`;
-
-
-const LikeOnBtnStyled = styled.button`
-    display: flex;
-    justify-content: space-evenly;
-    width: 33%;
-    height: 100%;
-    border: 0px;
-    background-color: #f875aa;
+const CommentIconStlyed = styled(IconStyled)`
+    filter:invert(53%) sepia(74%) saturate(1309%) hue-rotate(177deg) brightness(89%) contrast(91%);
 `
 
-const LikeOffBtnStyled = styled.button`
-    display: flex;
-    justify-content: space-evenly;
-    width: 33%;
-    height: 100%;
-    border: 0px;
-    background-color:#f5f4f4;
+const ShareBtnStyled = styled.div`
+    margin:5px;
+    opacity:0.5;
     &:hover{
-        background-color: #aaaaaa;
+        opacity:1;
     }
+`
+const NumberStyled = styled.div`
+    margin-left:5px;
+`
+const LikeStyled = styled.div`
+    margin:5px 5px 5px 18px;
+    display:flex;
+    font-size:1.2em;
+    line-height:32px;
+`
+
+const CommentBtnStyled = styled.div`
+    margin:5px;
+    display:flex;
+    font-size:1.2em;
+    line-height:32px;
+`
+
+const LikeBtnStyled = styled(IconStyled)`
+    filter:${props=>props.color};
 `
 
 

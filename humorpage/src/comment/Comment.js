@@ -1,6 +1,6 @@
 import React, {useState, useRef} from "react";
 import userDefaultImg from "../static/img/userDefault.png";
-import Merge from "../static/img/merge.png";
+import {IconStyled} from "../MainStyled"
 import {authWrapper} from "../auth/AuthWrapper"
 import {withRouter, Link, useHistory} from "react-router-dom"
 import {sanitizeHarder, 
@@ -9,6 +9,7 @@ import {sanitizeHarder,
 		isEmpty} from "../utils/Utils"
 import Axios from "axios";
 import RecommentConnector from "./RecommentConnector"
+import * as Styled from "./CommentStyled"
 import styled from "styled-components"
 import CommentUploader from "./CommentUploader"
 
@@ -102,34 +103,19 @@ const Comment = ({...props}) =>{
 
 	if(c==null) return null;
 	if(isDeleted) return null;
-	return <CommentStyled>
-			<CommentUserImageStyled src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
+	return <Styled.CommentStyled>
+			<Styled.CommentUserImageStyled src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
 				
-				<CommentMainStyled>
-					<CommentSubsciprtStyled>
-						<CommentLeftStyled>
-							<CommentAuthorStyled>
+				<Styled.CommentMainStyled>
+					<Styled.CommentSubsciprtStyled>
+						<Styled.CommentLeftStyled>
+							<Styled.CommentAuthorStyled>
 								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
-								</CommentAuthorStyled>
-							<div>
-								{getTime(c.created)}
-							</div>
-						</CommentLeftStyled>
-						<CommentRightStlyed>
-							<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
-							<RecommentBtn recommentClick={recommentClickHandler}
-								authorName={c.author.name}
-								id={c.id}
-								onOff={recommentOnId===c.id}/>
-							<DeleteCommentBtn
-								author_num={c.author.userNum}
-								user={props.user}
-								deleteHandler={deleteHandler}
-							/>
-						</CommentRightStlyed>
-					</CommentSubsciprtStyled>
+								</Styled.CommentAuthorStyled>
+						</Styled.CommentLeftStyled>
+					</Styled.CommentSubsciprtStyled>
 					<CommentContext 
 						content={c.content} 
 						media={c.media}
@@ -149,8 +135,20 @@ const Comment = ({...props}) =>{
 						board_id={props.board_id}
 						comment_id={c.id}
 						appendComment={appendComment}/>
-			</CommentMainStyled>
-	</CommentStyled>
+			</Styled.CommentMainStyled>
+			<Styled.CommentRightStlyed>
+				<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
+				<RecommentBtn recommentClick={recommentClickHandler}
+					authorName={c.author.name}
+					id={c.id}
+					onOff={recommentOnId===c.id}/>
+				<DeleteCommentBtn
+					author_num={c.author.userNum}
+					user={props.user}
+					deleteHandler={deleteHandler}
+				/>
+			</Styled.CommentRightStlyed>
+	</Styled.CommentStyled>
 }
 
 const ConnectorBtn = ({cnt,onClick})=>{
@@ -164,6 +162,9 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 		like:like,
 		cnt:likes
 	})
+	const [filter,setFilter] = useState(like?
+		"invert(53%) sepia(74%) saturate(1309%) hue-rotate(177deg) brightness(89%) contrast(91%)":
+		"")
 	const likeBtnRef = useRef();
 	let history = useHistory();
 
@@ -179,7 +180,7 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 				like:!likeCnt.like,
 				cnt:likeCnt.cnt-1
 			})
-			target.style.removeAttribute('filter');
+			setFilter("")
 		}else{
 			Axios.get(`/comment/likeon?id=${id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
@@ -190,16 +191,19 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 				like:!likeCnt.like,
 				cnt:likeCnt.cnt+1
 			})
-			//todo:color filter
+			setFilter("invert(34%) sepia(88%) saturate(862%) hue-rotate(329deg) brightness(98%) contrast(98%)")
 		}
 	}
 
-	return <React.Fragment>
-		<CommentLikeBtnStyled  onClick={likeHandler()}>
-			좋아요 {convertUnitOfNum(likeCnt.cnt)}
-		</CommentLikeBtnStyled>
-		<LikeBtn ref = {likeBtnRef} onClick={likeHandler()}/>
-	</React.Fragment>
+	return <Styled.LikeStyled>
+		<Styled.LikeBtnStyled
+		color={filter}
+		theme="like_sm"
+		ref = {likeBtnRef} onClick={likeHandler()}/>
+		<Styled.NumberStyled>
+			{convertUnitOfNum(likeCnt.cnt)}
+		</Styled.NumberStyled>
+	</Styled.LikeStyled>
 }
 
 export const CommentContext = ({content,media,blob}) =>{
@@ -233,109 +237,28 @@ export const CommentContext = ({content,media,blob}) =>{
 		}
 	}
 	const renderImage = () =>{
-		if(media!=null || blob!=null) return <CommentImgStyled onClick = {ImageClickHandler()}
+		if(media!=null || blob!=null) return <Styled.CommentImgStyled onClick = {ImageClickHandler()}
 		src={src_small} alt="" 
 		width="100px" height="100px"
 		onLoad={e=>{e.target.style.removeProperty("display");}}
 		onError = {e=>{e.preventDefault(); e.target.onerror=null; e.target.style.display="none";}}/>
 		else return null
 	}
-	return <CommentContextStyled>
+	return <Styled.CommentContextStyled>
 		<p dangerouslySetInnerHTML={{__html:contentChecked}}></p>
 		{renderImage()}		
-	</CommentContextStyled>
+	</Styled.CommentContextStyled>
 }
 
 export const DeleteCommentBtn = ({author_num, deleteHandler, user}) =>{
 	if(user==null || author_num!==user.userNum) return null;
-	return <CommentDeleteBtnStyled onClick={deleteHandler()}>삭제</CommentDeleteBtnStyled>
+	return <Styled.CommentDeleteBtnStyled onClick={deleteHandler()}>삭제</Styled.CommentDeleteBtnStyled>
 }
 
 export const RecommentBtn = ({recommentClick, authorName, onOff, id}) =>{
 
-	return <RecommentBtnStyled onClick={e=>{e.preventDefault();
-		recommentClick(id,authorName)}}>{onOff?"답글 접기":"답글 달기"}</RecommentBtnStyled>
+	return <Styled.RecommentBtnStyled onClick={e=>{e.preventDefault();
+		recommentClick(id,authorName)}}>{onOff?"답글 접기":"답글 달기"}
+		</Styled.RecommentBtnStyled>
 }
-
-export const CommentUserImageStyled = styled.img`
-	max-width: 32px;
-	max-height: 32px;
-	border-radius: 16px;
-	margin: 0px 10px 10px 5px;
-`
-
-export const CommentDeleteBtnStyled = styled.button`
-	background-color: #e8e8e8;
-	cursor: pointer;
-	border: none;
-	margin-left:5px;
-`
-
-const CommentMainStyled = styled.div`
-	width: 100%;
-`
-
-const CommentSubsciprtStyled = styled.div`
-	font-size: 0.8em;
-	padding-top: 2px;
-	display:flex;
-`
-
-const CommentLeftStyled = styled.div`
-	display:flex;
-	position:relative;
-`
-
-const CommentAuthorStyled = styled.div`
-	font-weight: 500;
-	margin-right: 10px;
-`
-
-const CommentRightStlyed = styled.div`
-	right: 0;
-	float: right;
-	margin-left: auto;
-	display:flex;
-`
-
-const CommentLikeBtnStyled = styled.button`
-	background-color: #e8e8e8;
-	display:flex;
-	position:relative;
-	border: none;
-`
-//todo:colorfilterneed
-const LikeBtn = styled.div`
-	width:24px;
-	height:24px;
-	background-image:url(${Merge});
-	background-repeat: no-repeat;
-	background-position: -32px -32px;
-`
-
-const CommentStyled = styled.div`
-	margin-left: 30px;
-	margin-right: 30px;
-	padding-top: 10px;
-	padding-bottom: 10px;
-	border-bottom: solid gainsboro 1px;
-	display: flex;
-`
-
-const RecommentBtnStyled = styled.button`
-	background-color: #e8e8e8;
-	cursor: pointer;
-	border: none;
-`
-
-const CommentImgStyled = styled.img`
-	margin-top: 5px;
-`
-const CommentContextStyled = styled.div`
-	padding-top:5px;
-	& *{
-		white-space:pre-wrap;
-	}
-`
-
 export default withRouter(authWrapper(Comment));

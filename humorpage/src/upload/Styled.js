@@ -1,6 +1,23 @@
 import styled from "styled-components"
+import Icons from "../static/img/Icons.png"
 
-export const BlurBackGroundStlyed = styled.div`
+export const MyCustomIconStyled = styled.div`
+  background-image:url(${Icons});
+  width:24px;
+  height:24px;
+  background-repeat: no-repeat;
+  background-position: -72px -32px;
+`
+
+export const QlVideoIconStyled = styled.div`
+  background-image:url(${Icons});
+  width:24px;
+  height:24px;
+  background-repeat: no-repeat;
+  background-position: -96px -32px;
+`
+
+export const BlurBackGroundStyled = styled.div`
   position: fixed;
   z-index: 1;
   background-color: rgb(0,0,0,65%);
@@ -17,10 +34,10 @@ export const TitleZoneStyled = styled.div`
 
 export const DeleteBtnStyled = styled.button`
   position: absolute;
-  top: 8px;
-  right: 0px;
-  width: 16px;
-  height: 16px;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
   border-radius: 18px;
   border: 0px;
   opacity: 0.4;
@@ -31,8 +48,8 @@ export const DeleteBtnStyled = styled.button`
   }
   &::before, &::after{
     position: absolute;
-    left: -6px;
-    bottom: -9px;
+    left: 13px;
+    bottom: 1px;
     content: ' ';
     height: 28px;
     width: 3px;

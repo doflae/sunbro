@@ -2,7 +2,7 @@ import React, {useState,useRef} from 'react';
 import userDefaultImg from "../static/img/userDefault.png";
 import {authWrapper} from "../auth/AuthWrapper"
 import {withRouter} from 'react-router-dom'
-import Merge from "../static/img/merge.png"
+import {IconStyled} from "../MainStyled"
 import Dropzone from "react-dropzone"
 import Axios from "axios"
 import styled from "styled-components"
@@ -117,7 +117,8 @@ function MyHeader({
                 <ProfileImgDelete onClick={imageDelete()}></ProfileImgDelete>
                 <ImagePartStyled ref={profileImgRef} onClick={imageHandler()}>
                     <UserImage src={userImg} userDefaultImg={userDefaultImg}/>
-                    <PencilStyled/>
+                    <PencilStyled
+                        theme="pencil_sm"/>
                 </ImagePartStyled>
             </MyProfileImgZone>
             <SubmitImageBtn isChanged = {isChanged} onClick={imageSubmit}/>
@@ -193,12 +194,7 @@ const ImagePartStyled = styled.div`
     padding: 5px;
 `
 
-const PencilStyled = styled.div`
-    width:16px;
-    height:16px;
-    background-image:url(${Merge});
-    background-repeat: no-repeat;
-    background-position: -128px 0px;
+const PencilStyled = styled(IconStyled)`
     position: absolute;
     right: 0px;
     bottom: 0px;
@@ -238,8 +234,8 @@ const SubmitImageBtnStyled = styled.button`
 
 const ProfileImgDelete = styled.button`
     position: absolute;
-    top: -3px;
-    right: -3px;
+    top: -8px;
+    right: -8px;
     width: 16px;
     height: 16px;
     border-radius: 18px;
@@ -252,8 +248,8 @@ const ProfileImgDelete = styled.button`
     }
     &::before, &::after{
         position: absolute;
-        left: 13px;
-        bottom: 6px;
+        left: 7px;
+        bottom: 0px;
         content: ' ';
         height: 16px;
         width: 2px;

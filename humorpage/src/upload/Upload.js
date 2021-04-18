@@ -8,11 +8,13 @@ import Axios from "axios"
 import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage, sanitizeUrl, dataUrltoBlob} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 import * as Styled from "./Styled";
+import {IconStyled} from "../MainStyled"
+import ReactDomServer from "react-dom/server"
 
 const icons = Quill.import('ui/icons')
-icons['mycustom'] = `<img src="/film.svg" alt="" className="ql-mycustom"/>`
-icons['video'] = `<img src="/youtube.svg" alt="" className="ql-mycustom"/>`
-
+icons['mycustom'] = ReactDomServer.renderToString(<IconStyled theme="video_sm"/>);
+icons['video'] = ReactDomServer.renderToString(<IconStyled theme="youtube_sm"/>);
+icons['image'] = ReactDomServer.renderToString(<IconStyled theme="image_sm"/>);
 
 
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;

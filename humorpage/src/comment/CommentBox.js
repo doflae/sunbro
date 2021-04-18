@@ -90,7 +90,6 @@ const SeeMoreBtn = ({on, seeMore}) =>{
 }
 
 const CommentBoxStyled = styled.div`
-    background: #e8e8e8;
     width: 100%;
     margin-top: 10px;
     padding-top: 20px;

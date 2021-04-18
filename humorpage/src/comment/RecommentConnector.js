@@ -5,10 +5,10 @@ import {getTime} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
 import {CommentLikeBtn, 
 	CommentContext, 
-	RecommentBtn, 
-	CommentUserImageStyled,
+	RecommentBtn,
 	DeleteCommentBtn} from "./Comment"
 import Axios from "axios";
+import * as Styled from "./CommentStyled"
 
 const RecommentConnector = ({...props}) => {
 	if(props.onOff===false) return null;
@@ -44,36 +44,41 @@ const Recomment = authWrapper(({c,recommentClickHandler,recommentOnId, ...props}
 	}
 	if(c==null) return null;
 	if(isDeleted) return null;
-	return <div className="recomment">
-			<CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
+	return <Styled.RecommentStyled>
+			<Styled.CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
 			
-			<div className="comment-main">
-				<div className="comment-subscript">
-					<div className="comment-left">
-						<div className="comment-author">
-							<Link to={`/mypage/${c.author.usernum}`}>{c.author.name}</Link>
-						</div>
-						<div className="comment-others">
-							{getTime(c.created)}
-						</div>
-						<DeleteCommentBtn
-							author_num={c.author.userNum}
-							user={props.user}
-							deleteHandler={deleteHandler}
-						/>
-					</div>
-					<div className="comment-right">
-						<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
-						<RecommentBtn recommentClick={recommentClickHandler}
+			<Styled.CommentMainStyled>
+					<Styled.CommentSubsciprtStyled>
+						<Styled.CommentLeftStyled>
+							<Styled.CommentAuthorStyled>
+								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
+								</Styled.CommentAuthorStyled>
+							<div>
+								{getTime(c.created)}
+							</div>
+						</Styled.CommentLeftStyled>
+						<Styled.CommentRightStlyed>
+							<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
+							<RecommentBtn recommentClick={recommentClickHandler}
 								authorName={c.author.name}
 								id={c.id}
 								onOff={recommentOnId===c.id}/>
-					</div>
-				</div>
-				<CommentContext content={c.content} media={c.media} blob={c.blob}/>
-			</div>
-		</div>
+							<DeleteCommentBtn
+								author_num={c.author.userNum}
+								user={props.user}
+								deleteHandler={deleteHandler}
+							/>
+						</Styled.CommentRightStlyed>
+					</Styled.CommentSubsciprtStyled>
+					<CommentContext 
+						content={c.content} 
+						media={c.media}
+						blob={c.blob}/>
+			</Styled.CommentMainStyled>
+	</Styled.RecommentStyled>
 })
+
+
 export default RecommentConnector;

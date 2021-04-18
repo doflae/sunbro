@@ -1,5 +1,5 @@
 import React, {useRef,useState} from "react"
-import Merge from "../static/img/merge.png"
+import {IconStyled} from "../MainStyled"
 import Dropzone from "react-dropzone"
 import {getToday, getRandomGenerator,isEmpty, ResizeImage, ResizeImageDefault} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
@@ -124,7 +124,9 @@ function CommentUploader({...props}){
             <ImageDeleteBtn onOff={imageOnOff} imageDelete={imageDelete}></ImageDeleteBtn>
         </CommentPreImgZoneStyled>
         <CommentBottomStyled>
-            <CameraStyled onClick={imageHandler()}/>
+            <CameraStyled 
+            theme="camera_lg"
+            onClick={imageHandler()}/>
         <CommentBtnStyled 
         onClick={submitComment(props.board_id, props.comment_id, props.cname)}
         type="submit">
@@ -202,9 +204,8 @@ const CommentBottomStyled = styled.div`
 
 const CommentBtnStyled = styled.button`
     cursor: pointer;
-    float: right;
     right: 10px;
-    position: relative;
+    position: absolute;
     z-index: 1;
     color: antiquewhite;
     background: #f05454;
@@ -213,13 +214,7 @@ const CommentBtnStyled = styled.button`
 `
 
 
-const CameraStyled = styled.div`
-    width:32px;
-    height:32px;
-    background-image:url(${Merge});
-	background-repeat: no-repeat;
-	background-position: -32px 0px;
-    cursor: pointer;
+const CameraStyled = styled(IconStyled)`
     margin:10px 5px;
 `
 

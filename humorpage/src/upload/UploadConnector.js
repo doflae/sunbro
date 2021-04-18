@@ -1,7 +1,7 @@
 import React,{useRef} from "react";
 import { authWrapper } from "../auth/AuthWrapper";
 import { uploadWrapper } from "./UploadWrapper";
-import {BlurBackGroundStlyed} from "./Styled"
+import {BlurBackGroundStyled} from "./Styled"
 import Upload from "./Upload";
 import Update from "./Update";
 const UploadConnector = uploadWrapper(authWrapper(({...props}) =>{
@@ -17,12 +17,12 @@ const UploadConnector = uploadWrapper(authWrapper(({...props}) =>{
         // const bg = props.backgroundRef
         // if(bg.current) bg.current.style.filter = "brightness(0.35)";
         return <div ref={props.uploadPageRef}>
-                <BlurBackGroundStlyed ref={bgRef}/>
+                <BlurBackGroundStyled ref={bgRef}/>
                 <Upload bgRef={bgRef}/>
             </div>
     } 
     return <div ref={props.updatePageRef}>
-        <BlurBackGroundStlyed ref={bgRef}/>
+        <BlurBackGroundStyled ref={bgRef}/>
         <Update bgRef = {bgRef}/>
         </div>
 }))

@@ -1,12 +1,3 @@
-.recomment{
-	padding-top: 10px;
-	margin-top: 10px;
-	border-top: solid gainsboro 1px;
-	display: flex;
-}
-.comment_text{
-	margin-bottom: 5px;
-}
 .recomment_target{
 	font-size: 0.8em;
 	font-weight: 700;
