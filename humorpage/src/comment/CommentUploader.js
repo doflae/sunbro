@@ -13,6 +13,7 @@ function CommentUploader({...props}){
     const [commentImg, setCommentImg] = useState(null);
     const [commentResizedImg, setCommentResizedImg] = useState({});
     const [mediaFormat, setMediaFormat] = useState(null);
+    const [commentText, setCommentText] = useState("");
     const mediaRef = useRef();
     const dropzoneRef = useRef();
     const contentRef = useRef();
@@ -103,7 +104,6 @@ function CommentUploader({...props}){
             })
         })
     }
-
     const imageDelete = () => (e) =>{
         mediaRef.current.style.display="none"
         URL.revokeObjectURL(commentImg);
@@ -116,23 +116,28 @@ function CommentUploader({...props}){
     if(props.onOff===false) return null;
     return <CommentUploaderStyled>
         {props.cname?<RecommentTargetStyled>@{props.cname}</RecommentTargetStyled>:null}
-        <CommentTextAreaStyled ref={contentRef}></CommentTextAreaStyled>
+        <CommentTextAreaStyled
+            contentEditable={true}
+            aria-label="댓글을 입력해주세요..."
+            ref={contentRef}></CommentTextAreaStyled>
         <CommentPreImgZoneStyled>
             <ImageResized src={commentImg}
                 mediaRef={mediaRef}
                 setImageOnOff={setImageOnOff}/>
             <ImageDeleteBtn onOff={imageOnOff} imageDelete={imageDelete}></ImageDeleteBtn>
         </CommentPreImgZoneStyled>
-        <CommentBottomStyled>
-            <CameraStyled 
-            theme="camera_lg"
-            onClick={imageHandler()}/>
-        <CommentBtnStyled 
-        onClick={submitComment(props.board_id, props.comment_id, props.cname)}
-        type="submit">
-            등록
-        </CommentBtnStyled>
-        </CommentBottomStyled>
+        <CommentUploadBtnStyled>
+            <CommentBottomStyled>
+                <CameraStyled 
+                theme="camera_lg"
+                onClick={imageHandler()}/>
+            <CommentBtnStyled 
+            onClick={submitComment(props.board_id, props.comment_id, props.cname)}
+            type="submit">
+                등록
+            </CommentBtnStyled>
+            </CommentBottomStyled>
+        </CommentUploadBtnStyled>
         <Dropzone
             ref = {dropzoneRef}
             accept = "image/*"
@@ -176,46 +181,68 @@ const RecommentTargetStyled = styled.span`
 
 const CommentUploaderStyled = styled.div`
     position: relative;
-    width: 90%;
+    width: 96%;
     margin: auto;
-    background-color: #ffffff;
+    border-radius: 20px;
+    background-color: #e9e9e9;
     margin-top: 20px;
-    padding:10px;
+    padding: 10px;
+    overflow:auto;
 `
 
-const CommentTextAreaStyled = styled.textarea`
-    width: 100%;
+const CommentTextAreaStyled = styled.div`
+    background-color:#e9e9e9;
+    -webkit-user-modify: read-write-plaintext-only;
+    user-modify:read-write;
+    max-width:100%;
+    width:fit-content;
+    display:inline-block;
     box-sizing: border-box;
-    padding: 20px 0px 5px 20px;
-    height: 100px;
+    padding: 5px 10px;
+    height: fit-content;
     border-style: none;
     resize: none;
+    &:empty::before {
+        content:attr(aria-label);
+        opacity:0.5;
+        cursor:text;
+    }
 `
 
 const CommentPreImgZoneStyled = styled.div`
     position: relative;
+    display:inline-block;
     width: fit-content;
     height: fit-content;
 `
+
+const CommentUploadBtnStyled = styled.div`
+    float:right;
+`
+
 const CommentBottomStyled = styled.div`
     height:50px;
     display:flex;
+    position:relative;
+    float:right;
+    height:fit-content;
+    width:fit-content;
 `
 
-const CommentBtnStyled = styled.button`
-    cursor: pointer;
-    right: 10px;
-    position: absolute;
+const CommentBtnStyled = styled.div`
+    cursor:pointer;
     z-index: 1;
     color: antiquewhite;
     background: #f05454;
     border: solid #d8d8d8 1px;
-    padding: 10px;
+    padding: 5px;
+    height:32px;
+    border-radius:10px;
 `
 
 
 const CameraStyled = styled(IconStyled)`
-    margin:10px 5px;
+    margin-right:10px;
 `
 
 const ImageDeleteBtnStyled = styled.button`

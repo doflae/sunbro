@@ -4,6 +4,7 @@ import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import CommentUploader from "./CommentUploader"
 import styled from "styled-components"
+import {SeeMoreBtnStyled} from "./CommentStyled"
 
 function CommentBox({
     ...props
@@ -68,7 +69,7 @@ function CommentBox({
     }
 
     const CommentListRender = (commentList, board_id) => {
-        if(commentList.length===0) return "첫 댓글을 달아주세요"
+        if(commentList.length===0) return null;
         return commentList.map(c =>
             <Comment key={c.id} comment={c} board_id={board_id}/>
         )
@@ -85,14 +86,13 @@ function CommentBox({
 }
 
 const SeeMoreBtn = ({on, seeMore}) =>{
-    if(on===true) return <div><button onClick={seeMore()}>더보기</button></div>
+    if(on===true) return <SeeMoreBtnStyled onClick={seeMore()}>더보기...</SeeMoreBtnStyled>
     else return null
 }
 
+
 const CommentBoxStyled = styled.div`
     width: 100%;
-    margin-top: 10px;
-    padding-top: 20px;
     padding-bottom: 20px;
 `
 

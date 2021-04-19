@@ -388,7 +388,7 @@ const BoardTitleStyled = styled.div`
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    margin: 10px 5px;
+    margin: 0px 5px 10px 5px;
     padding-left: 10px;
     font-size: 1.5rem;
     font-weight: normal;

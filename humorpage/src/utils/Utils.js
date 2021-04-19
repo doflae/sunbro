@@ -93,6 +93,7 @@ export const getTime = (datetime) =>{
 }
 
 export const convertUnitOfNum = (num) =>{
+    if(num==null) return null
     if(num<1000) return num
     else if(num<10000) return `${(num/1000).toFixed(1)} K`
     else if(num<1000000) return `${(num/10000).toFixed(1)} M`

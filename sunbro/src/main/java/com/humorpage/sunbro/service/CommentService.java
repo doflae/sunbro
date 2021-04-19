@@ -33,10 +33,11 @@ public class CommentService {
     public void delete(Comment comment){
         fileDeleteService.deleteFiles(comment.getMedia(),MediaType.COMMENT);
         List<Comment> commentList = commentRepository.findAllByPid(comment.getId());
+        //Cascade에 의해 자식까지 전부 삭제됨
+        commentRepository.delete(comment);
+        //스토리지에서 미디어파일 삭제
         commentList.forEach(cmt -> {
             fileDeleteService.deleteFiles(comment.getMedia(),MediaType.COMMENT);
-            commentRepository.delete(cmt);
         });
-        commentRepository.delete(comment);
     }
 }

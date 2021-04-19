@@ -50,22 +50,23 @@ public class CommentController {
     public ListResult<Comment> getComment(@RequestParam(value = "board_id", required = false) Long board_id,
                                           @RequestParam(value = "parent_id", required = false) Long parent_id,
                                           @RequestParam(value = "comment_id", required = false) Long comment_id,
+                                          @RequestParam(value = "page_size", required = false, defaultValue = "10") int page_size,
                                           Authentication authentication){
         List<Comment> commentList=null;
         //depth가 0인 댓글
         if(board_id!=null) {
             if (comment_id == null) {
-                commentList = commentRepository.findTop3ByBoardAndPidIsOrderByLikesDesc(board_id, 0L);
+                commentList = commentRepository.findTop3ByBoardAndPidIsNullOrderByLikesDesc(board_id);
             } else {
-                commentList = commentRepository.findByBoardAndIdGreaterThanAndPidIsOrderByIdAsc(board_id, comment_id, 0L, PageRequest.of(0, 10));
+                commentList = commentRepository.findByBoardAndIdGreaterThanAndPidIsNullOrderByIdAsc(board_id, comment_id, PageRequest.of(0, page_size));
             }
         }
         //대댓글 -> board id 대신 parent comment id가 주어짐
         else if(parent_id!=null){
             if (comment_id == null){
-                commentList = commentRepository.findByPidIsOrderByIdAsc(parent_id, PageRequest.of(0,10));
+                commentList = commentRepository.findByPidIsOrderByIdAsc(parent_id, PageRequest.of(0,page_size));
             }else{
-                commentList = commentRepository.findByPidIsAndIdGreaterThanOrderByIdAsc(parent_id, comment_id, PageRequest.of(0,10));
+                commentList = commentRepository.findByPidIsAndIdGreaterThanOrderByIdAsc(parent_id, comment_id, PageRequest.of(0,page_size));
             }
         }
         try{

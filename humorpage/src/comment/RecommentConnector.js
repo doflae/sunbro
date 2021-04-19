@@ -22,7 +22,9 @@ const RecommentConnector = ({...props}) => {
 
 const SeeMoreBtn = ({hasMore, getData}) =>{
 	if(hasMore===false) return null;
-	else return <button onClick={e=>{e.preventDefault();getData();}}>더보기</button>
+	else return <Styled.SeeMoreBtnStyled 
+	onClick={e=>{e.preventDefault();getData();}}>더보기...
+	</Styled.SeeMoreBtnStyled>
 }
 
 const Recomment = authWrapper(({c,recommentClickHandler,recommentOnId, ...props}) =>{
@@ -55,28 +57,25 @@ const Recomment = authWrapper(({c,recommentClickHandler,recommentOnId, ...props}
 							<Styled.CommentAuthorStyled>
 								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
 								</Styled.CommentAuthorStyled>
-							<div>
-								{getTime(c.created)}
-							</div>
 						</Styled.CommentLeftStyled>
-						<Styled.CommentRightStlyed>
-							<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
-							<RecommentBtn recommentClick={recommentClickHandler}
-								authorName={c.author.name}
-								id={c.id}
-								onOff={recommentOnId===c.id}/>
-							<DeleteCommentBtn
-								author_num={c.author.userNum}
-								user={props.user}
-								deleteHandler={deleteHandler}
-							/>
-						</Styled.CommentRightStlyed>
+						<DeleteCommentBtn
+							author_num={c.author.userNum}
+							user={props.user}
+							deleteHandler={deleteHandler}
+						/>
 					</Styled.CommentSubsciprtStyled>
 					<CommentContext 
 						content={c.content} 
 						media={c.media}
 						blob={c.blob}/>
 			</Styled.CommentMainStyled>
+			<Styled.CommentOptionStlyed>
+				<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
+				<RecommentBtn recommentClick={recommentClickHandler}
+					authorName={c.author.name}
+					id={c.id}
+					onOff={recommentOnId===c.id}/>
+			</Styled.CommentOptionStlyed>
 	</Styled.RecommentStyled>
 })
 

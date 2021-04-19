@@ -26,9 +26,9 @@ const Comment = ({...props}) =>{
 	const [recommentOnId, setRecommentOnId] = useState(0);
 	const [onOffrecomment, setOnOffrecomment] = useState(false);
 	const [onOffSeeMore, setOnOffSeeMore] = useState(true);
-
+	const [pageSize, setPageSize] = useState(3)
 	const getData = () => {
-		let resturl = `/comment/list?parent_id=${c.id}`
+		let resturl = `/comment/list?parent_id=${c.id}&page_size=${pageSize}`
 		if(recommentLastId>0){
 			resturl+=`&comment_id=${recommentLastId}`
 		}
@@ -49,7 +49,8 @@ const Comment = ({...props}) =>{
 			setRecommentList(recommentList.concat([...temp]))
 			setRecommentLastId(resLastId)
 			setKeyList(keyList)
-			if(res.list.length<10) setOnOffSeeMore(false);
+			if(res.list.length<pageSize) setOnOffSeeMore(false);
+			setPageSize(10)
 		})
 	}
 
@@ -91,19 +92,17 @@ const Comment = ({...props}) =>{
 		setOnOffrecomment(true)
 	}
 
-	const getRecomment = () => (e) =>{
-		if(onOffrecomment===false){
-			getData().then(
-				setOnOffrecomment(!onOffrecomment)
-			)
-		}else{
-			setOnOffrecomment(!onOffrecomment)
-		}
+	const getRecomment = () => {
+		if(onOffrecomment) return
+		getData().then(
+			setOnOffrecomment(true)
+		)
 	}
 
 	if(c==null) return null;
 	if(isDeleted) return null;
-	return <Styled.CommentStyled>
+	return <React.Fragment>
+		<Styled.CommentStyled>
 			<Styled.CommentUserImageStyled src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
@@ -115,47 +114,44 @@ const Comment = ({...props}) =>{
 								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
 								</Styled.CommentAuthorStyled>
 						</Styled.CommentLeftStyled>
+						<DeleteCommentBtn
+							author_num={c.author.userNum}
+							user={props.user}
+							deleteHandler={deleteHandler}
+						/>
 					</Styled.CommentSubsciprtStyled>
 					<CommentContext 
 						content={c.content} 
 						media={c.media}
 						blob={c.blob}/>
-					<ConnectorBtn onClick={getRecomment}
-						cnt={c.children_cnt}/>
-				<RecommentConnector id={c.id} 
-						onOff={onOffrecomment}
-						getData={getData}
-						recommentOnId={recommentOnId}
-						recommentList={recommentList}
-						recommentClickHandler={recommentClickHandler}
-						onOffSeeMore={onOffSeeMore}/>
-				<CommentUploader 
-						onOff = {uploaderSetting.onOff}
-						cname = {uploaderSetting.target}
-						board_id={props.board_id}
-						comment_id={c.id}
-						appendComment={appendComment}/>
 			</Styled.CommentMainStyled>
-			<Styled.CommentRightStlyed>
+			<Styled.CommentOptionStlyed>
 				<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
 				<RecommentBtn recommentClick={recommentClickHandler}
 					authorName={c.author.name}
 					id={c.id}
-					onOff={recommentOnId===c.id}/>
-				<DeleteCommentBtn
-					author_num={c.author.userNum}
-					user={props.user}
-					deleteHandler={deleteHandler}
-				/>
-			</Styled.CommentRightStlyed>
-	</Styled.CommentStyled>
+					getRecomment = {getRecomment}
+					onOff={recommentOnId===c.id}
+					cnt={c.children_cnt}/>
+			</Styled.CommentOptionStlyed>
+		</Styled.CommentStyled>
+		<Styled.RecommentBox>
+			<RecommentConnector id={c.id} 
+					onOff={onOffrecomment}
+					getData={getData}
+					recommentOnId={recommentOnId}
+					recommentList={recommentList}
+					recommentClickHandler={recommentClickHandler}
+					onOffSeeMore={onOffSeeMore}/>
+			<CommentUploader 
+					onOff = {uploaderSetting.onOff}
+					cname = {uploaderSetting.target}
+					board_id={props.board_id}
+					comment_id={c.id}
+					appendComment={appendComment}/>
+		</Styled.RecommentBox>
+	</React.Fragment>
 }
-
-const ConnectorBtn = ({cnt,onClick})=>{
-	if(cnt>0) return <button onClick={onClick()}> 답글 {convertUnitOfNum(cnt)} </button>
-	else return null;
-}
-
 export const CommentLikeBtn = ({id,like,likes}) =>{
 
 	const [likeCnt,setLikeCnt] = useState({
@@ -165,11 +161,9 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 	const [filter,setFilter] = useState(like?
 		"invert(53%) sepia(74%) saturate(1309%) hue-rotate(177deg) brightness(89%) contrast(91%)":
 		"")
-	const likeBtnRef = useRef();
 	let history = useHistory();
 
 	const likeHandler = () => (e) => {
-		const target = likeBtnRef.current
 		if(likeCnt.like){
 			Axios.get(`/comment/likeoff?id=${id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
@@ -199,7 +193,7 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 		<Styled.LikeBtnStyled
 		color={filter}
 		theme="like_sm"
-		ref = {likeBtnRef} onClick={likeHandler()}/>
+		onClick={likeHandler()}/>
 		<Styled.NumberStyled>
 			{convertUnitOfNum(likeCnt.cnt)}
 		</Styled.NumberStyled>
@@ -252,13 +246,31 @@ export const CommentContext = ({content,media,blob}) =>{
 
 export const DeleteCommentBtn = ({author_num, deleteHandler, user}) =>{
 	if(user==null || author_num!==user.userNum) return null;
-	return <Styled.CommentDeleteBtnStyled onClick={deleteHandler()}>삭제</Styled.CommentDeleteBtnStyled>
+	return <Styled.CommentDeleteBtnStyled onClick={deleteHandler()}>
+		<Styled.CommentDeleteBtnIconStyled/>
+	</Styled.CommentDeleteBtnStyled>
 }
 
-export const RecommentBtn = ({recommentClick, authorName, onOff, id}) =>{
+export const RecommentBtn = ({recommentClick,
+							getRecomment,
+							cnt,
+							authorName,
+							onOff,
+							id}) =>{
 
-	return <Styled.RecommentBtnStyled onClick={e=>{e.preventDefault();
-		recommentClick(id,authorName)}}>{onOff?"답글 접기":"답글 달기"}
+	const renderCommentIcon = () =>{
+		if(onOff) return <Styled.RecommentOnIcon
+					theme="comment_sm"/>
+		return <Styled.RecommentOffIcon theme="comment_sm"/>
+	}
+	const clickHandler = ()=>(e) =>{
+		if(getRecomment) getRecomment()
+		recommentClick(id,authorName)
+	}
+
+	return <Styled.RecommentBtnStyled onClick={clickHandler()}>
+		{renderCommentIcon()}
+		<Styled.NumberStyled>{convertUnitOfNum(cnt)}</Styled.NumberStyled>
 		</Styled.RecommentBtnStyled>
 }
 export default withRouter(authWrapper(Comment));

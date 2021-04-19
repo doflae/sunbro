@@ -15,7 +15,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findAllById(Long id);
     Optional<Comment> findById(Long id);
 
-    List<Comment> findTop3ByBoardAndPidIsOrderByLikesDesc(Long board_id, Long pid);
+    List<Comment> findTop3ByBoardAndPidIsNullOrderByLikesDesc(Long board_id);
 
     List<Comment> findAllByPid(Long pid);
     List<Comment> findByPidIsOrderByIdAsc(Long pid,Pageable pageable);
@@ -23,6 +23,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPidIsAndIdGreaterThanOrderByIdAsc(Long pid, Long comment_id, Pageable pageable);
 
     List<Comment> findByBoardAndIdLessThanOrderByIdDesc(Long board_id,Long comment_id, Pageable pageable);
-    List<Comment> findByBoardAndIdGreaterThanAndPidIsOrderByIdAsc(Long board_id,Long comment_id, Long pid, Pageable pageable);
+    List<Comment> findByBoardAndIdGreaterThanAndPidIsNullOrderByIdAsc(Long board_id,Long comment_id, Pageable pageable);
     List<Comment> findAllByBoard(Long board_id);
 }

@@ -1,11 +1,33 @@
 import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
 
+
+export const RecommentOnIcon = styled(IconStyled)`
+	filter:invert(53%) sepia(74%) saturate(1309%) hue-rotate(177deg) brightness(89%) contrast(91%);
+`
+
+export const RecommentOffIcon = styled(IconStyled)``
+
+export const RecommentBox = styled.div`
+	width:calc(100% - 80px);
+	margin-left:auto;
+	margin-right:15px;
+	position:relative;
+`
+
 export const RecommentStyled = styled.div`
-    padding-top: 10px;
-    margin-top: 10px;
-    border-top: solid gainsboro 1px;
+	margin-bottom:10px;
     display:flex;
+`
+
+export const SeeMoreBtnStyled = styled.div`
+	margin:5px;
+	opacity:0.5;
+	cursor:pointer;
+	&:hover {
+		opacity:1;
+		text-decoration:underline;
+	}
 `
 
 export const CommentUserImageStyled = styled.img`
@@ -15,18 +37,58 @@ export const CommentUserImageStyled = styled.img`
 	margin: 0px 10px 10px 5px;
 `
 
-export const CommentDeleteBtnStyled = styled.button`
+export const CommentDeleteBtnStyled = styled.div`
 	background-color: #e8e8e8;
 	height: fit-content;
 	cursor: pointer;
-	border: none;
-	margin-left:5px;
+	margin-left:auto;
+	width:18px;
+	height:18px;
+	border-radius:50%;
+	position: relative;
+    right: -6px;
+    top: -6px;
+	&:hover{
+		background-color:#d8d8d8;
+	}
 `
+
+export const CommentDeleteBtnIconStyled = styled.div`
+	background-color:#000;
+	width:3px;
+	height:3px;
+	position:relative;
+	border-radius:50%;
+	top:8px;
+	right:-1px;
+	margin:auto;
+	&::before, &::after{
+		background-color:#000;
+		content:" ";
+		position:absolute;
+		display:inline-block;
+		width:3px;
+		height:3px;
+		border-radius:50%;
+	}
+
+	&::before{
+		top:-6px;
+	}
+
+	&::after{
+		top:6px;
+	}
+`
+
+
+
 export const CommentMainStyled = styled.div`
 	border-radius: 5px;
 	background-color: #e9e9e9;
 	padding: 10px;
 	width:fit-content;
+	max-width:70%;
 	position:relative;
 	&:after{
 		content: " ";
@@ -52,11 +114,11 @@ export const CommentLeftStyled = styled.div`
 `
 
 export const CommentAuthorStyled = styled.div`
-	font-weight: 500;
+	font-weight: 700;
 	margin-right: 10px;
 `
 
-export const CommentRightStlyed = styled.div`
+export const CommentOptionStlyed = styled.div`
 	right: 0;
 	float: right;
 	margin-left: auto;
@@ -85,11 +147,11 @@ export const CommentStyled = styled.div`
 	display: flex;
 `
 
-export const RecommentBtnStyled = styled.button`
-	background-color: #e8e8e8;
-	height: fit-content;
+export const RecommentBtnStyled = styled.div`
+	height: 24px;
+	display:flex;
+	margin-left:5px;
 	cursor: pointer;
-	border: none;
 `
 
 export const CommentImgStyled = styled.img`
@@ -98,6 +160,6 @@ export const CommentImgStyled = styled.img`
 export const CommentContextStyled = styled.div`
 	padding-top:5px;
 	& *{
-		white-space:pre-wrap;
+		word-break:break-all;
 	}
 `
