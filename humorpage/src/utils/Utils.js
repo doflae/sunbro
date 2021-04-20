@@ -28,8 +28,15 @@ export const sanitize = (dirty) => sanitizeHtml(dirty,{
       allowProtocolRelative: true,
       enforceHtmlBoundary: false
 })
+
 export const isEmpty = (st) => {
     return (st == null ||st.length === 0 || !st.trim());
+}
+
+export const splitCname = (content) =>{
+    const r = content.match(/<span[^>]*>@([^<]*)<\/span>/)
+    if(r) return {cname:r[1],content:content.slice(r[0].length)}
+    return {cname:null,content:content}
 }
 
 export const sanitizeHarder = (dirty) => sanitizeHtml(dirty,{

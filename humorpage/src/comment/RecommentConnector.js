@@ -1,20 +1,22 @@
 import React, { useState } from "react"
 import userDefaultImg from "../static/img/userDefault.png";
 import {Link} from 'react-router-dom'
-import {getTime} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
+import {getCname} from "../utils/Utils"
 import {CommentLikeBtn, 
 	CommentContext, 
 	RecommentBtn,
-	DeleteCommentBtn} from "./Comment"
+	ControlCommentBtn} from "./Comment"
 import Axios from "axios";
 import * as Styled from "./CommentStyled"
+import CommentUploader from "./CommentUploader";
 
 const RecommentConnector = ({...props}) => {
 	if(props.onOff===false) return null;
 	return <React.Fragment>
 		{props.recommentList.map(c => <Recomment recommentOnId={props.recommentOnId}
-						on={c.like} c={c} key={c.id}
+						on={c.like} c={c} key={c.id} board_id={props.board_id}
+						comment_id={props.comment_id}
 		recommentClickHandler={props.recommentClickHandler}/>)}
 		<SeeMoreBtn hasMore={props.onOffSeeMore} getData = {props.getData}/>
 		</React.Fragment>
@@ -27,8 +29,10 @@ const SeeMoreBtn = ({hasMore, getData}) =>{
 	</Styled.SeeMoreBtnStyled>
 }
 
-const Recomment = authWrapper(({c,recommentClickHandler,recommentOnId, ...props}) =>{
+const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) =>{
+	const [c, setC] = useState(props.c)
 	const [isDeleted, setIsDeleted] = useState(false)
+	const [updateMode, setUpdateMode] = useState(false)
 	const deleteHandler = () => (e) =>{
 		if(window.confirm("삭제하시겠습니까?")){
             const formData = new FormData();
@@ -44,8 +48,24 @@ const Recomment = authWrapper(({c,recommentClickHandler,recommentOnId, ...props}
             })
         }
 	}
+
+	const updateHandler = ()=>(e) =>{
+		setUpdateMode(!updateMode)
+	}
+
+	const successHandler = (c)=>{
+		setUpdateMode(!updateMode)
+		setC(c)
+	}
+
 	if(c==null) return null;
 	if(isDeleted) return null;
+	if(updateMode) return <CommentUploader c={c}
+							comment_id={props.comment_id}
+							board_id={props.board_id}
+							success={successHandler}
+							cancel={updateHandler}
+							/>
 	return <Styled.RecommentStyled>
 			<Styled.CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
@@ -58,10 +78,11 @@ const Recomment = authWrapper(({c,recommentClickHandler,recommentOnId, ...props}
 								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
 								</Styled.CommentAuthorStyled>
 						</Styled.CommentLeftStyled>
-						<DeleteCommentBtn
+						<ControlCommentBtn
 							author_num={c.author.userNum}
 							user={props.user}
 							deleteHandler={deleteHandler}
+							updateHandler={updateHandler}
 						/>
 					</Styled.CommentSubsciprtStyled>
 					<CommentContext 

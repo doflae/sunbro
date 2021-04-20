@@ -1,20 +1,17 @@
-import React, {useState, useRef} from "react";
+import React, {useState,useRef, useEffect} from "react";
 import userDefaultImg from "../static/img/userDefault.png";
-import {IconStyled} from "../MainStyled"
 import {authWrapper} from "../auth/AuthWrapper"
 import {withRouter, Link, useHistory} from "react-router-dom"
-import {sanitizeHarder, 
-		getTime, 
+import {sanitizeHarder,
 		convertUnitOfNum, 
 		isEmpty} from "../utils/Utils"
 import Axios from "axios";
 import RecommentConnector from "./RecommentConnector"
 import * as Styled from "./CommentStyled"
-import styled from "styled-components"
 import CommentUploader from "./CommentUploader"
 
 const Comment = ({...props}) =>{
-	const c = props.comment
+	const [c,setC] = useState(props.comment)
 	const [keyList, setKeyList] = useState(new Set());
 	const [recommentList,setRecommentList] = useState([]);
 	const [recommentLastId,setRecommentLastId] = useState(0);
@@ -22,11 +19,14 @@ const Comment = ({...props}) =>{
 		onOff:false,
 		target:null
 	})
+	const [updateMode, setUpdateMode] = useState(false);
 	const [isDeleted, setIsDeleted] = useState(false);
 	const [recommentOnId, setRecommentOnId] = useState(0);
 	const [onOffrecomment, setOnOffrecomment] = useState(false);
 	const [onOffSeeMore, setOnOffSeeMore] = useState(true);
 	const [pageSize, setPageSize] = useState(3)
+	const optionRef = useRef()
+
 	const getData = () => {
 		let resturl = `/comment/list?parent_id=${c.id}&page_size=${pageSize}`
 		if(recommentLastId>0){
@@ -70,6 +70,15 @@ const Comment = ({...props}) =>{
         }
 	}
 
+	const updateHandler = () => (e) =>{
+		setUpdateMode(!updateMode)
+	}
+
+	const successHandler = (c) =>{
+		setUpdateMode(!updateMode);
+		setC(c);
+	}
+
 	const recommentClickHandler = (id,authorName) => {
 		if(id===recommentOnId){
 			setUploaderSetting({
@@ -92,6 +101,13 @@ const Comment = ({...props}) =>{
 		setOnOffrecomment(true)
 	}
 
+	const getDistance = ()=>{
+		if(optionRef.current){
+			return parseInt(window.getComputedStyle(optionRef.current).marginLeft);
+		}
+		return 100;
+	}
+
 	const getRecomment = () => {
 		if(onOffrecomment) return
 		getData().then(
@@ -101,6 +117,10 @@ const Comment = ({...props}) =>{
 
 	if(c==null) return null;
 	if(isDeleted) return null;
+	if(updateMode) return <CommentUploader c={c}
+						board_id={props.board_id}
+						success={successHandler}
+						cancel={updateHandler}/>
 	return <React.Fragment>
 		<Styled.CommentStyled>
 			<Styled.CommentUserImageStyled src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
@@ -114,10 +134,12 @@ const Comment = ({...props}) =>{
 								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
 								</Styled.CommentAuthorStyled>
 						</Styled.CommentLeftStyled>
-						<DeleteCommentBtn
+						<ControlCommentBtn
 							author_num={c.author.userNum}
 							user={props.user}
+							getDistance={getDistance}
 							deleteHandler={deleteHandler}
+							updateHandler={updateHandler}
 						/>
 					</Styled.CommentSubsciprtStyled>
 					<CommentContext 
@@ -125,7 +147,7 @@ const Comment = ({...props}) =>{
 						media={c.media}
 						blob={c.blob}/>
 			</Styled.CommentMainStyled>
-			<Styled.CommentOptionStlyed>
+			<Styled.CommentOptionStlyed ref = {optionRef}>
 				<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
 				<RecommentBtn recommentClick={recommentClickHandler}
 					authorName={c.author.name}
@@ -136,7 +158,9 @@ const Comment = ({...props}) =>{
 			</Styled.CommentOptionStlyed>
 		</Styled.CommentStyled>
 		<Styled.RecommentBox>
-			<RecommentConnector id={c.id} 
+			<RecommentConnector id={c.id}
+					comment_id={c.id}
+					board_id={props.board_id}
 					onOff={onOffrecomment}
 					getData={getData}
 					recommentOnId={recommentOnId}
@@ -244,13 +268,50 @@ export const CommentContext = ({content,media,blob}) =>{
 	</Styled.CommentContextStyled>
 }
 
-export const DeleteCommentBtn = ({author_num, deleteHandler, user}) =>{
-	if(user==null || author_num!==user.userNum) return null;
-	return <Styled.CommentDeleteBtnStyled onClick={deleteHandler()}>
-		<Styled.CommentDeleteBtnIconStyled/>
-	</Styled.CommentDeleteBtnStyled>
+export const ControlCommentBtn = ({...props}) =>{
+	const [boxOnOff, setBoxOnOff] = useState(false)
+	return <Styled.CCBtnStyled
+			tabIndex={0}
+			onClick={()=>{
+				setBoxOnOff(!boxOnOff)
+			}}
+			onBlur={()=>{
+				setBoxOnOff(false)
+			}}>
+		<Styled.CCBtnIconStyled/>
+		<ControlBox
+			isAuthor={props.user && props.user.userNum===props.author_num}
+			boxOnOff={boxOnOff}
+			distance={props.getDistance()}
+			deleteHandler={props.deleteHandler}
+			updateHandler={props.updateHandler}
+			/>
+	</Styled.CCBtnStyled>
 }
 
+const ControlBox = ({...props}) =>{
+	if(props.isAuthor && props.boxOnOff){
+		if(props.distance<50) return <Styled.CCBoxOnLeftStyled>
+			<Styled.CCStyled
+				onClick={props.deleteHandler()}>
+					삭제
+			</Styled.CCStyled>
+			<Styled.CCStyled
+				onClick={props.updateHandler()}
+				isBottom={true}>수정</Styled.CCStyled>
+			</Styled.CCBoxOnLeftStyled>
+		return <Styled.CCBoxOnRightStyled>
+		<Styled.CCStyled
+				onClick={props.deleteHandler()}>
+					삭제
+			</Styled.CCStyled>
+			<Styled.CCStyled
+				onClick={props.updateHandler()}
+				isBottom={true}>수정</Styled.CCStyled>
+		</Styled.CCBoxOnRightStyled>
+	}
+	return null
+}
 export const RecommentBtn = ({recommentClick,
 							getRecomment,
 							cnt,

@@ -27,7 +27,7 @@ public class CommentService {
     public void save(UserSimple userSimple, Long board_id, Long comment_id, Comment comment){
         comment.setAuthor(userSimple);
         comment.setBoard(board_id);
-        comment.setPid(comment_id);
+        if(comment_id>0) comment.setPid(comment_id);
         commentRepository.save(comment);
     }
     public void delete(Comment comment){

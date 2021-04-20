@@ -2,6 +2,7 @@ import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
 
 
+
 export const RecommentOnIcon = styled(IconStyled)`
 	filter:invert(53%) sepia(74%) saturate(1309%) hue-rotate(177deg) brightness(89%) contrast(91%);
 `
@@ -37,30 +38,27 @@ export const CommentUserImageStyled = styled.img`
 	margin: 0px 10px 10px 5px;
 `
 
-export const CommentDeleteBtnStyled = styled.div`
-	background-color: #e8e8e8;
-	height: fit-content;
-	cursor: pointer;
-	margin-left:auto;
-	width:18px;
-	height:18px;
+export const CCBtnStyled = styled.div`
+	position: absolute;
+	background-color: #e9e9e9;
+	top: 5px;
+	right: 2px;
+    width: 20px;
+    height: 20px;
+	cursor:pointer;
 	border-radius:50%;
-	position: relative;
-    right: -6px;
-    top: -6px;
 	&:hover{
-		background-color:#d8d8d8;
+		background-color:#b9b9b9;
 	}
 `
 
-export const CommentDeleteBtnIconStyled = styled.div`
+export const CCBtnIconStyled = styled.div`
 	background-color:#000;
+	position: relative;
+    top: 8px;
 	width:3px;
 	height:3px;
-	position:relative;
 	border-radius:50%;
-	top:8px;
-	right:-1px;
 	margin:auto;
 	&::before, &::after{
 		background-color:#000;
@@ -81,7 +79,54 @@ export const CommentDeleteBtnIconStyled = styled.div`
 	}
 `
 
+export const CCBoxOnLeftStyled = styled.div`
+	position: absolute;
+	top: 6px;
+	right: 18px;
+	background-color: #f9f9f9;
+	width: 40px;
+	height: 40px;
+	border-radius: 5px;
+    box-shadow: 0px 1px 1px 0px rgb(0 0 0 / 24%);
+	&::before{
+		content: "";
+		border-bottom: 5px solid transparent;
+		border-top: 0px solid transparent;
+		border-right: 5px solid transparent;
+		border-left: 5px solid #f9f9f9;
+		position: absolute;
+		top: 6px;
+		right: -10px;
+	}
+`
 
+export const CCBoxOnRightStyled = styled.div`
+	position: absolute;
+	top: 6px;
+	right: -38px;
+	background-color: #f9f9f9;
+	width: 40px;
+	border-radius: 5px;
+	box-shadow: 0px 1px 1px 0px rgb(0 0 0 / 24%);
+	height: 40px;
+	&::before{
+		content: "";
+		border-bottom: 5px solid transparent;
+		border-top: 0px solid transparent;
+		border-right: 5px solid #f9f9f9;
+		border-left: 5px solid transparent;
+		position: absolute;
+		top: 6px;
+		right: 40px;
+	}
+`
+
+export const CCStyled = styled.div`
+	font-size: 1.1em;
+	text-align: center;
+	border-bottom: ${props=>props.isBottom?"":"1px solid rgb(0,0,0,0.24);"}
+	margin: 1px 4px;
+`
 
 export const CommentMainStyled = styled.div`
 	border-radius: 5px;

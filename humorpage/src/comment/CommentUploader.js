@@ -1,56 +1,75 @@
-import React, {useRef,useState} from "react"
+import React, {useRef,useState,useEffect} from "react"
 import {IconStyled} from "../MainStyled"
 import Dropzone from "react-dropzone"
-import {getToday, getRandomGenerator,isEmpty, ResizeImage, ResizeImageDefault} from "../utils/Utils"
+import {getToday,
+    getRandomGenerator,
+    isEmpty,
+    ResizeImage, 
+    ResizeImageDefault,
+    splitCname} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
-import {useHistory} from "react-router-dom"
 import Axios from "axios"
 import styled from "styled-components"
 
 function CommentUploader({...props}){
-    
+    const c = props.c
+    const inputSet = c&&c.content?splitCname(c.content):null
+    const cname = props.cname || (inputSet?inputSet.cname:null)
+    const content = c&&c.content?inputSet.content:""
     const [imageOnOff,setImageOnOff] = useState(false);
     const [commentImg, setCommentImg] = useState(null);
     const [commentResizedImg, setCommentResizedImg] = useState({});
     const [mediaFormat, setMediaFormat] = useState(null);
-    const [commentText, setCommentText] = useState("");
     const mediaRef = useRef();
     const dropzoneRef = useRef();
     const contentRef = useRef();
-    let history = useHistory();
+
+    useEffect(()=>{
+        if(c&&c.media){
+            setCommentImg(`/api/file/get?name=${c.media}`)
+            setCommentResizedImg(`/api/file/get?name=/200${c.media}`)
+            setImageOnOff(true)
+        }
+    },[])
     
-    const submitComment = (board_id,comment_id,cname) => async(e) =>{
+    const submitComment = () => (e) =>{
         let data = new FormData();
-        let content = contentRef.current.value
+        let content = contentRef.current.innerText
         if(cname!=null){
             content=`<span class="recomment_target">@${cname}</span>`+content
         }
         if(!isEmpty(commentImg)){
-            const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+'.'+mediaFormat;
-            saveFile(filePath)
-            data.append('media',filePath)
+            if(commentImg.startsWith("blob")){
+                const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+'.'+mediaFormat;
+                saveFile(filePath)
+                data.append('media',filePath)
+            }else{
+                data.append('media',c.media)
+            }
         }
         if(!isEmpty(content)||!isEmpty(commentImg)){
+            if(c) data.append('id',c.id)
             data.append('content', content)
-            data.append('board_id',board_id)
-            data.append('comment_id',comment_id)
+            data.append('board_id',props.board_id)
+            if(props.comment_id) data.append('comment_id',props.comment_id)
             const blob = {};
             blob.commentImg = commentImg
             blob.commentResizedImg = commentResizedImg
             props.request('post',"/comment/upload",data).then(res=>{
-                console.log(res)
-                console.log(props)
                 if(res.status===200 && res.data.success){
-
+                    console.log(res)
                     if(mediaRef.current!=null) mediaRef.current.style.display="none";
-                    contentRef.current.value="";
+                    contentRef.current.innerText="";
                     setImageOnOff(false)
                     const comment = res.data.data
                     comment.blob = blob;
                     comment.media = null;
-                    props.appendComment(comment)
+                    if(props.success) props.success(comment)
+                    else props.appendComment(comment)
+                    
                 }else{
-                    history.push("/login")
+                    //todo history -> props.pageOption
+                    //history.push("/login")
                 }
             })
         }else{
@@ -115,10 +134,11 @@ function CommentUploader({...props}){
     }
     if(props.onOff===false) return null;
     return <CommentUploaderStyled>
-        {props.cname?<RecommentTargetStyled>@{props.cname}</RecommentTargetStyled>:null}
+        {cname?<RecommentTargetStyled>@{cname}</RecommentTargetStyled>:null}
         <CommentTextAreaStyled
             contentEditable={true}
             aria-label="댓글을 입력해주세요..."
+            dangerouslySetInnerHTML={{__html:content}}
             ref={contentRef}></CommentTextAreaStyled>
         <CommentPreImgZoneStyled>
             <ImageResized src={commentImg}
@@ -132,10 +152,14 @@ function CommentUploader({...props}){
                 theme="camera_lg"
                 onClick={imageHandler()}/>
             <CommentBtnStyled 
-            onClick={submitComment(props.board_id, props.comment_id, props.cname)}
+            onClick={submitComment()}
             type="submit">
                 등록
             </CommentBtnStyled>
+            {props.cancel?<CommentBtnStyled
+            onClick={props.cancel()}>
+                취소
+            </CommentBtnStyled>:null}
             </CommentBottomStyled>
         </CommentUploadBtnStyled>
         <Dropzone
@@ -211,9 +235,11 @@ const CommentTextAreaStyled = styled.div`
 
 const CommentPreImgZoneStyled = styled.div`
     position: relative;
-    display:inline-block;
+    display:block;
     width: fit-content;
+    max-width:200px;
     height: fit-content;
+    max-height:200px;
 `
 
 const CommentUploadBtnStyled = styled.div`

@@ -28,7 +28,7 @@ public class Comment implements Serializable {
 
     @Column(name = "parent_id")
     @JsonIgnore
-    private Long pid;
+    private Long pid=null;
 
     @ManyToOne
     @JoinColumn(name = "author_num")
@@ -43,15 +43,6 @@ public class Comment implements Serializable {
     @Column(name="board_id")
     @JsonIgnore
     private Long board;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created")
-    @CreationTimestamp
-    private LocalDateTime created;
-
-    @GeneratedValue
-    @Column(name ="updated")
-    private LocalDateTime updated;
 
 
     @Basic(fetch = FetchType.LAZY)
