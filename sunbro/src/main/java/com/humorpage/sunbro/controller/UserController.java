@@ -8,6 +8,7 @@ import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.ResponseService;
+import com.humorpage.sunbro.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +33,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserService userService;
 
     @ApiOperation(
             value = "유저 정보",

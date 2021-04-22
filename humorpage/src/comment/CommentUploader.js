@@ -56,8 +56,9 @@ function CommentUploader({...props}){
             blob.commentImg = commentImg
             blob.commentResizedImg = commentResizedImg
             props.request('post',"/comment/upload",data).then(res=>{
-                if(res.status===200 && res.data.success){
-                    console.log(res)
+                if(res.status===200) return res.data
+            }).then(res=>{
+                if(res.success){
                     if(mediaRef.current!=null) mediaRef.current.style.display="none";
                     contentRef.current.innerText="";
                     setImageOnOff(false)
@@ -66,8 +67,14 @@ function CommentUploader({...props}){
                     comment.media = null;
                     if(props.success) props.success(comment)
                     else props.appendComment(comment)
-                    
-                }else{
+                }else if(res.code){
+                    //삭제된 상위 글
+                    //caller에서 callbackcancel
+                    alert(props.failedMsg)
+                    //재조회
+                    props.failedHandler()
+                }
+                else{
                     //todo history -> props.pageOption
                     //history.push("/login")
                 }

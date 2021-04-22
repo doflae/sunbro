@@ -22,7 +22,6 @@ public class AssignDirectoryService {
         String key = RandomGenerator.RandomnameGenerate(10);
         String tmp = redisTokenService.getData(todayKey+key);
         while(!StringUtils.isEmpty(tmp)){
-            System.out.println(tmp);
             key = RandomGenerator.RandomnameGenerate(10);
             tmp = redisTokenService.getData(todayKey+key);
         }

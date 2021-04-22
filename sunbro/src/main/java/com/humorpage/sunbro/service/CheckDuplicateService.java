@@ -34,7 +34,8 @@ public class CheckDuplicateService {
         String tmp = redisTokenService.getData(key);
         if(tmp==null){
             try{
-                userSimpleRepository.findByUid(value).orElseThrow(()-> new UserNotFoundException("ID"));
+                userSimpleRepository
+                        .findByUid(value).orElseThrow(()-> new UserNotFoundException("ID",value));
                 return 2;
             }catch (UserNotFoundException e){
                 try{
@@ -61,7 +62,8 @@ public class CheckDuplicateService {
         //중복 검사한 것이 없거나 다른 닉네임으로 중복 검사한다면
         if(temp==null){
             try {
-                userSimpleRepository.findByName(value).orElseThrow(()-> new UserNotFoundException("Name"));
+                userSimpleRepository
+                        .findByName(value).orElseThrow(()-> new UserNotFoundException("Name",value));
                 return false;
             } catch (UserNotFoundException e) {
                 if(beforeTemp!=null){

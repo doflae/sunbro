@@ -81,6 +81,8 @@ function CommentBox({
         <SeeMoreBtn on={onOffSeeMore} seeMore={seeMore}/>
         <CommentUploader board_id={props.board_id}
                     comment_id={0}
+                    failedMsg={"삭제된 글입니다."}
+                    failedHandler={props.failedHandler}
                     appendComment={appendComment}/>
     </CommentBoxStyled>
 }

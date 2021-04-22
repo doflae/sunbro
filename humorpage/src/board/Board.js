@@ -125,7 +125,11 @@ function Board({
                 </ShareBtnStyled>   
             </BoardBottomButtonStyled>
         </div>
-        <CommentBox board_id={id} comment_cnt = {comments_num} commentBtnRef = {commentBtnRef}/>
+        <CommentBox 
+            board_id={id}
+            comment_cnt = {comments_num} 
+            commentBtnRef = {commentBtnRef}
+            failedHandler={()=>{setIsDeleted(true)}}/>
     </BoardStyled>
 }
 

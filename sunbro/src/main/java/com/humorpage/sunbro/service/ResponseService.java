@@ -69,6 +69,15 @@ public class ResponseService {
         return result;
     }
 
+    public <T> SingleResult<T> getDetailSingleResult(boolean res, int code, String msg, T data){
+        SingleResult<T> result = new SingleResult<>();
+        result.setCode(code);
+        result.setMsg(msg);
+        result.setSuccess(res);
+        result.setData(data);
+        return result;
+    }
+
     public CommonResult getDetailResult(boolean res, int code, String msg){
         CommonResult result = new CommonResult();
         result.setSuccess(res);

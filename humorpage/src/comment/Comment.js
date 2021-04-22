@@ -172,6 +172,8 @@ const Comment = ({...props}) =>{
 					cname = {uploaderSetting.target}
 					board_id={props.board_id}
 					comment_id={c.id}
+					failedMsg = {"삭제된 댓글입니다."}
+					failedHandler={()=>{setIsDeleted(true)}}
 					appendComment={appendComment}/>
 		</Styled.RecommentBox>
 	</React.Fragment>

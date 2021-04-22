@@ -268,7 +268,7 @@ class Update extends Component {
 
               var blob = new Blob([ab], {type: mimeString});
               const data = {blob:blob,name:_file.name}
-              quill.insertEmbed(range.index,"myvideo",data);
+              quill.insertEmbed(range.index+range.length,"myvideo",data);
               quill.setSelection(range.index + 1);
               quill.focus();
             }
@@ -287,7 +287,7 @@ class Update extends Component {
               }
 
               var blob = new Blob([ab], {type: mimeString});
-              quill.insertEmbed(range.index,"image",blob);
+              quill.insertEmbed(range.index+range.length,"image",blob);
               quill.setSelection(range.index + 1);
               quill.focus();
             }
@@ -362,10 +362,12 @@ class Update extends Component {
       <Styled.UploadBoxStyled>
         <Styled.DeleteBtnStyled onClick={this.hiddenPage()}/>
         <Styled.TitleZoneStyled>
-          <input type="text" className="editor_title" ref={this.titleRef} onChange={e=>{e.preventDefault(); this.onChangeTitle(e.target.value)}}></input>
+          <Styled.TitleInputStyled 
+          type="text" ref={this.titleRef} 
+          onChange={e=>{e.preventDefault(); this.onChangeTitle(e.target.value)}}/>
           <ValidationError errors={this.state.titleErr}/>
         </Styled.TitleZoneStyled>
-        <div className="main-content">
+        <Styled.MainContentStyled>
         <ReactQuill
           ref={(el)=>(this.quillRef = el)}
           value={this.state.contents}
@@ -389,10 +391,8 @@ class Update extends Component {
             </section>
           )}
         </Dropzone>
-      </div>
-        <div className="submitbar">
-          <button type="submit" onClick={this.submit()} className="editor_submit">저장</button>
-        </div>
+      </Styled.MainContentStyled>
+      <Styled.SubmitStyled type="submit" onClick={this.submit()}>저장</Styled.SubmitStyled>
       </Styled.UploadBoxStyled>
     )
   }

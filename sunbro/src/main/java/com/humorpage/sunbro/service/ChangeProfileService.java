@@ -20,9 +20,9 @@ public class ChangeProfileService {
     public void ChangeImage(UserSimple saveTarget, String path){
         String beforeProfileImage = saveTarget.getUserImg();
         if(!beforeProfileImage.equals(path)){
-            fileDeleteService.deleteFiles(beforeProfileImage,MediaType.PROFILE);
             saveTarget.setUserImg(path);
             userSimpleRepository.save(saveTarget);
+            fileDeleteService.deleteFiles(beforeProfileImage,MediaType.PROFILE);
         }
     }
     public void ChangeProfile(UserSimple saveTarget, UserSimple newUserInfo){
@@ -31,9 +31,9 @@ public class ChangeProfileService {
         saveTarget.setName(newUserInfo.getName());
         String beforeProfileImage = saveTarget.getUserImg();
         if(!beforeProfileImage.equals(newUserInfo.getUserImg())){
-            fileDeleteService.deleteFiles(beforeProfileImage,MediaType.PROFILE);
             saveTarget.setUserImg(newUserInfo.getUserImg());
+            userSimpleRepository.save(saveTarget);
+            fileDeleteService.deleteFiles(beforeProfileImage,MediaType.PROFILE);
         }
-        userSimpleRepository.save(saveTarget);
     }
 }

@@ -1,6 +1,7 @@
 package com.humorpage.sunbro.controller;
 
 
+import com.humorpage.sunbro.advice.exception.BoardNotFoundException;
 import com.humorpage.sunbro.advice.exception.CommentNotFoundException;
 import com.humorpage.sunbro.model.Comment;
 import com.humorpage.sunbro.model.UserSimple;
@@ -12,6 +13,7 @@ import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -94,7 +96,11 @@ public class CommentController {
         }catch (NullPointerException ignored){
             return responseService.getFailSingleResult();
         }
-        commentService.save(userSimple,board_id, comment_id,comment);
+        try{
+            commentService.save(userSimple,board_id, comment_id,comment);
+        }catch (DataIntegrityViolationException e){
+            return responseService.getDetailSingleResult(false,1,e.getMessage(),null);
+        }
         return responseService.getSingleResult(comment);
 
     }
@@ -131,7 +137,9 @@ public class CommentController {
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
 
-            Comment comment = commentRepository.findById(comment_id).orElseThrow(()-> new CommentNotFoundException("CommentID"));
+            Comment comment = commentRepository
+                    .findById(comment_id).orElseThrow(()->
+                            new CommentNotFoundException("ID",String.valueOf(comment_id)));
             if(comment.getAuthor().getUserNum().equals(userSimple.getUserNum())){
                 commentService.delete(comment);
             }else{

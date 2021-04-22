@@ -241,7 +241,7 @@ public class BoardController {
         if(StringUtils.isEmpty(title) && StringUtils.isEmpty(content)){
             try{
                 UserSimple target = userSimpleRepository
-                        .findByUid(uid).orElseThrow(()-> new UserNotFoundException("ID"));
+                        .findByUid(uid).orElseThrow(()-> new UserNotFoundException("ID",uid));
                 boardThumbnailList = boardThumbnailRepository.findAllByAuthor(target.getUserNum());
             }
             catch (UserNotFoundException ignored){

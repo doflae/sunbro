@@ -138,7 +138,10 @@ public class AccountController {
         try{
             System.out.println(otherUser.toString());
             if(connectSocialService.AuthBySocial(otherUser)){
-                userSimple = userSimpleRepository.findByUid(otherUser.getPlatForm().name()+otherUser.getUid()).orElseThrow(()->new UserNotFoundException("ID"));
+                String userId = otherUser.getPlatForm().name()+otherUser.getUid();
+                userSimple = userSimpleRepository.findByUid(userId)
+                        .orElseThrow(()->
+                                new UserNotFoundException("ID",userId));
             }else{
                 responseService.getDetailResult(false,-1,otherUser.getPlatForm().name()+" Token error");
             }
@@ -180,7 +183,8 @@ public class AccountController {
                                HttpServletResponse res) {
         UserSimple userSimple;
         try{
-            userSimple = userSimpleRepository.findByUid(uid).orElseThrow(()->new UserNotFoundException("ID"));
+            userSimple = userSimpleRepository
+                    .findByUid(uid).orElseThrow(()->new UserNotFoundException("ID",uid));
             if (passwordEncoder.matches(password, userSimple.getPassword())){
                 final String token = jwtTokenService.generateToken(userSimple);
                 final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
