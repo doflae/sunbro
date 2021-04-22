@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { withRouter,useHistory} from "react-router-dom";
 import { authWrapper } from '../auth/AuthWrapper';
-import { uploadWrapper} from "../upload/UploadWrapper";
 import logo from "../static/img/logo.jpg"
 import styled from "styled-components";
 import {IconStyled} from "../MainStyled";
@@ -18,9 +17,6 @@ function Header({...props}){
   const goLogin = () => (e) =>{
     props.setAuthPageOption(0);
   }
-  const goUpload = () => (e) =>{
-    props.onOffUploadPage(0);
-  }
   useEffect(()=>{
     setUser(props.user);
   },[props.user,user])
@@ -33,9 +29,6 @@ function Header({...props}){
     <SearchInputStyled type="text" className="search-input"></SearchInputStyled>
     <SearchStyled theme="search_lg"/>
   </SearchZoneStyled>
-  <PencilStyled 
-    theme="pencil_lg"
-    onClick={goUpload()}/>
   <LogBtn user = {user} Logout = {Logout} goLogin = {goLogin}/>
   </HeadStyled>
 }
@@ -48,15 +41,6 @@ const LogBtn = ({user, Logout, goLogin}) =>{
   }
 }
 
-const PencilStyled = styled(IconStyled)`
-  align-self: center;
-  cursor:pointer;
-  filter: invert(37%) sepia(90%) saturate(577%) hue-rotate(
-  185deg
-  ) brightness(98%) contrast(85%);
-  position: absolute;
-  right: 100px;
-`
 
 const SearchZoneStyled = styled.div`
   background-color: #dfdede;
@@ -138,4 +122,4 @@ const HeadStyled = styled.header`
   position:fixed;
 `
 
-export default withRouter(uploadWrapper(authWrapper(Header)))
+export default withRouter(authWrapper(Header));

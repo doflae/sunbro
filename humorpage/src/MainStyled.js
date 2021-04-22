@@ -8,6 +8,9 @@ const IconSize = {
     "search_lg":32,
     "pencil_lg":32,
     "share_lg":32,
+    "new_lg":32,
+    "hot_lg":32,
+    "rank_lg":32,
     "like_sm":24,
     "image_sm":24,
     "comment_sm":24,
@@ -23,12 +26,15 @@ const IconPos = {
     "search_lg":"-96px 0px",
     "pencil_lg":"-128px 0px",
     "share_lg":"-160px 0px",
-    "like_sm":"0px -32px",
-    "image_sm":"-24px -32px",
-    "comment_sm":"-48px -32px",
-    "video_sm":"-72px -32px",
-    "youtube_sm":"-96px -32px",
-    "pencil_sm":"-120px -32px"
+    "new_lg":"-192px 0px",
+    "hot_lg":"0px -32px",
+    "rank_lg":"-32px -32px",
+    "like_sm":"-64px -32px",
+    "image_sm":"-88px -32px",
+    "comment_sm":"-112px -32px",
+    "video_sm":"-136px -32px",
+    "youtube_sm":"-160px -32px",
+    "pencil_sm":"-184px -32px"
 }
 
 export const IconStyled = styled.div`
