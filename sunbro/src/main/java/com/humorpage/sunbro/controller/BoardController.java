@@ -11,7 +11,6 @@ import com.humorpage.sunbro.service.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
@@ -19,6 +18,7 @@ import org.thymeleaf.util.StringUtils;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api/board")
@@ -44,9 +44,6 @@ public class BoardController {
     private UserSimpleRepository userSimpleRepository;
 
     @Autowired
-    private BoardLikesRepository boardLikesRepository;
-
-    @Autowired
     private CacheRankingService cacheRankingService;
 
     @Autowired
@@ -54,6 +51,9 @@ public class BoardController {
 
     @Autowired
     private BoardDetailRepository boardDetailRepository;
+
+    @Autowired
+    private BoardService boardService;
 
     @Autowired
     private AssignDirectoryService assignDirectoryService;
@@ -185,32 +185,13 @@ public class BoardController {
         }else{
             boardThumbnailList = boardThumbnailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,10));
         }
-        try {
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
-            boardThumbnailList.forEach(boardThumbnail -> {
-                boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
-            });
-        }catch (NullPointerException ignored){
-
-        }
-
-        return responseService.getListResult(boardThumbnailList);
+        return responseService.getListResult(boardService.setTransientBoard(boardThumbnailList,authentication));
     }
 
     @GetMapping("/rank")
     ListResult<BoardThumbnail> ranked(@RequestParam(required = false, defaultValue = "DAILY") RankingType rankType, Authentication authentication){
         List<BoardThumbnail> boardThumbnailList = cacheRankingService.getRanking(rankType);
-        try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
-            boardThumbnailList.forEach(boardThumbnail -> {
-                boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
-            });
-        }catch (NullPointerException ignored){
-
-        }
-        return responseService.getListResult(boardThumbnailList);
+        return responseService.getListResult(boardService.setTransientBoard(boardThumbnailList,authentication));
     }
 
     @GetMapping("/content/{board_id}")
@@ -259,15 +240,6 @@ public class BoardController {
 
         if (boardThumbnailList==null)
             return responseService.getListResult(null);
-        try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
-            boardThumbnailList.forEach(boardThumbnail -> {
-                boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
-            });
-        }catch (NullPointerException ignored){
-
-        }
-        return responseService.getListResult(boardThumbnailList);
+        return responseService.getListResult(boardService.setTransientBoard(boardThumbnailList,authentication));
     }
 }

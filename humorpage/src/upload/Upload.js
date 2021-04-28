@@ -154,19 +154,6 @@ class Upload extends Component {
       const bgTarget = this.props.bgRef.current
       //Background click event
       if(bgTarget) bgTarget.addEventListener('click',this.hiddenPage());
-      //이전 hidden 함수에 의한 display 변경 복구
-      const ref = this.props.uploadPageRef
-      // if(ref) {
-      //   console.log(ref.style);
-      //   ref.style.display="";
-      // }else{
-      //   console.log(ref)
-      // }
-      //
-      // quill.clipboard.addMatcher("DIV",(node,delta)=>{
-      //   delta.insert({'myvideo':node.firstElementChild.getAttribute('src')})
-      //   return delta;
-      // })
       tooltip.save = () =>{
         const url = sanitizeUrl(tooltip.textbox.value)
         console.log(url)
@@ -188,6 +175,63 @@ class Upload extends Component {
           }
         })
       }
+    }
+
+    sendVideo = (filePath,elementList) =>{
+      if(elementList==null) return
+      elementList.forEach(elem=>{
+        if(elem.childElementCount>1) elem.removeChild(elem.lastChild)
+        elem.removeAttribute("src")
+        elem.removeAttribute("style")
+        elem.removeAttribute("class")
+        elem.setAttribute("class","board_video");
+        const video = elem.firstElementChild
+        video.removeAttribute("class")
+        video.setAttribute("controls","true")
+        
+        if(video.src.startsWith("blob")){
+          fetch(video.src).then(r=>r.blob()).then(
+            blob=>{
+              const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+              video.setAttribute("src", "/api/file/get?name="+newPath)
+              if(video.videoWidth>0){
+                this.saveFile(blob,newPath,false)
+              }else{
+                this.saveFile(blob,newPath,true)
+              }
+            }
+          )
+        }
+      })
+    }
+
+    sendImage = (filePath,elementList) =>{
+      if(elementList==null) return
+      elementList.forEach(elem=>{
+        elem.removeAttribute("class")
+        const src = elem.src
+        if(src.startsWith("blob")){
+          fetch(src).then(r=>r.blob()).then(
+            blob=>{
+              const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+              elem.setAttribute("src", "/api/file/get?name="+newPath)
+              this.saveFile(blob,newPath,false)
+            }
+          )
+        }else if(src.startsWith("data")){
+          const blob = dataUrltoBlob(src);
+          const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+          elem.setAttribute("src", "/api/file/get?name="+newPath)
+          this.saveFile(blob,newPath,false)
+        }
+      })
+    }
+
+    removeId = (elementList) =>{
+      if(elementList==null) return
+      elementList.forEach(elem=>{
+        elem.removeAttribute("id")
+      })
     }
 
 
@@ -214,7 +258,6 @@ class Upload extends Component {
         })
         return
       }
-      var content = document.querySelector(".ql-editor").innerHTML
       const filePath = "/"+getToday()+"/"+this.mediaDir+"/"
       // path = /240/path.jpg
       let data = new FormData();
@@ -263,7 +306,7 @@ class Upload extends Component {
           const youtubePattern = /.*\/([^?.]*)\?.*/g
           const src = mediaElem.getAttribute("src");
           const Id = youtubePattern.exec(src)
-          if(Id.length>0){
+          if(Id!=null){
             const thumbNailSrc = `https://img.youtube.com/vi/${Id[1]}/sddefault.jpg`
             data.append("thumbnailImg",thumbNailSrc);
           }
@@ -271,56 +314,18 @@ class Upload extends Component {
       }
       
       // NEED UPDATE : querySelector -> ref 사용 추천
-      for(const elem of document.querySelectorAll(".ql-prevideo")){
-        if(elem.childElementCount>1) elem.removeChild(elem.lastChild)
-        elem.removeAttribute("src")
-        elem.removeAttribute("style")
-        elem.removeAttribute("class")
-        elem.setAttribute("class","board_video");
-        const video = elem.firstElementChild
-        video.removeAttribute("class")
-        video.setAttribute("controls","true")
-        
-        if(video.src.startsWith("blob")){
-          await fetch(video.src).then(r=>r.blob()).then(
-            blob=>{
-              const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-              video.setAttribute("src", "/api/file/get?name="+newPath)
-              if(video.videoWidth>0){
-                this.saveFile(blob,newPath,false)
-              }else{
-                this.saveFile(blob,newPath,true)
-              }
-            }
-          )
-        }
-      }
-      for(const elem of document.querySelectorAll(".image_preview")){
-        elem.removeAttribute("class")
-        const src = elem.src
-        if(src.startsWith("blob")){
-          await fetch(src).then(r=>r.blob()).then(
-            blob=>{
-              const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-              elem.setAttribute("src", "/api/file/get?name="+newPath)
-              this.saveFile(blob,newPath,false)
-            }
-          )
-        }else if(src.startsWith("data")){
-          const blob = dataUrltoBlob(src);
-          const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-          elem.setAttribute("src", "/api/file/get?name="+newPath)
-          this.saveFile(blob,newPath,false)
-        }
-      }
-      content = this.quillRef.props.value
-      if (this.mediaFileSend || document.querySelector("#ql") !=null ){
+      await this.sendVideo(filePath,document.querySelectorAll(".ql-prevideo"))
+      await this.sendImage(filePath,document.querySelectorAll(".image_preview"))
+      const mediaElems = document.querySelectorAll("#ql")
+      await this.removeId(mediaElems)
+      const content = this.quillRef.props.value
+      if (this.mediaFileSend || mediaElems!==null){
         data.append('title',title)
         data.append('content',content)
         data.append('mediaDir',this.mediaDir)
         Axios.post("/board/upload",data).then(res =>{
           if (res.status ===200){
-            this.props.history.push("/boards");
+            this.props.onOffUploadPage(-1);
           }else{
             console.log(res)
           }
