@@ -1,4 +1,4 @@
-import React, { Component} from 'react';
+import React from 'react';
 import './static/css/Normalize.css'
 import './static/css/App.css';
 import './static/css/Board.css'
@@ -11,17 +11,15 @@ import BoardConnector from "./board/BoardConnector"
 import UploadConnector from "./upload/UploadConnector"
 import Header from "./header/Header"
 import {Login} from "./auth/Login"
-import {Provider} from "react-redux"
-import {HumorDataStore} from "./data/DataStore"
 import UserPage from "./userpage/UserPage"
 import BoardSingleConnector from './board/BoardSingleConnector';
 import styled from 'styled-components';
 import {SideBar} from "./sidebar/SideBar";
 
-class App extends Component{
-  render(){
-    return<Provider store = {HumorDataStore}>
-            <AppStyled ref={this.AppRef}>
+const App = () =>{
+  return (
+        <React.Fragment>
+          <AppStyled>
               <Header/>
             <Switch>
               <MainBoxStyled>
@@ -36,8 +34,8 @@ class App extends Component{
             </Switch>
           </AppStyled>
           <UploadConnector/>
-          </Provider>
-  }
+          </React.Fragment>
+  )
 }
 
 const AppStyled = styled.div`

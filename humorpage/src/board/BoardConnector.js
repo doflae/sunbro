@@ -1,19 +1,30 @@
-import React, {Component} from "react";
+import React, { Component } from 'react';
+import {WindowScroller, CellMeasurer, CellMeasurerCache, AutoSizer, List} from 'react-virtualized';
 import Board from "./Board";
 import {authWrapper} from "../auth/AuthWrapper"
 import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
 import {uploadWrapper} from "../upload/UploadWrapper"
+import {throttle} from "../utils/Utils"
+import {boardWrapper} from "./BoardWrapper"
+
+export const cache = new CellMeasurerCache({
+    defaultWidth:100,
+    fixedWidth:true
+})
 
 class BoardConnector extends Component{
     constructor(props){
-        super(props)
-
-        this.state = {
-            boardList : [],
-            last_board:0,
-        };
+        super(props);
+        this.listRef = React.createRef();
         this.boardElements = [];
+        this.lastBoard = 0;
+        this.lastElementid = 0;
+        this.lastIndex = 0;
+        this.state = {
+            boards:[]
+        };
+        this.clear = this.clear.bind(this)
         this.registerRef = this.registerRef.bind(this)
     }
 
@@ -23,53 +34,35 @@ class BoardConnector extends Component{
         }
     }
 
-    componentDidMount(){
-        this.getData();
-        this.setState({
-            lastElementid:0
-        })
-        window.addEventListener('scroll', this.infiniteScroll);
-    }
-    
-    componentWillUnmount(){
-        window.removeEventListener('scroll', this.infiniteScroll);
-    }
-
     gotoNext = () =>(e)=> {
-        e.preventDefault();
         const {documentElement, body} = document;
-        const {lastElementid} = this.state;
         const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
         const scrollBottom = scrollTop+documentElement.clientHeight
-        const boards = this.boardElements
-        for(let i = lastElementid+1; i<boards.length;i++){
-            const b = boards[i]
+        for(let i = this.lastElementid+1; i<this.boardElements.length;i++){
+            const b = this.boardElements[i]
             const offsetTop = b.offsetTop
             if(offsetTop+b.offsetHeight<scrollBottom) continue
-            this.setState({
-                lastElementid:i,
-            })
+            this.lastElementid = i
             window.scrollTo({top:offsetTop-50, behavior:'smooth'})
-            break;
-            
+            return
         }
     }
 
-    getData = () => {
-        const {last_board,boardList} = this.state;
-        var resturl = '/board/recently?'
-        if(last_board!==0){
-            resturl+=`board_id=${last_board}`
+    getBoard = () =>{
+        let resturl = `/board/recently?`
+        if(this.lastBoard!==0){
+            resturl+=`board_id=${this.lastBoard}`
         }
+        const {boards} = this.state
         this.props.request('get',resturl).then(res=>{
             const resData = res.data.list
             if(0<resData.length && resData.length<11){
                 this.setState({
-                    boardList:[...boardList, ...resData],
-                    last_board:resData[resData.length-1]['id']
+                    boards:[...boards,...resData]
                 })
+                this.lastBoard = resData[resData.length-1]['id']
             }else{
-                window.removeEventListener('scroll', this.infiniteScroll);
+                window.removeEventListener("scroll",throttle(this.infiniteScroll,300))
             }
         })
     }
@@ -80,31 +73,86 @@ class BoardConnector extends Component{
         const scrollHeight = Math.max(documentElement.scrollHeight, body.scrollHeight);
         const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
         const clientHeight = documentElement.clientHeight;
-
         if (scrollTop + clientHeight >= scrollHeight) {
-            this.getData();
+            this.getBoard();
         }
     }
-
-    boardsRender = () =>{
-        const boardList = this.state.boardList;
-        if(boardList.length===0) return null;
-        return boardList.map(board=><Board setRef={this.registerRef} board={board} key={board.id}/>)
-    }
-    nextBtnRender = () =>{
-        if(this.state.boardList.length===0) return null;
+    
+    nextBtnRenderer = () =>{
+        const {boards} = this.state
+        if(boards.length===0) return null;
         return <NextBoardBtnStyled onClick={this.gotoNext()}>
             NEXT
             <DownIconStyled/>
         </NextBoardBtnStyled>
     }
 
+    clear = (idx) =>{
+        for(let i = idx; idx<=this.lastIndex;i++){
+            cache.clear(i,0);
+        }
+    }
+
+    rowRenderer = ({ index, key, parent, style }) => {
+        this.lastIndex = Math.max(index,this.lastIndex)
+        const {boards} = this.state
+        return (
+            <CellMeasurer cache={cache} parent={parent} key={key} columnIndex={0} rowIndex={index}>
+                {({measure, registerChild})=>(
+                    <Board 
+                    boardRef = {registerChild}
+                    board={boards[index]} 
+                    measure={measure}
+                    idx={index}
+                    clear={this.clear}
+                    style={style}
+                    setRef={this.registerRef}/>
+                )}
+            </CellMeasurer>
+        );
+    };
+
+    componentDidMount(){
+        this.getBoard()
+        window.addEventListener("scroll",throttle(this.infiniteScroll,300))
+    }
+
+    componentWillUnmount(){
+        window.removeEventListener("scroll",throttle(this.infiniteScroll,300))
+    }
+
     render(){
-        return <React.Fragment>
+        const {boards} = this.state
+        return (
+        <React.Fragment>
             <BoardZoneHeader/>
-            {this.boardsRender()}
-            {this.nextBtnRender()}
-            </React.Fragment>
+            <BoardMainBoxStyled>
+                <WindowScroller>
+                    {({ height, scrollTop, isScrolling, onChildScroll }) => (
+                        <AutoSizer disableHeight>
+                            {({ width }) => (
+                                <List
+                                    ref={this.listRef}
+                                    autoHeight
+                                    height={height}
+                                    width={width}
+                                    isScrolling={isScrolling}
+                                    overscanRowCount={0}
+                                    onScroll={onChildScroll}
+                                    scrollTop={scrollTop}
+                                    rowCount={boards.length}
+                                    rowHeight={cache.rowHeight}
+                                    rowRenderer={this.rowRenderer}
+                                    deferredMeasurementCache={cache}
+                                />
+                            )}
+                        </AutoSizer>
+                    )}
+                </WindowScroller>
+            </BoardMainBoxStyled>
+            {this.nextBtnRenderer()}
+        </React.Fragment>
+        );
     }
 }
 
@@ -142,6 +190,12 @@ const BoardZoneHeader = uploadWrapper(({...props}) =>{
         </HeaderBtnRightZone>
     </BoardZoneHeaderStyled>
 })
+
+const BoardMainBoxStyled = styled.div`
+    min-width: 496px;
+    max-width: 700px;
+    margin-left:auto;
+`
 
 const BoardIconStyled = styled(IconStyled)`
     margin-right:5px;
@@ -233,4 +287,4 @@ const DownIconStyled = styled.div`
     }
 `
 
-export default authWrapper(BoardConnector);
+export default boardWrapper(authWrapper(BoardConnector));

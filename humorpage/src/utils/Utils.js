@@ -282,3 +282,29 @@ export const copyToClipboard = (text) =>{
         }
     }
 }
+
+export const throttle = (fn, delay=100) =>{
+    var timer = null;
+    return ()=>{
+        var context = this;
+        var args = arguments;
+        if(!timer){
+            timer = setTimeout(()=>{
+                fn.apply(context,args);
+                timer = null;
+            },delay);
+        }
+    }
+}
+
+export const debounce = (fn,delay=1000) =>{
+    var timer = null;
+    return ()=>{
+        var context = this;
+        var args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(()=>{
+            fn.apply(context,args);
+        },delay);
+    }
+}

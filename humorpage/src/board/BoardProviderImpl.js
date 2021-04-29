@@ -24,8 +24,8 @@ export class BoardProviderImpl extends Component{
     }
     render = () =>
         <BoardContext.Provider value={{...this.state,
-        setBoard:this.setBoard,
-        setBoardKey:this.setBoardKey}}>
+            setBoard:this.setBoard,
+            setBoardKey:this.setBoardKey}}>
             {this.props.children}
         </BoardContext.Provider>
 }

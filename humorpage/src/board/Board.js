@@ -9,9 +9,11 @@ import {uploadWrapper} from "../upload/UploadWrapper"
 import Axios from "axios"
 import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
+import ReactResizeDetector from "react-resize-detector"
+import {cache} from "./BoardConnector"
 
 function Board({
-    board,setRef,...props
+    board,setRef,idx,...props
 }){
     const [content, setContent] = useState(board.content);
     const [onOff, setOnOff] = useState(!board.more);
@@ -28,12 +30,14 @@ function Board({
         if(setRef!=null && boardRef.current) setRef(boardRef.current)
     },[boardRef,setRef])
 
+    //todo:update후 바로 적용
     const UpdateBoard = ()=> async (e)=>{
         props.setBoardKey(id).then(()=>{
             props.onOffUploadPage(1)
         })
     }
 
+    //todo:test
     const DeleteBoard = ()=>(e)=>{
         if(window.confirm("삭제하시겠습니까?")){
             const formData = new FormData();
@@ -59,78 +63,97 @@ function Board({
         }
     }
 
+    const onResize = () =>{
+        console.log(boardRef)
+        console.log("hi")
+        props.measure()
+    }
+
     if(board==null) return null;
     if(board.author==null){
         board.author = {userNum:"#",name:"@user123",userImg:""}
     }
     const isAuthor = props.user!=null && board.author.userNum===props.user.userNum;
     if(isDeleted) return null;
-    return <BoardStyled ref = {boardRef}>
-        <BoardTop>
-            <BoardTopLeft>
-            <BoardAuthorImageStyled src={"/api/file/get?name=/72"+board.author.userImg}
-                alt="" onError={(e)=>{
-                    e.target.onError=null;e.target.src=userDefaultImg;
-                }}/>
-            </BoardTopLeft>
-            <BoardTopCenter className="board_top_center">
-                <AuthorName><Link to={`/userpage/${board.author.usernum}`}>{board.author.name}</Link></AuthorName>
-                <Created className="created">{getTime(board.created)}</Created>
-            </BoardTopCenter>
-            <BoardTopRight>
-                <BoardControlBtn
-                    setDUpBtnOnOff={setDUpBtnOnOff}
-                    dUpBtnOnOff={dUpBtnOnOff}
-                />
-                <BoardControls
-                    btnOnOff={dUpBtnOnOff}
-                    isAuthor={isAuthor}
-                    UpdateBoard={UpdateBoard}
-                    DeleteBoard={DeleteBoard}
-                />
-            </BoardTopRight>
-        </BoardTop>
-        <BoardTitleStyled>
-            {board.title}
-        </BoardTitleStyled>
-        <div className="board_main">
-            <MainContentComponent content={content} thumbnail={thumbnail} onOff={onOff}></MainContentComponent>
-        </div>
-        <div>
-            <GetDetailBtn
-                id = {id}
-                isMore={board.more}
-                onOff={onOff}
-                setOnOff={setOnOff}
-                offset={offset}
-                setOffset={setOffset}
-                boardRef={boardRef}
-                setContent={setContent}
-                content={content}
-                />
-            <BoardBottomButtonStyled>
-                <LikeBtn id={id} like={board.like} likes={board.likes}/>
-                <CommentBtnStyled
-                    ref={commentBtnRef}>
-                    <CommentIconStlyed
-                        theme="comment_lg"/>
-                    <NumberStyled>
-                        {convertUnitOfNum(board.total_comments_num)}
-                    </NumberStyled>
-                </CommentBtnStyled>
-                <ShareBtnStyled>
-                    <IconStyled
-                    theme="share_lg"
-                    onClick={ShareBoard()}/>
-                </ShareBtnStyled>   
-            </BoardBottomButtonStyled>
-        </div>
-        <CommentBox 
-            board_id={id}
-            comment_cnt = {comments_num} 
-            commentBtnRef = {commentBtnRef}
-            failedHandler={()=>{setIsDeleted(true)}}/>
-    </BoardStyled>
+    return (
+        <ReactResizeDetector handleWidth={false}
+        skipOnMount={true}
+        refreshMode={"throttle"}
+        onResize={onResize}>
+            <BoardPaddingStyled
+                style={props.style}
+                ref = {boardRef}>
+                <BoardStyled >
+                    <BoardTop>
+                        <BoardTopLeft>
+                        <BoardAuthorImageStyled src={"/api/file/get?name=/72"+board.author.userImg}
+                            alt="" onError={(e)=>{
+                                e.target.onError=null;e.target.src=userDefaultImg;
+                            }}/>
+                        </BoardTopLeft>
+                        <BoardTopCenter className="board_top_center">
+                            <AuthorName><Link to={`/userpage/${board.author.usernum}`}>{board.author.name}</Link></AuthorName>
+                            <Created className="created">{getTime(board.created)}</Created>
+                        </BoardTopCenter>
+                        <BoardTopRight>
+                            <BoardControlBtn
+                                setDUpBtnOnOff={setDUpBtnOnOff}
+                                dUpBtnOnOff={dUpBtnOnOff}
+                            />
+                            <BoardControls
+                                btnOnOff={dUpBtnOnOff}
+                                isAuthor={isAuthor}
+                                UpdateBoard={UpdateBoard}
+                                DeleteBoard={DeleteBoard}
+                            />
+                        </BoardTopRight>
+                    </BoardTop>
+                    <BoardTitleStyled>
+                        {board.title}
+                    </BoardTitleStyled>
+                    <div className="board_main">
+                        <MainContentComponent content={content} thumbnail={thumbnail} onOff={onOff}></MainContentComponent>
+                    </div>
+                    <div>
+                        <GetDetailBtn
+                            id = {id}
+                            idx = {idx}
+                            clear = {props.clear}
+                            isMore={board.more}
+                            onOff={onOff}
+                            setOnOff={setOnOff}
+                            offset={offset}
+                            setOffset={setOffset}
+                            boardRef={boardRef}
+                            setContent={setContent}
+                            content={content}
+                            />
+                        <BoardBottomButtonStyled>
+                            <LikeBtn id={id} like={board.like} likes={board.likes}/>
+                            <CommentBtnStyled
+                                ref={commentBtnRef}>
+                                <CommentIconStlyed
+                                    theme="comment_lg"/>
+                                <NumberStyled>
+                                    {convertUnitOfNum(board.total_comments_num)}
+                                </NumberStyled>
+                            </CommentBtnStyled>
+                            <ShareBtnStyled>
+                                <IconStyled
+                                theme="share_lg"
+                                onClick={ShareBoard()}/>
+                            </ShareBtnStyled>   
+                        </BoardBottomButtonStyled>
+                    </div>
+                    <CommentBox 
+                        board_id={id}
+                        comment_cnt = {comments_num} 
+                        commentBtnRef = {commentBtnRef}
+                        failedHandler={()=>{setIsDeleted(true)}}/>
+                </BoardStyled>
+            </BoardPaddingStyled>
+        </ReactResizeDetector>
+    )
 }
 
 
@@ -155,7 +178,7 @@ const GetDetailBtn = ({...props}) => {
             window.scrollTo({top:current.offsetTop-50,behavior:'smooth'})
             target.innerText="접기"
             if(props.content==null){
-                Axios({method:"get",url:`/board/content/${props.id}`}).then((res)=>{
+                await Axios({method:"get",url:`/board/content/${props.id}`}).then((res)=>{
                     if(res.status===200){
                         props.setContent(res.data.data)
                         props.setOnOff(true)
@@ -165,6 +188,8 @@ const GetDetailBtn = ({...props}) => {
                 props.setOnOff(true)
             }
         }
+        props.clear(props.idx,0);
+        
     }
     if(!props.isMore) return null;
     else return <GetDetailBtnStyled ref = {detailBtnRef}
@@ -321,11 +346,13 @@ const BoardThumbnailStyled = styled.div`
     text-align:center;
 `
 
+const BoardPaddingStyled = styled.div`
+    ${props=>props.style}
+    padding:10px 0px;
+`
+
 const BoardStyled = styled.div`
-    min-width: 496px;
-    max-width: 700px;
     border-radius:10px;
-    margin-left:auto;
     background-color: #f9f9f9;
     border-bottom: 1px solid rgba(94,93,93,0.418);
     margin-bottom: 4px;

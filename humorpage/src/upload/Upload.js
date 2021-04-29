@@ -5,7 +5,13 @@ import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import {uploadWrapper} from "./UploadWrapper";
 import Axios from "axios"
-import {getToday, getRandomGenerator,isEmpty, ResizeThumbnailImage, sanitizeUrl, dataUrltoBlob} from "../utils/Utils"
+import {getToday, 
+  getRandomGenerator,
+  isEmpty, 
+  ResizeThumbnailImage, 
+  sanitizeUrl, 
+  dataUrltoBlob,
+} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 import * as Styled from "./Styled";
 import {IconStyled} from "../MainStyled"
@@ -73,10 +79,9 @@ class CustomImage extends Image{
     else return null;
   }
 }
+CustomImage.blotName = 'myimage';
 
-CustomImage.blotName = 'image';
-
-Quill.register("formats/image",CustomImage,false);
+Quill.register("formats/myimage",CustomImage,false);
 
 class CustomVideo extends Video{
   static create(value){
@@ -146,21 +151,22 @@ class Upload extends Component {
       this.dropzone = null;
       this.mediaFileSend = false;
       this.titleRef = createRef();
+      this.quill = null
     }
 
     componentDidMount(){
-      const quill = this.quillRef.getEditor();      
+      const quill = this.quillRef.getEditor(); 
+      this.quill = quill.root     
       const tooltip = quill.theme.tooltip;
       const bgTarget = this.props.bgRef.current
       //Background click event
       if(bgTarget) bgTarget.addEventListener('click',this.hiddenPage());
       tooltip.save = () =>{
         const url = sanitizeUrl(tooltip.textbox.value)
-        console.log(url)
         if(url!=null) {
           const range = tooltip.quill.selection.savedRange
           quill.insertEmbed(range.index,'video',url,'user');
-          quill.getSelection(range.index + 1)
+          quill.setSelection(range.index + 2)
           quill.focus();
         }
         tooltip.hide();
@@ -177,78 +183,78 @@ class Upload extends Component {
       }
     }
 
-    sendVideo = (filePath,elementList) =>{
-      if(elementList==null) return
-      elementList.forEach(elem=>{
-        if(elem.childElementCount>1) elem.removeChild(elem.lastChild)
-        elem.removeAttribute("src")
-        elem.removeAttribute("style")
-        elem.removeAttribute("class")
-        elem.setAttribute("class","board_video");
-        const video = elem.firstElementChild
-        video.removeAttribute("class")
-        video.setAttribute("controls","true")
-        
-        if(video.src.startsWith("blob")){
-          fetch(video.src).then(r=>r.blob()).then(
-            blob=>{
-              const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-              video.setAttribute("src", "/api/file/get?name="+newPath)
-              if(video.videoWidth>0){
-                this.saveFile(blob,newPath,false)
-              }else{
-                this.saveFile(blob,newPath,true)
-              }
-            }
-          )
-        }
-      })
-    }
-
-    sendImage = (filePath,elementList) =>{
-      if(elementList==null) return
-      elementList.forEach(elem=>{
-        elem.removeAttribute("class")
-        const src = elem.src
-        if(src.startsWith("blob")){
-          fetch(src).then(r=>r.blob()).then(
-            blob=>{
-              const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-              elem.setAttribute("src", "/api/file/get?name="+newPath)
+    sendVideo = async (filePath,elem) =>{
+      if(elem.childElementCount>1) elem.removeChild(elem.lastChild)
+      elem.removeAttribute("src")
+      elem.removeAttribute("style")
+      elem.removeAttribute("class")
+      elem.setAttribute("class","board_video");
+      const video = elem.firstElementChild
+      video.removeAttribute("class")
+      video.setAttribute("controls","true")
+      
+      if(video.src.startsWith("blob")){
+        await fetch(video.src).then(r=>r.blob()).then(
+          blob=>{
+            const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+            video.setAttribute("src", "/api/file/get?name="+newPath)
+            if(video.videoWidth>0){
               this.saveFile(blob,newPath,false)
+            }else{
+              this.saveFile(blob,newPath,true)
             }
-          )
-        }else if(src.startsWith("data")){
-          const blob = dataUrltoBlob(src);
-          const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-          elem.setAttribute("src", "/api/file/get?name="+newPath)
-          this.saveFile(blob,newPath,false)
-        }
-      })
+          }
+        )
+      }
     }
 
-    removeId = (elementList) =>{
-      if(elementList==null) return
-      elementList.forEach(elem=>{
-        elem.removeAttribute("id")
-      })
+    sendImage = async (filePath,elem) =>{
+      elem.removeAttribute("class")
+      const src = elem.src
+      if(src.startsWith("blob")){
+        await fetch(src).then(r=>r.blob()).then(
+          blob=>{
+            const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+            elem.setAttribute("src", "/api/file/get?name="+newPath)
+            this.saveFile(blob,newPath,false)
+          }
+        )
+      }else if(src.startsWith("data")){
+        const blob = dataUrltoBlob(src);
+        const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+        elem.setAttribute("src", "/api/file/get?name="+newPath)
+        this.saveFile(blob,newPath,false)
+      }
+    }
+
+    send = async (filePath) =>{
+      const mediaElems = this.quill.querySelectorAll("#ql")
+      Object.values(mediaElems).forEach(media=>this.removeId(media))
+      const videos = this.quill.querySelectorAll(".ql-prevideo")
+      const videoQuery = Object.values(videos).map(async video=> await this.sendVideo(filePath,video))
+      const images = this.quill.querySelectorAll(".image_preview")
+      const imageQuery = Object.values(images).map(async image=> await this.sendImage(filePath,image))
+      await Promise.all([...imageQuery,...videoQuery])
+    }
+
+    removeId = (elem) =>{
+      elem.removeAttribute("id")
     }
 
 
     checkIsmore = () =>{
       //1. src체크 -> image든 video든 여러개면 x
-      if(document.querySelectorAll("#ql").length>1){
+      if(this.quill.querySelectorAll("#ql").length>1){
         return true;
       }
       //2. text체크 -> 에디터 스크롤 height 이용?
-      const height = document.querySelector(".ql-editor").scrollHeight;
+      const height = this.quill.scrollHeight;
       if(height>600){
         return true;
       }
       return false;
     }
 
-    //blob to file list, name-> src 정해서
     submit = () => async (e) =>{
       e.preventDefault();
       var title = this.titleRef.current.value
@@ -264,7 +270,7 @@ class Upload extends Component {
       //썸네일 만들지 여부
       const isMore = this.checkIsmore();
       data.append('more',isMore)
-      const mediaElem = document.querySelector("#ql")
+      const mediaElem = this.quill.querySelector("#ql")
       //썸네일은 0.5배로 min height 240 max height 500
       //썸네일 저장소는 사이즈로 구분안되기 때문에 thumb/...로 변경
       if(isMore && mediaElem!==null){
@@ -312,14 +318,9 @@ class Upload extends Component {
           }
         }
       }
-      
-      // NEED UPDATE : querySelector -> ref 사용 추천
-      await this.sendVideo(filePath,document.querySelectorAll(".ql-prevideo"))
-      await this.sendImage(filePath,document.querySelectorAll(".image_preview"))
-      const mediaElems = document.querySelectorAll("#ql")
-      await this.removeId(mediaElems)
-      const content = this.quillRef.props.value
-      if (this.mediaFileSend || mediaElems!==null){
+      await this.send(filePath)
+      const content = this.quill.innerHTML
+      if (this.mediaFileSend || mediaElem!==null){
         data.append('title',title)
         data.append('content',content)
         data.append('mediaDir',this.mediaDir)
@@ -363,8 +364,9 @@ class Upload extends Component {
               const dataURL = e.target.result;
               const blob = dataUrltoBlob(dataURL);
               const data = {blob:blob,name:_file.name}
-              quill.insertEmbed(range.index+range.length,"myvideo",data,'user');
-              quill.setSelection(range.index + 1);
+              console.log(range)
+              quill.insertEmbed(range.index,"myvideo",data,'user');
+              quill.setSelection(range.index + 2);
               quill.focus();
             }
             return reader.readAsDataURL(_file);
@@ -372,7 +374,8 @@ class Upload extends Component {
             reader.onload = (e) =>{
               const dataURL = e.target.result;
               const blob = dataUrltoBlob(dataURL)
-              quill.insertEmbed(range.index+range.length,"image",blob);
+              console.log(range)
+              quill.insertEmbed(range.index,"myimage",blob);
               quill.setSelection(range.index + 1);
               quill.focus();
             }
@@ -409,7 +412,7 @@ class Upload extends Component {
     };
   
     formats = [
-      "image",
+      "myimage",
       "video",
       "myvideo"
     ];
