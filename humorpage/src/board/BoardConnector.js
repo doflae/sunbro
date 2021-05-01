@@ -98,9 +98,8 @@ class BoardConnector extends Component{
         const {boards} = this.state
         return (
             <CellMeasurer cache={cache} parent={parent} key={key} columnIndex={0} rowIndex={index}>
-                {({measure, registerChild})=>(
-                    <Board 
-                    boardRef = {registerChild}
+                {({measure})=>(
+                    <Board
                     board={boards[index]} 
                     measure={measure}
                     idx={index}

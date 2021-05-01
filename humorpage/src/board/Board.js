@@ -2,7 +2,10 @@ import React, {useState, useRef, useEffect} from "react"
 import userDefaultImg from "../static/img/userDefault.png";
 import CommentBox from "../comment/CommentBox";
 import { Link } from "react-router-dom";
-import {sanitizeNonNull, getTime, convertUnitOfNum, copyToClipboard} from "../utils/Utils"
+import {sanitizeNonNull, 
+    getTime, 
+    convertUnitOfNum, 
+    copyToClipboard} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
 import {boardWrapper} from "./BoardWrapper"
 import {uploadWrapper} from "../upload/UploadWrapper"
@@ -10,7 +13,6 @@ import Axios from "axios"
 import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
 import ReactResizeDetector from "react-resize-detector"
-import {cache} from "./BoardConnector"
 
 function Board({
     board,setRef,idx,...props
@@ -54,6 +56,12 @@ function Board({
         }
     }
 
+    const measure = () =>{
+        if(boardRef.current){
+            props.measure()
+        }
+    }
+
 
     const ShareBoard = () => (e) =>{
         //todo:배포시 변경
@@ -63,12 +71,6 @@ function Board({
         }
     }
 
-    const onResize = () =>{
-        console.log(boardRef)
-        console.log("hi")
-        props.measure()
-    }
-
     if(board==null) return null;
     if(board.author==null){
         board.author = {userNum:"#",name:"@user123",userImg:""}
@@ -76,10 +78,6 @@ function Board({
     const isAuthor = props.user!=null && board.author.userNum===props.user.userNum;
     if(isDeleted) return null;
     return (
-        <ReactResizeDetector handleWidth={false}
-        skipOnMount={true}
-        refreshMode={"throttle"}
-        onResize={onResize}>
             <BoardPaddingStyled
                 style={props.style}
                 ref = {boardRef}>
@@ -112,7 +110,9 @@ function Board({
                         {board.title}
                     </BoardTitleStyled>
                     <div className="board_main">
-                        <MainContentComponent content={content} thumbnail={thumbnail} onOff={onOff}></MainContentComponent>
+                        <MainContentComponent content={content} 
+                        measure={measure}
+                        thumbnail={thumbnail} onOff={onOff}></MainContentComponent>
                     </div>
                     <div>
                         <GetDetailBtn
@@ -145,14 +145,18 @@ function Board({
                             </ShareBtnStyled>   
                         </BoardBottomButtonStyled>
                     </div>
+                    <ReactResizeDetector handleWidth={false}
+                    skipOnMount={true}
+                    refreshMode={"throttle"}
+                    onResize={props.measure}>
                     <CommentBox 
                         board_id={id}
                         comment_cnt = {comments_num} 
                         commentBtnRef = {commentBtnRef}
                         failedHandler={()=>{setIsDeleted(true)}}/>
+                    </ReactResizeDetector>
                 </BoardStyled>
             </BoardPaddingStyled>
-        </ReactResizeDetector>
     )
 }
 
@@ -188,7 +192,6 @@ const GetDetailBtn = ({...props}) => {
                 props.setOnOff(true)
             }
         }
-        props.clear(props.idx,0);
         
     }
     if(!props.isMore) return null;
@@ -268,16 +271,43 @@ const BoardControls = ({btnOnOff, isAuthor, UpdateBoard, DeleteBoard}) =>{
     return null;
 }
 
-const MainContentComponent = ({content,thumbnail,onOff}) =>{
-    if(onOff===true){
-        return <BoardDetailStyled dangerouslySetInnerHTML={{__html:sanitizeNonNull(content)}}></BoardDetailStyled>
+const MainContentComponent = ({content,thumbnail,onOff,...props}) =>{
+    const detailRef = useRef()
+    useEffect(()=>{
+        if(onOff){
+            if(detailRef){
+                const root = detailRef.current
+                root.innerHTML = sanitizeNonNull(content)
+                const imgList = root.getElementsByTagName("img")
+                const iframeList = root.getElementsByTagName("iframe")
+                const loadList = [...imgList,...iframeList]
+                const checkList = {}
+                Object.entries(loadList).forEach(entry=>{
+                    const key = entry[0], node = entry[1]
+                    checkList[key] = false
+                    node.setAttribute("data-idx",key)
+                    node.onload = () =>{
+                        loadList[node.getAttribute("data-idx")]=true
+                        const ret = Object.values(loadList).reduce((pre,value)=>{
+                            return pre&value
+                        },true)
+                        if(ret){
+                            props.measure()
+                        }
+                    }
+                })
+            }
+        }
+    },[onOff])
+    if(onOff){
+        return <BoardDetailStyled ref={detailRef}></BoardDetailStyled>
     }else{
         return <BoardThumbnailStyled>
-            <BoardThumbnailImg  alt="" 
+            <BoardThumbnailImgStyled  alt=""
+                onLoad={props.measure}
                 src={thumbnail.thumbnailImg} onError={(e)=>{
                 e.target.onError=null; e.target.style.display="none"}}/>
-            <BoardThumbnailText dangerouslySetInnerHTML={{__html:sanitizeNonNull(thumbnail.thumbnail)}}>
-            </BoardThumbnailText>
+            <BoardThumbnailTextStyled dangerouslySetInnerHTML={{__html:sanitizeNonNull(thumbnail.thumbnail)}}/>
         </BoardThumbnailStyled>
     }
 }
@@ -348,7 +378,7 @@ const BoardThumbnailStyled = styled.div`
 
 const BoardPaddingStyled = styled.div`
     ${props=>props.style}
-    padding:10px 0px;
+    padding:5px 0px;
 `
 
 const BoardStyled = styled.div`
@@ -396,13 +426,13 @@ const BoardTopRight = styled.div`
     margin:-7px -2px 0px 0px;
 `
 
-const BoardThumbnailText = styled.span`
+const BoardThumbnailTextStyled = styled.span`
     font-size: 1.2em;
     padding: 10px;
     width: 50%;
 `
 
-const BoardThumbnailImg = styled.img`
+const BoardThumbnailImgStyled = styled.img`
     max-height:500px;
     max-width:500px;
     margin : 5px;

@@ -25,12 +25,12 @@ public class FFMpegVideoConvert {
     }
 
     //need Absolute Path
-    public void extractThumbNail(String input, String ouput) throws VideoConvertException{
+    public void extractThumbNail(String input, String output) throws VideoConvertException{
 
         FFmpegBuilder builder = new FFmpegBuilder()
                 .addExtraArgs("-itsoffset","-1")
                 .setInput(input)
-                .addOutput(ouput)
+                .addOutput(output)
                 //if video height >= 1000px -> height 500px
                 //else if height>500px -> height / 2
                 //else height

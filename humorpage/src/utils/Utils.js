@@ -219,6 +219,7 @@ export const ResizeImage = (data, maxSize) =>{
         }
         fileReader.onload = (readerEvent) =>{
             if(data.type.match(/image.gif/)){
+                //gif 파일은 리사이즈 못하고 blob으로 변경
                 image.onload = () => ok(dataUrltoBlob(readerEvent.target.result))
             }else{
                 image.onload = () => ok(resize());
