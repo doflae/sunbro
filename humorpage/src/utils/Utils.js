@@ -70,9 +70,10 @@ export const sanitizeUrl = (url) =>{
     if (youtubeMatch && youtubeMatch[2].length === 11) {
         return `https://www.youtube.com/embed/${youtubeMatch[2]}?showinfo=0`
     }
-    const vimeoMatch = url.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/)
-    if (vimeoMatch) { // eslint-disable-line no-cond-assign
-        return (vimeoMatch[1] || 'https') + '://player.vimeo.com/video/' + vimeoMatch[2] + '/';
+    const twitchMatch = url.match(/^(?:(https?):\/\/)?(?:www\.)?twitch\.tv\/videos\/(\d+)/)||
+                url.match(/^(?:(https?):\/\/)?(?:www\.)?player\.twitch\.tv\/\?video\=(\d+).*/)
+    if (twitchMatch) {
+        return `https://player.twitch.tv/?video=${twitchMatch[2]}&parent=127.0.0.1&autoplay=false`
     }
     return null;
 }

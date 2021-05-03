@@ -1,0 +1,12 @@
+.ng-div-center{
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.youtube-logo{
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    height: 50px;
+}

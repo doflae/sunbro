@@ -3,6 +3,7 @@ import './static/css/Normalize.css'
 import './static/css/App.css';
 import './static/css/Board.css'
 import './static/css/Comment.css'
+import './static/css/Nogari.css'
 import "react-quill/dist/quill.snow.css"
 import './static/css/Editor.css'
 import './static/css/Mypage.css'

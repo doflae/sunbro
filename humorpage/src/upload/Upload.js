@@ -69,10 +69,11 @@ class CustomImage extends IMG{
     this.getSmUrl(node, value)
     image.onload = () => {
       node.dataset.size = `${image.naturalWidth} ${image.naturalHeight}`
-      const ratio = (image.naturalHeight*100/image.naturalWidth).toFixed(4)
-      node.setAttribute("style",`max-width:${image.naturalWidth};padding-top:${ratio}%;`)
+      const ratio = (image.naturalWidth/image.naturalHeight).toFixed(5)
+      node.setAttribute("style",`max-width:${image.naturalWidth}px;aspect-ratio:${ratio};`)
       node.className="ql-img-div"
     }
+    image.classList.add("image_preview")
     image.setAttribute("id","ql")
     node.appendChild(image)
     return node
@@ -245,19 +246,25 @@ class Upload extends Component {
     sendImage = async (filePath,elem) =>{
       elem.removeAttribute("class")
       const src = elem.src
+      const dataset = elem.parentElement.dataset
+      const newOriginFilePath = filePath+getRandomGenerator(10)
       if(src.startsWith("blob")){
         await fetch(src).then(r=>r.blob()).then(
           blob=>{
-            const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
+            const newPath = newOriginFilePath+"."+blob.type.split("/")[1]
             elem.setAttribute("src", "/api/file/get?name="+newPath)
             this.saveFile(blob,newPath,false)
           }
         )
-      }else if(src.startsWith("data")){
-        const blob = dataUrltoBlob(src);
-        const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-        elem.setAttribute("src", "/api/file/get?name="+newPath)
-        this.saveFile(blob,newPath,false)
+      }
+      if(dataset.small.startsWith("blob")){
+        await fetch(dataset.small).then(r=>r.blob()).then(
+          blob=>{
+            const newPath = "/27"+newOriginFilePath+"."+blob.type.split("/")[1]
+            elem.parentElement.dataset.small = "/api/file/get?name="+newPath
+            this.saveFile(blob,newPath,false)
+          }
+        )
       }
     }
 
@@ -311,13 +318,14 @@ class Upload extends Component {
         const newPath = filePath+getRandomGenerator(10)
         const ResizedFilePath = newPath+"thumb.jpg";
         const tag = mediaElem.tagName
+        const div = document.createElement("div")
+        div.className="ng-div-center"
         if(tag==="IMG"){
           //이미지는 원본 보내고 썸네일도 보내야함
-          //리사이징 이미지는 jpg파일로
+          //리사이징 이미지는 jpg 고정 (data size)
           let blob;
           if(mediaElem.src.startsWith('blob')){
             blob = await fetch(mediaElem.src).then(r=>r.blob())
-              
           }else if(mediaElem.src.startsWith('data')){
             blob = await dataUrltoBlob(mediaElem.src)
           }
@@ -327,7 +335,23 @@ class Upload extends Component {
           ResizeThumbnailImage(blob).then(resizedImage=>{
             this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
           })
-          data.append("thumbnailImg","/api/file/get?name="+ResizedFilePath);
+          const dataset = mediaElem.parentElement.dataset
+          if(dataset.small.startsWith("blob")){
+            await fetch(dataset.small).then(r=>r.blob()).then(
+              blob=>{
+                const newPath = "/27"+OriginalFilePath
+                mediaElem.parentElement.dataset.small = "/api/file/get?name="+newPath
+                this.saveFile(blob,newPath,false)
+                div.dataset.small = "/api/file/get?name="+newPath
+                const smallImg = new Image();
+                smallImg.src = div.dataset.small
+                div.appendChild(smallImg)
+              }
+            )
+          }
+          div.setAttribute("style",`max-width:${mediaElem.naturalWidth}px;
+          aspect-ratio:${mediaElem.naturalWidth/mediaElem.naturalHeight}`)
+          data.append("thumbnailImg",div.outerHTML);
         }else if(tag==="VIDEO"){
           //비디오는 원본 보낼시 리사이징 백엔드에서 완료
           //thumbnailImg만 원본FileOriginName+thumb.jpg
@@ -343,13 +367,24 @@ class Upload extends Component {
           data.append("thumbnailImg","/api/file/get?name="+ResizedFilePath);
         }else if(tag==="IFRAME"){
           //youtube => https://img.youtube.com/vi/<insert-youtube-video-id-here>/sddefault.jpg
-          const youtubePattern = /.*\/([^?.]*)\?.*/g
+          const youtubePattern = /https:\/\/www\.youtube\.com\/embed\/([^?.]*)\?.*/g
           const src = mediaElem.getAttribute("src");
           const Id = youtubePattern.exec(src)
-          if(Id!=null){
-            const thumbNailSrc = `https://img.youtube.com/vi/${Id[1]}/sddefault.jpg`
-            data.append("thumbnailImg",thumbNailSrc);
+          const img = new Image()
+          if(Id){
+            img.src = `https://img.youtube.com/vi/${Id[1]}/sddefault.jpg`
+            const logo = new Image()
+            logo.src = "/api/file/get?name=/youtubelogo.png"
+            logo.className = "youtube-logo"
+            div.appendChild(img)
+            div.appendChild(logo)
+            div.setAttribute("style","aspect-ratio:1.334;max-width:640px;")
+          }else{
+            img.src="/api/file/get?name=/twitchlogo.jpg"
+            div.setAttribute("style","aspect-ratio:1.5;max-width:600px;")
+            div.appendChild(img)
           }
+          data.append("thumbnailImg",div.outerHTML);
         }
       }
       await this.send(filePath)
@@ -409,8 +444,8 @@ class Upload extends Component {
               const blob = dataUrltoBlob(dataURL)
               ResizeImage(blob,27).then(small=>{
                 const data = {origin:blob,small:small}
-                quill.insertEmbed(range.index,"myimage",data);
-                quill.setSelection(range.index + 1);
+                quill.insertEmbed(range.index,"myimage",data,'user');
+                quill.setSelection(range.index+2);
                 quill.focus();
               })
             }
