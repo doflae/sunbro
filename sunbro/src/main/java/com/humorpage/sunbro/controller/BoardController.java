@@ -99,26 +99,18 @@ public class BoardController {
 
     @PostMapping(value="/delete")
     CommonResult deleteBoard(@RequestParam List<Long> boardList, Authentication authentication){
-        if(authentication==null) return responseService.getFailResult();
-        try{
+        if(authentication!=null && authentication.isAuthenticated()){
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-
             boardList.forEach(bid->{
                 try{
-                    Board board = boardRepository.findById(bid).orElseThrow(()->new BoardNotFoundException("BoardID"));
-                    if(board.getAuthor().getUserNum().equals(userSimple.getUserNum())){
-                        fileDeleteService.deleteDir(board.getMediaDir(), board.getId());
-                        boardRepository.delete(board);
-                    }
-                }catch (BoardNotFoundException ignored){
+                    boardService.delete(bid,userSimple);
+                }catch (Exception ignored){
 
                 }
-
             });
             return responseService.getSuccessResult();
-        }catch (NullPointerException e){
-            return responseService.getFailResult();
         }
+        return responseService.getFailResult();
     }
 
 
@@ -129,26 +121,25 @@ public class BoardController {
      *                thumbnail 썸네일에 들어갈 텍스트
      *                board의 id가 존재 할 경우 해당 글 수정
      */
+    /*TODO 업로드 트랜잭션화
+     */
     @PostMapping(value = "/upload")
     CommonResult postForm(@ModelAttribute Board board,
                           Authentication authentication){
-        UserSimple userSimple;
-        try{
-            userSimple = (UserSimple) authentication.getPrincipal();
+        if(authentication!=null && authentication.isAuthenticated()){
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            board.setAuthorNum(userSimple.getUserNum());
+            if(board.getId()!=null){
+                try{
+                    fileDeleteService.refreshDir(board.getContent(),board.getThumbnailImg());
+                }catch (IOException ignored){
 
-        }catch (NullPointerException e){
-            return responseService.getDetailResult(false,-1,"Need to Login");
-        }
-        board.setAuthor(userSimple);
-        if(board.getId()!=null){
-            try{
-                fileDeleteService.refreshDir(board.getContent(),board.getThumbnailImg());
-            }catch (IOException ignored){
-
+                }
             }
+            boardRepository.save(board);
+            return responseService.getSuccessResult();
         }
-        boardRepository.save(board);
-        return responseService.getSuccessResult();
+        return responseService.getDetailResult(false,-1,"Need to Login");
     }
 
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")

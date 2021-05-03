@@ -9,7 +9,8 @@ import {getToday,
   getRandomGenerator,
   isEmpty, 
   ResizeThumbnailImage, 
-  sanitizeUrl, 
+  sanitizeUrl,
+  ResizeImage,
   dataUrltoBlob,
 } from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
@@ -26,7 +27,7 @@ icons['image'] = ReactDomServer.renderToString(<IconStyled theme="image_sm"/>);
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 
 const Video = Quill.import('formats/video');
-const Image = Quill.import('formats/image');
+const IMG = Quill.import('formats/image');
 const BlockEmbed = Quill.import('blots/block/embed');
 
 class MediaBlot extends BlockEmbed{
@@ -60,19 +61,52 @@ MediaBlot.tagName = "iframe";
 Quill.register("formats/video",MediaBlot,false);
 
 
-class CustomImage extends Image{
+class CustomImage extends IMG{
   static create(value){
-    const image = document.createElement('img')
+    const node = document.createElement('div')
+    const image = new Image();
     image.src = this.getUrl(value)
-    image.setAttribute("style","max-height:100%;max-width:100%;")
-    image.className="image_preview"
+    this.getSmUrl(node, value)
+    image.onload = () => {
+      node.dataset.size = `${image.naturalWidth} ${image.naturalHeight}`
+      const ratio = (image.naturalHeight*100/image.naturalWidth).toFixed(4)
+      node.setAttribute("style",`max-width:${image.naturalWidth};padding-top:${ratio}%;`)
+      node.className="ql-img-div"
+    }
     image.setAttribute("id","ql")
-    return image
+    node.appendChild(image)
+    return node
+  }
+
+  static getSmUrl(node,url){
+    if(url){
+      if(typeof(url)==="string"){
+        if(url.startsWith("data")){
+          ResizeImage(url,27).then(small=>{
+            node.dataset.small = URL.createObjectURL(small)
+          })
+          return
+        }
+        node.dataset.small = url.replace("=","=/27")
+        return
+      }
+      else if(url.small){
+        node.dataset.small = URL.createObjectURL(url.small)
+        return
+      }
+      node.dataset.small = URL.createObjectURL(url)
+    }
   }
   static getUrl(url){
     if(url!=null) {
       if(typeof(url)==="string"){
+        if(url.startsWith("data")){
+          return URL.createObjectURL(dataUrltoBlob(url))
+        }
         return url;
+      }
+      else if(url.origin!=null){
+        return URL.createObjectURL(url.origin)
       }
       else return URL.createObjectURL(url);
     }
@@ -155,7 +189,7 @@ class Upload extends Component {
     }
 
     componentDidMount(){
-      const quill = this.quillRef.getEditor(); 
+      const quill = this.quillRef.getEditor();
       this.quill = quill.root     
       const tooltip = quill.theme.tooltip;
       const bgTarget = this.props.bgRef.current
@@ -364,7 +398,6 @@ class Upload extends Component {
               const dataURL = e.target.result;
               const blob = dataUrltoBlob(dataURL);
               const data = {blob:blob,name:_file.name}
-              console.log(range)
               quill.insertEmbed(range.index,"myvideo",data,'user');
               quill.setSelection(range.index + 2);
               quill.focus();
@@ -374,10 +407,12 @@ class Upload extends Component {
             reader.onload = (e) =>{
               const dataURL = e.target.result;
               const blob = dataUrltoBlob(dataURL)
-              console.log(range)
-              quill.insertEmbed(range.index,"myimage",blob);
-              quill.setSelection(range.index + 1);
-              quill.focus();
+              ResizeImage(blob,27).then(small=>{
+                const data = {origin:blob,small:small}
+                quill.insertEmbed(range.index,"myimage",data);
+                quill.setSelection(range.index + 1);
+                quill.focus();
+              })
             }
             return reader.readAsDataURL(_file);
           }

@@ -1,12 +1,17 @@
 package com.humorpage.sunbro.service;
 
+import com.humorpage.sunbro.advice.exception.BoardNotFoundException;
+import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.model.BoardThumbnail;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.BoardLikesRepository;
+import com.humorpage.sunbro.respository.BoardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,6 +21,12 @@ public class BoardService {
 
     @Autowired
     private BoardLikesRepository boardLikesRepository;
+
+    @Autowired
+    private BoardRepository boardRepository;
+
+    @Autowired
+    private FileDeleteService fileDeleteService;
 
     public List<BoardThumbnail> setTransientBoard(
             List<BoardThumbnail> boardThumbnailList,
@@ -28,5 +39,15 @@ public class BoardService {
             });
         }
         return boardThumbnailList;
+    }
+
+    @Transactional(rollbackFor = {IOException.class,BoardNotFoundException.class})
+    public void delete(Long bid, UserSimple userSimple)
+            throws IOException, BoardNotFoundException{
+        Board board = boardRepository.findById(bid).orElseThrow(()->new BoardNotFoundException("BoardID"));
+        if(board.getAuthorNum().equals(userSimple.getUserNum())){
+            boardRepository.delete(board);
+            fileDeleteService.deleteDir(board.getMediaDir(), board.getId());
+        }
     }
 }

@@ -155,44 +155,9 @@ export const dataUrltoBlob = (dataURL) =>{
 }
 
 
+//input file or dataUrl
 //return Promise=>resizedImage(blob data)
-export const ResizeImageDefault = (data) => {
-    //max-width 474px
-    const fileReader = new FileReader();
-    var canvas = document.createElement("canvas");
-    var image = new Image();
-    var resize = () => {
-        var width = image.width;
-        var height = image.height;
-        if(width>474){
-            height *= 474 / width;
-            width = 474;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(image,0,0,width,height);
-        var dataUrl = canvas.toDataURL(data.type);
-        return dataUrltoBlob(dataUrl);
-    }
-    return new Promise(function(ok, no){
-        if(!data.type.match(/image.*/)){
-            no(new Error("Not an Image"))
-            return;
-        }
-        fileReader.onload = (readerEvent) =>{
-            if(data.type.match(/image.gif/)){
-                image.onload = () => ok(dataUrltoBlob(readerEvent.target.result))
-            }else{
-                image.onload = () => ok(resize());
-            }
-            image.src = readerEvent.target.result;
-        };
-        fileReader.readAsDataURL(data);
-    })
-}
-
-//return Promise=>resizedImage(blob data)
-export const ResizeImage = (data, maxSize) =>{
+export const ResizeImage = (data, maxSize=474) =>{
     const fileReader = new FileReader();
     var canvas = document.createElement("canvas");
     var image = new Image();
@@ -213,20 +178,30 @@ export const ResizeImage = (data, maxSize) =>{
         return dataUrltoBlob(dataUrl);
     }
     return new Promise(function(ok, no){
-        if(!data.type.match(/image.*/)){
+        if(data.type && !data.type.match(/image.*/)){
             no(new Error("Not an Image"))
             return;
         }
-        fileReader.onload = (readerEvent) =>{
-            if(data.type.match(/image.gif/)){
-                //gif 파일은 리사이즈 못하고 blob으로 변경
-                image.onload = () => ok(dataUrltoBlob(readerEvent.target.result))
-            }else{
-                image.onload = () => ok(resize());
+        if(typeof(data)==="string"){
+            var mimeString = data.split(',')[0].split(':')[1].split(';')[0]
+            if(mimeString.match(/image.gif/)){
+                return ok(dataUrltoBlob(data))
             }
-            image.src = readerEvent.target.result;
-        };
-        fileReader.readAsDataURL(data);
+            image.onload = () => ok(resize())
+            image.src=data
+        }
+        else{
+            fileReader.onload = (readerEvent) =>{
+                if(data.type.match(/image.gif/)){
+                    //gif 파일은 리사이즈 못하고 blob으로 변경
+                    image.onload = () => ok(dataUrltoBlob(readerEvent.target.result))
+                }else{
+                    image.onload = () => ok(resize());
+                }
+                image.src = readerEvent.target.result;
+            };
+            fileReader.readAsDataURL(data);
+        }
     })
 }
 

@@ -31,15 +31,11 @@ public class Board implements Serializable {
     @Column(name="content")
     private String content;
 
-
     @Column(name = "thumbnailImg")
     private String thumbnailImg;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_num")
-    private UserSimple author;
-
-
+    @Column(name = "author_num")
+    private Long authorNum;
 
     @Column(name = "more")
     private boolean more;

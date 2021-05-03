@@ -33,6 +33,7 @@ public class FileDeleteService {
     private final String baseDir = "C://mediaFiles";
     private final Pattern srcPattern = Pattern.compile("\"/file/get\\?name=([^\"]*)");
 
+    //게시글 수정 시 글 파싱 후 삭제된 미디어 파일들 삭제
     public void refreshDir(String contentAfter,
                            String thumbNailImg) throws IOException {
         Matcher contentMatcher = srcPattern.matcher(contentAfter);
@@ -49,7 +50,6 @@ public class FileDeleteService {
                     .filter(Files::isRegularFile)
                     .map(Path::toFile)
                     .collect(Collectors.toList());
-            filesInFolder.forEach(file->System.out.println(file.toString()));
             while(contentMatcher.find()){
                 File f = new File(baseDir+contentMatcher.group(1));
                 filesInFolder.remove(f);
@@ -65,17 +65,18 @@ public class FileDeleteService {
         }
     }
 
-    public void deleteDir(String target, Long board_id){
+    //게시글 삭제시 mediaDir, created 조합 후 file path 찾아 삭제
+    public void deleteDir(String target, Long board_id) throws IOException{
         LocalDateTime created = boardRepository.findByIdOnlyCreated(board_id);
         String createPath = formatter.format(created);
         File f = new File(baseDir+createPath+target);
-        try{
-            FileUtils.deleteDirectory(f);
-        }catch (Exception ignored){
-
-        }
+        FileUtils.deleteDirectory(f);
     }
 
+    //댓글, 프로필, 썸네일은 변경 혹은 삭제 시 리사이징 된 파일도 삭제
+    /*TODO 썸네일 및 게시글의 미디어 파일 이미지 small 사이즈 생성
+        이후 image lazy loading 사용
+     */
     public void deleteFiles(String path, MediaType mediaType){
         List<String> deleteList = new ArrayList<>(Collections.singletonList(path));
         switch (mediaType){

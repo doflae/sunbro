@@ -4,8 +4,7 @@ import Dropzone from "react-dropzone"
 import {getToday,
     getRandomGenerator,
     isEmpty,
-    ResizeImage, 
-    ResizeImageDefault,
+    ResizeImage,
     splitCname} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
 import Axios from "axios"
@@ -91,7 +90,7 @@ function CommentUploader({...props}){
             ResizeImage(acceptFile[0],200).then(resizedImage=>{
                 setCommentResizedImg({200:URL.createObjectURL(resizedImage)});
             })
-            ResizeImageDefault(acceptFile[0]).then(defaultImage=>{
+            ResizeImage(acceptFile[0]).then(defaultImage=>{
                 setCommentImg(URL.createObjectURL(defaultImage))
                 setImageOnOff(true)
             })
