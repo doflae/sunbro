@@ -43,7 +43,7 @@ class BoardConnector extends Component{
             const offsetTop = b.offsetTop
             if(offsetTop+b.offsetHeight<scrollBottom) continue
             this.lastElementid = i
-            window.scrollTo({top:offsetTop-50, behavior:'smooth'})
+            window.scrollTo({top:offsetTop+50, behavior:'smooth'})
             return
         }
     }
@@ -87,10 +87,8 @@ class BoardConnector extends Component{
         </NextBoardBtnStyled>
     }
 
-    clear = (idx) =>{
-        for(let i = idx; idx<=this.lastIndex;i++){
-            cache.clear(i,0);
-        }
+    clear = () =>{
+        cache.clearAll();
     }
 
     rowRenderer = ({ index, key, parent, style }) => {
@@ -102,7 +100,6 @@ class BoardConnector extends Component{
                     <Board
                     board={boards[index]} 
                     measure={measure}
-                    idx={index}
                     clear={this.clear}
                     style={style}
                     setRef={this.registerRef}/>

@@ -24,17 +24,7 @@
     position:absolute;
     left:0px;
     top:0px;
-    /* opacity: 0;
-    transition: opacity 1s linear; */
 }
-.ql-img-div img.loaded{
-    opacity: 1;
-}
-.ql-img-small{
-    filter: blur(50px);
-    transform: scale(1);
-}
-
 .ql-editor .video-preview{
     position: relative;
     height: 500px;
@@ -84,4 +74,19 @@
     border-radius: 5px;
     margin-bottom: 10px;
 }
-
+.playBtn-2{
+    content: "";
+    width: 20px;
+    position: absolute;
+    left: calc(50% - 10px);
+    top: calc(50% - 18px);
+    border-top: 25px solid transparent;
+    border-bottom: 25px solid transparent;
+    border-left: 35px solid white;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+.playBtn-2:hover{
+    border-left:35px solid black;
+}

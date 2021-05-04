@@ -40,6 +40,7 @@ const AdsBox = () =>{
     return <AdsBoxStyled/>
 }
 
+//TODO: 사이드바 광고 위치 조정
 const SideBarStyled = styled.div`
     position: sticky;
     top: 60px;

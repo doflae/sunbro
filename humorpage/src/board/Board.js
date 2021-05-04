@@ -1,4 +1,5 @@
 import React, {useState, useRef, useEffect} from "react"
+import ReactDOM from "react-dom"
 import userDefaultImg from "../static/img/userDefault.png";
 import CommentBox from "../comment/CommentBox";
 import { Link } from "react-router-dom";
@@ -13,9 +14,10 @@ import Axios from "axios"
 import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
 import ReactResizeDetector from "react-resize-detector"
+import ReactHlsPlayer from "react-hls-player"
 
 function Board({
-    board,setRef,idx,...props
+    board,setRef,...props
 }){
     const [content, setContent] = useState(board.content);
     const [onOff, setOnOff] = useState(!board.more);
@@ -26,7 +28,6 @@ function Board({
     const commentBtnRef = useRef();
     const id = board.id
     const comments_num = board.comments_num
-    const thumbnail = {thumbnail:board.thumbnail,thumbnailImg:board.thumbnailImg};
 
     useEffect(()=>{
         if(setRef!=null && boardRef.current) setRef(boardRef.current)
@@ -112,12 +113,11 @@ function Board({
                     <div className="board_main">
                         <MainContentComponent content={content} 
                         measure={measure}
-                        thumbnail={thumbnail} onOff={onOff}></MainContentComponent>
+                        thumbnail={board.thumbnailImg} onOff={onOff}></MainContentComponent>
                     </div>
                     <div>
                         <GetDetailBtn
                             id = {id}
-                            idx = {idx}
                             clear = {props.clear}
                             isMore={board.more}
                             onOff={onOff}
@@ -171,15 +171,16 @@ const GetDetailBtn = ({...props}) => {
             target.innerText="펼치기"
             detailBtnRef.current.style.marginTop = "-35px";
             props.setOnOff(false)
+            props.clear();
             window.scrollTo({top:props.offset,behavior:'smooth'})
         }else{
             //펼치기
             //펼치기 전에 아래글의 offsetTop 저장
             const current = props.boardRef.current
+            //더보기 버튼 위치 조정
             detailBtnRef.current.style.marginTop = "0px";
             //header height 감안
-            props.setOffset(current.offsetTop + current.offsetHeight - 50)
-            window.scrollTo({top:current.offsetTop-50,behavior:'smooth'})
+            props.setOffset(current.offsetTop + current.offsetHeight + 50)
             target.innerText="접기"
             if(props.content==null){
                 await Axios({method:"get",url:`/board/content/${props.id}`}).then((res)=>{
@@ -191,8 +192,10 @@ const GetDetailBtn = ({...props}) => {
             }else {
                 props.setOnOff(true)
             }
+            props.clear();
+            console.log(current)
+            window.scrollTo({top:current.offsetTop+60,behavior:'smooth'})
         }
-        
     }
     if(!props.isMore) return null;
     else return <GetDetailBtnStyled ref = {detailBtnRef}
@@ -272,43 +275,51 @@ const BoardControls = ({btnOnOff, isAuthor, UpdateBoard, DeleteBoard}) =>{
 }
 
 const MainContentComponent = ({content,thumbnail,onOff,...props}) =>{
-    const detailRef = useRef()
+    const boardRef = useRef()
     useEffect(()=>{
-        if(onOff){
-            if(detailRef){
-                const root = detailRef.current
-                root.innerHTML = sanitizeNonNull(content)
-                const imgList = root.getElementsByTagName("img")
-                const iframeList = root.getElementsByTagName("iframe")
-                const loadList = [...imgList,...iframeList]
-                const checkList = {}
-                Object.entries(loadList).forEach(entry=>{
-                    const key = entry[0], node = entry[1]
-                    checkList[key] = false
-                    node.setAttribute("data-idx",key)
-                    node.onload = () =>{
-                        loadList[node.getAttribute("data-idx")]=true
-                        const ret = Object.values(loadList).reduce((pre,value)=>{
-                            return pre&value
-                        },true)
-                        if(ret){
-                            props.measure()
-                        }
-                    }
-                })
-            }
+        if(boardRef){
+            const root = boardRef.current
+            root.querySelectorAll(".ng-img-div").forEach(elem=>{
+                var img = new Image()
+                img.src = elem.firstChild.getAttribute("src")
+                img.onload = () =>{
+                    elem.firstChild.classList.add('loaded');
+                }
+                var imgLarge = new Image();
+                imgLarge.src = elem.dataset.lg
+                imgLarge.onload = () =>{
+                    imgLarge.classList.add("loaded")
+                }
+                elem.appendChild(imgLarge)
+            })
+            root.querySelectorAll(".playBtn-2").forEach(elem=>{
+                elem.onclick = () =>{
+                    elem.style.display="none";
+                    const p = elem.parentElement
+                    p.removeChild(p.firstElementChild)
+                    ReactDOM.render(<ReactHlsPlayer
+                        src={p.dataset.url}
+                        autoPlay={true}
+                        controls={true}
+                        width="auto"
+                        height="auto"
+                      />,p)
+                }
+            })
+            root.querySelectorAll(".ng-thumb").forEach(elem=>{
+                elem.style.removeProperty("display");
+            })
         }
     },[onOff])
     if(onOff){
-        return <BoardDetailStyled ref={detailRef}></BoardDetailStyled>
+        return <div ref={boardRef} 
+                dangerouslySetInnerHTML={{__html:sanitizeNonNull(content)}}
+                onLoad={props.measure}></div>
     }else{
-        return <BoardThumbnailStyled>
-            <BoardThumbnailImgStyled  alt=""
-                onLoad={props.measure}
-                src={thumbnail.thumbnailImg} onError={(e)=>{
-                e.target.onError=null; e.target.style.display="none"}}/>
-            <BoardThumbnailTextStyled dangerouslySetInnerHTML={{__html:sanitizeNonNull(thumbnail.thumbnail)}}/>
-        </BoardThumbnailStyled>
+        return <BoardThumbnailStyled
+        ref = {boardRef}
+        onLoad={props.measure}
+        dangerouslySetInnerHTML={{__html:sanitizeNonNull(thumbnail)}}/>
     }
 }
 
@@ -426,19 +437,6 @@ const BoardTopRight = styled.div`
     margin:-7px -2px 0px 0px;
 `
 
-const BoardThumbnailTextStyled = styled.span`
-    font-size: 1.2em;
-    padding: 10px;
-    width: 50%;
-`
-
-const BoardThumbnailImgStyled = styled.img`
-    max-height:500px;
-    max-width:500px;
-    margin : 5px;
-    box-sizing:border-box;
-`
-
 const BoardAuthorImageStyled = styled.img`
     width: 50px;
     height: 50px;
@@ -455,10 +453,6 @@ const BoardTitleStyled = styled.div`
     font-weight: normal;
     border-bottom: 1px solid rgba(94, 93, 93, 0.15);
     line-height:200%;
-`
-
-const BoardDetailStyled = styled.div`
-    min-height:300px;
 `
 
 const GetDetailBtnStyled = styled.div`

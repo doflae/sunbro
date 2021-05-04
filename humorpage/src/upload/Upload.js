@@ -68,7 +68,6 @@ class CustomImage extends IMG{
     image.src = this.getUrl(value)
     this.getSmUrl(node, value)
     image.onload = () => {
-      node.dataset.size = `${image.naturalWidth} ${image.naturalHeight}`
       const ratio = (image.naturalWidth/image.naturalHeight).toFixed(5)
       node.setAttribute("style",`max-width:${image.naturalWidth}px;aspect-ratio:${ratio};`)
       node.className="ql-img-div"
@@ -242,14 +241,18 @@ class Upload extends Component {
 
     sendImage = async (filePath,elem) =>{
       elem.removeAttribute("class")
+      const parent = elem.parentElement
+      parent.className = "ng-img-div"
       const src = elem.src
       const dataset = elem.parentElement.dataset
+      elem.className = "ng-img-small"
       const newOriginFilePath = filePath+getRandomGenerator(10)
       if(src.startsWith("blob")){
         await fetch(src).then(r=>r.blob()).then(
           blob=>{
             const newPath = newOriginFilePath+"."+blob.type.split("/")[1]
             elem.setAttribute("src", "/api/file/get?name="+newPath)
+            parent.dataset.lg = elem.getAttribute("src")
             this.saveImage(blob,newPath)
           }
         )
@@ -263,6 +266,7 @@ class Upload extends Component {
           }
         )
       }
+      parent.firstChild.src = parent.dataset.small
     }
 
     send = async (filePath) =>{
@@ -316,11 +320,10 @@ class Upload extends Component {
         const newPath = filePath+fileName
         const ResizedFilePath = newPath+"thumb.jpg";
         const tag = mediaElem.tagName
-        const div = document.createElement("div")
-        div.className="ng-div-center"
         if(tag==="IMG"){
           //이미지는 원본 보내고 썸네일도 보내야함
           //리사이징 이미지는 jpg 고정 (data size)
+          const node = mediaElem.parentElement
           let blob;
           if(mediaElem.src.startsWith('blob')){
             blob = await fetch(mediaElem.src).then(r=>r.blob())
@@ -328,44 +331,43 @@ class Upload extends Component {
             blob = await dataUrltoBlob(mediaElem.src)
           }
           const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
+          mediaElem.className = "ng-img-small"
           mediaElem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
           this.saveImage(blob,OriginalFilePath,"THUMBNAIL")
           ResizeThumbnailImage(blob).then(resizedImage=>{
             this.saveImage(resizedImage,ResizedFilePath,"THUMBNAIL")
           })
-          const dataset = mediaElem.parentElement.dataset
+          const dataset = node.dataset
           if(dataset.small.startsWith("blob")){
             await fetch(dataset.small).then(r=>r.blob()).then(
               blob=>{
                 const newPath = "/27"+OriginalFilePath
-                mediaElem.parentElement.dataset.small = "/api/file/get?name="+newPath
+                node.dataset.small = "/api/file/get?name="+newPath
                 this.saveImage(blob,newPath)
-                div.dataset.small = "/api/file/get?name="+newPath
-                const smallImg = new Image();
-                smallImg.src = div.dataset.small
-                div.appendChild(smallImg)
               }
             )
           }
-          div.setAttribute("style",`max-width:${mediaElem.naturalWidth}px;
-          aspect-ratio:${mediaElem.naturalWidth/mediaElem.naturalHeight}`)
-          data.append("thumbnailImg",div.outerHTML);
+          node.dataset.lg = node.firstChild.getAttribute("src")
+          node.firstChild.src = node.dataset.small
+          node.className = "ng-img-div"
+          data.append("thumbnailImg",node.outerHTML);
         }else if(tag==="VIDEO"){
-          //비디오는 원본 보낼시 리사이징 백엔드에서 완료
-          //thumbnailImg만 원본FileOriginName+thumb.jpg
+          const node = mediaElem.parentElement
           await fetch(mediaElem.src).then(r=>r.blob()).then(async blob=>{
             const OriginalFilePath = newPath+"/"+fileName+".m3u8"
             const thumbPath = newPath+"/thumb.jpg"
             mediaElem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
-            await this.saveVideo(mediaElem.parentElement,blob,thumbPath)
+            await this.saveVideo(node,blob,OriginalFilePath,thumbPath)
           })
-          data.append("thumbnailImg","/api/file/get?name="+ResizedFilePath);
+          data.append("thumbnailImg",node.outerHTML);
         }else if(tag==="IFRAME"){
           //youtube => https://img.youtube.com/vi/<insert-youtube-video-id-here>/sddefault.jpg
           const youtubePattern = /https:\/\/www\.youtube\.com\/embed\/([^?.]*)\?.*/g
           const src = mediaElem.getAttribute("src");
           const Id = youtubePattern.exec(src)
           const img = new Image()
+          const div = document.createElement("div")
+          div.className="ng-div-center"
           if(Id){
             img.src = `https://img.youtube.com/vi/${Id[1]}/sddefault.jpg`
             const logo = new Image()
@@ -425,6 +427,10 @@ class Upload extends Component {
           image.onerror = (e) =>{e.preventDefault(); e.target.style.display="none";}
           node.appendChild(image)
           node.removeChild(node.firstElementChild)
+          node.className="ng-video"
+          const play = document.createElement("div")
+          play.className = "playBtn-2";
+          node.append(play)
         }else{
           //login
         }
