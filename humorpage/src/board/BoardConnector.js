@@ -17,7 +17,7 @@ class BoardConnector extends Component{
     constructor(props){
         super(props);
         this.listRef = React.createRef();
-        this.boardElements = [];
+        this.mainBoxRef = React.createRef()
         this.lastBoard = 0;
         this.lastElementid = 0;
         this.lastIndex = 0;
@@ -25,27 +25,25 @@ class BoardConnector extends Component{
             boards:[]
         };
         this.clear = this.clear.bind(this)
-        this.registerRef = this.registerRef.bind(this)
     }
 
-    registerRef = (elem) =>{
-        if(elem!==null){
-            this.boardElements.push(elem)
-        }
-    }
 
-    gotoNext = () =>(e)=> {
+    gotoNext = () => {
         const {documentElement, body} = document;
         const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
         const scrollBottom = scrollTop+documentElement.clientHeight
-        for(let i = this.lastElementid+1; i<this.boardElements.length;i++){
-            const b = this.boardElements[i]
-            const offsetTop = b.offsetTop
-            if(offsetTop+b.offsetHeight<scrollBottom) continue
-            this.lastElementid = i
-            window.scrollTo({top:offsetTop+50, behavior:'smooth'})
-            return
+        const onBoard = this.mainBoxRef.current.querySelectorAll(".ng-board-main")
+        let l = 0, r = onBoard.length
+        while (l<r){
+            let mid = (l+r)>>1
+            let b = onBoard[mid]
+            let offsetTop = b.offsetTop
+            if(offsetTop+b.offsetHeight<scrollBottom) l = mid+1
+            else r = mid
         }
+        const t = onBoard[l]
+        console.log(t.offsetTop+t.offsetHeight+50)
+        window.scrollTo({top:t.offsetTop+t.offsetHeight+50,behavior:"smooth"})
     }
 
     getBoard = () =>{
@@ -56,7 +54,7 @@ class BoardConnector extends Component{
         const {boards} = this.state
         this.props.request('get',resturl).then(res=>{
             const resData = res.data.list
-            if(0<resData.length && resData.length<11){
+            if(0<resData.length && resData.length<6){
                 this.setState({
                     boards:[...boards,...resData]
                 })
@@ -73,7 +71,7 @@ class BoardConnector extends Component{
         const scrollHeight = Math.max(documentElement.scrollHeight, body.scrollHeight);
         const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
         const clientHeight = documentElement.clientHeight;
-        if (scrollTop + clientHeight >= scrollHeight) {
+        if (scrollTop + clientHeight >= scrollHeight-600) {
             this.getBoard();
         }
     }
@@ -81,7 +79,7 @@ class BoardConnector extends Component{
     nextBtnRenderer = () =>{
         const {boards} = this.state
         if(boards.length===0) return null;
-        return <NextBoardBtnStyled onClick={this.gotoNext()}>
+        return <NextBoardBtnStyled onClick={this.gotoNext}>
             NEXT
             <DownIconStyled/>
         </NextBoardBtnStyled>
@@ -92,7 +90,6 @@ class BoardConnector extends Component{
     }
 
     rowRenderer = ({ index, key, parent, style }) => {
-        this.lastIndex = Math.max(index,this.lastIndex)
         const {boards} = this.state
         return (
             <CellMeasurer cache={cache} parent={parent} key={key} columnIndex={0} rowIndex={index}>
@@ -101,8 +98,7 @@ class BoardConnector extends Component{
                     board={boards[index]} 
                     measure={measure}
                     clear={this.clear}
-                    style={style}
-                    setRef={this.registerRef}/>
+                    style={style}/>
                 )}
             </CellMeasurer>
         );
@@ -122,7 +118,7 @@ class BoardConnector extends Component{
         return (
         <React.Fragment>
             <BoardZoneHeader/>
-            <BoardMainBoxStyled>
+            <BoardMainBoxStyled ref={this.mainBoxRef}>
                 <WindowScroller>
                     {({ height, scrollTop, isScrolling, onChildScroll }) => (
                         <AutoSizer disableHeight>
@@ -130,10 +126,10 @@ class BoardConnector extends Component{
                                 <List
                                     ref={this.listRef}
                                     autoHeight
-                                    height={height}
+                                    height={height*3}
                                     width={width}
                                     isScrolling={isScrolling}
-                                    overscanRowCount={0}
+                                    overscanRowCount={5}
                                     onScroll={onChildScroll}
                                     scrollTop={scrollTop}
                                     rowCount={boards.length}

@@ -16,22 +16,21 @@ import {IconStyled} from "../MainStyled"
 import ReactResizeDetector from "react-resize-detector"
 import ReactHlsPlayer from "react-hls-player"
 
+const caches = {};
+
 function Board({
     board,setRef,...props
 }){
-    const [content, setContent] = useState(board.content);
-    const [onOff, setOnOff] = useState(!board.more);
+    const cache = board.id in caches? caches[board.id]:{};
+    const [content, setContent] = useState(cache.content || board.content);
+    const [onOff, setOnOff] = useState(cache.onOff || !board.more);
     const [offset, setOffset] = useState(null);
     const [dUpBtnOnOff, setDUpBtnOnOff] = useState(false);
-    const [isDeleted, setIsDeleted] = useState(false);
+    const [isDeleted, setIsDeleted] = useState(cache.isDeleted || false);
     const boardRef = useRef();
     const commentBtnRef = useRef();
     const id = board.id
     const comments_num = board.comments_num
-
-    useEffect(()=>{
-        if(setRef!=null && boardRef.current) setRef(boardRef.current)
-    },[boardRef,setRef])
 
     //todo:update후 바로 적용
     const UpdateBoard = ()=> async (e)=>{
@@ -39,6 +38,13 @@ function Board({
             props.onOffUploadPage(1)
         })
     }
+    
+
+    useEffect(()=>{
+        return ()=>{
+            caches[board.id] = {content:content,onOff:onOff,isDeleted:isDeleted}
+        }
+    },[onOff,isDeleted,content])
 
     //todo:test
     const DeleteBoard = ()=>(e)=>{
@@ -80,6 +86,7 @@ function Board({
     if(isDeleted) return null;
     return (
             <BoardPaddingStyled
+                className="ng-board-main"
                 style={props.style}
                 ref = {boardRef}>
                 <BoardStyled >
@@ -186,14 +193,11 @@ const GetDetailBtn = ({...props}) => {
                 await Axios({method:"get",url:`/board/content/${props.id}`}).then((res)=>{
                     if(res.status===200){
                         props.setContent(res.data.data)
-                        props.setOnOff(true)
                     }
                 })
-            }else {
-                props.setOnOff(true)
             }
+            props.setOnOff(true)
             props.clear();
-            console.log(current)
             window.scrollTo({top:current.offsetTop+60,behavior:'smooth'})
         }
     }
@@ -388,7 +392,6 @@ const BoardThumbnailStyled = styled.div`
 `
 
 const BoardPaddingStyled = styled.div`
-    ${props=>props.style}
     padding:5px 0px;
 `
 

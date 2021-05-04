@@ -172,9 +172,9 @@ public class BoardController {
     ListResult<BoardThumbnail> recently(@RequestParam(value = "board_id",required = false) Long board_id, Authentication authentication){
         List<BoardThumbnail> boardThumbnailList;
         if(board_id==null){
-            boardThumbnailList = boardThumbnailRepository.findByOrderByIdDesc(PageRequest.of(0,10));
+            boardThumbnailList = boardThumbnailRepository.findByOrderByIdDesc(PageRequest.of(0,5));
         }else{
-            boardThumbnailList = boardThumbnailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,10));
+            boardThumbnailList = boardThumbnailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,5));
         }
         return responseService.getListResult(boardService.setTransientBoard(boardThumbnailList,authentication));
     }
