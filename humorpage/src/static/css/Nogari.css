@@ -4,6 +4,19 @@
     margin-right: auto;
 }
 
+.ng-video{
+    max-height:100%;
+    max-width:100%;
+    position:relative;
+    margin:3px;
+}
+
+.ng-thumb{
+    position: absolute;
+    left:0px;
+    top:0px;
+}
+
 .youtube-logo{
     position: absolute;
     top: 5px;

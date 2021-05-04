@@ -16,7 +16,7 @@ export const sanitize = (dirty) => sanitizeHtml(dirty,{
       disallowedTagsMode: 'discard',
       allowedAttributes: {
         a: [ 'href', 'name', 'target', 'class' ],
-        div: ['class','frameborder','allowfullscreen'],
+        div: ['class','frameborder','allowfullscreen','style','data-*'],
         img: ['src','class','style'],
         video:['src','controls','type','style','class','tabindex','controlsList'],
         iframe:['*'],

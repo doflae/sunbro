@@ -100,9 +100,9 @@ class Update extends Component {
             const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
             video.setAttribute("src", "/api/file/get?name="+newPath)
             if(video.videoWidth>0){
-              this.saveFile(blob,newPath,false)
+              this.saveImage(blob,newPath)
             }else{
-              this.saveFile(blob,newPath,true)
+              this.saveImage(blob,newPath)
             }
           }
         )
@@ -117,14 +117,14 @@ class Update extends Component {
           blob=>{
             const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
             elem.setAttribute("src", "/api/file/get?name="+newPath)
-            this.saveFile(blob,newPath,false)
+            this.saveImage(blob,newPath)
           }
         )
       }else if(src.startsWith("data")){
         const blob = dataUrltoBlob(src);
         const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
         elem.setAttribute("src", "/api/file/get?name="+newPath)
-        this.saveFile(blob,newPath,false)
+        this.saveImage(blob,newPath)
       }
     }
 
@@ -184,9 +184,9 @@ class Update extends Component {
             await fetch(src).then(r=>r.blob()).then(blob=>{
               const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
               mediaElem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
-              this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
+              this.saveImage(blob,OriginalFilePath,"THUMBNAIL")
               ResizeThumbnailImage(blob).then(resizedImage=>{
-                this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
+                this.saveImage(resizedImage,ResizedFilePath,"THUMBNAIL")
               })
             })
           }else{
@@ -196,9 +196,9 @@ class Update extends Component {
               const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
               mediaElem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
               if(mediaElem.videoWidth>0){
-                this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
+                this.saveImage(blob,OriginalFilePath,false,"THUMBNAIL")
               }else{
-                this.saveFile(blob,OriginalFilePath,true,"THUMBNAIL")
+                this.saveImage(blob,OriginalFilePath,true,"THUMBNAIL")
               }
             })
           }
@@ -214,13 +214,13 @@ class Update extends Component {
             await fetch(src).then(r=>r.blob()).then(blob=>{
               if(mediaElem.tagName==="IMG"){
                 ResizeThumbnailImage(blob).then(resizedImage=>{
-                  this.saveFile(resizedImage,filePath+srcOriginFileName+"thumb.jpg",false,"THUMBNAIL")
+                  this.saveImage(resizedImage,filePath+srcOriginFileName+"thumb.jpg",false,"THUMBNAIL")
                 })
               }else{
                 if(mediaElem.videoWidth>0){
-                  this.saveFile(blob,src.replace("/api/file/get?name=",""),false,"THUMBNAIL")
+                  this.saveImage(blob,src.replace("/api/file/get?name=",""),false,"THUMBNAIL")
                 }else{
-                  this.saveFile(blob,src.replace("/api/file/get?name=",""),false,"THUMBNAIL")
+                  this.saveImage(blob,src.replace("/api/file/get?name=",""),false,"THUMBNAIL")
                 }
               }
             })
@@ -253,14 +253,13 @@ class Update extends Component {
       }
     }
 
-    saveFile = (file,path,needConvert,mediaType="BOARD") => {
+    saveImage = (file,path,mediaType="BOARD") => {
       this.mediaFileSend = true
       const formData = new FormData();
       formData.append('file',file);
       formData.append('path',path);
-      formData.append('needConvert',needConvert)
       formData.append("mediaType",mediaType)
-      Axios.post("/file/upload",formData,{
+      Axios.post("/file/upload-image",formData,{
         headers:{
           'Content-Type':'multipart/form-data',
         }

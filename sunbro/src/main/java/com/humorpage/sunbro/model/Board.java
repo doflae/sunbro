@@ -5,6 +5,7 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -37,9 +38,13 @@ public class Board implements Serializable {
     @Column(name = "author_num")
     private Long authorNum;
 
+    @Column(name = "created",insertable = false)
+    private LocalDateTime created;
+
     @Column(name = "more")
     private boolean more;
 
     @Column(name = "media_dir")
     private String mediaDir;
+
 }

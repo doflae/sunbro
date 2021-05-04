@@ -23,8 +23,7 @@ public class FileUploadService {
 
     private final FFMpegVideoConvert ffMpegVideoConvert;
     private final TemporaryFileStore temporaryFileStore;
-
-
+    static Pattern videoPattern =Pattern.compile("^(/.+/)([^/]+)\\..+");
 
     @Autowired
     public FileUploadService(TemporaryFileStore temporaryFileStore, FFMpegVideoConvert ffMpegVideoConvert){
@@ -33,56 +32,41 @@ public class FileUploadService {
     }
 
 
-    public void fileUpload(MultipartFile file, String path, boolean needConvert, MediaType mediaType, boolean needResize){
+    @Async("fileUploadExecutor")
+    public void videoUpload(Path tempFile, String path)
+            throws Exception{
+        Matcher tempMatcher = videoPattern.matcher(path);
+        if (tempMatcher.find()) {
+            String thumbnailPath = tempMatcher.group(1) + "thumb.jpg";
+            ffMpegVideoConvert.createThumbnail(tempFile.toString(), FileViewService.baseDir + thumbnailPath);
+            ffMpegVideoConvert.convertVideo(tempFile.toString(),tempMatcher.group(1),tempMatcher.group(2));
+        }
+        temporaryFileStore.delete(tempFile);
+    }
+
+
+    @Async("fileUploadExecutor")
+    public void imageUpload(MultipartFile file, String path, MediaType mediaType, boolean needResize){
         try{
             byte[] data = file.getBytes();
-            String baseDir = "C://mediaFiles";
-            File dir = new File(baseDir +path);
+            File dir = new File(FileViewService.baseDir +path);
             dir.getParentFile().mkdirs();
-            Path target = Paths.get(baseDir +path);
-            if(needConvert){
+            Path target = Paths.get(FileViewService.baseDir +path);
+            if(needResize){
                 Path tempFile = temporaryFileStore.store(data);
-                if(ffMpegVideoConvert.checkVideoCodec(tempFile.toString())){
-                    try{
-                        ffMpegVideoConvert.convertVideo(tempFile.toString(),target.toString());
-                    }catch (FFMpegVideoConvert.VideoConvertException ignored){
-
-                    }
-                }else{
-                    Files.write(target,data);
+                int maxSize;
+                if (mediaType == MediaType.PROFILE) {
+                    maxSize = 72;
+                } else {
+                    maxSize = 100;
                 }
-                //240/path/filename.jpg
-                if(mediaType==MediaType.THUMBNAIL){
-                    Pattern tempPattern = Pattern.compile("^(/.+/[^/]+)\\..+");
-                    Matcher tempMatcher = tempPattern.matcher(path);
-                    if(tempMatcher.find()){
-                        String thumbnailPath = tempMatcher.group(1)+"thumb.jpg";
-                        File f = new File(baseDir+thumbnailPath);
-                        f.getParentFile().mkdirs();
-                        try{
-                            ffMpegVideoConvert.extractThumbNail(baseDir+path,baseDir+thumbnailPath);
-                        }catch (FFMpegVideoConvert.VideoConvertException ignored){
-
-                        }
-                    }
-                }
-                temporaryFileStore.delete(tempFile);
-            }else{
-                if(needResize){
-                    Path tempFile = temporaryFileStore.store(data);
-                    int maxSize;
-                    if (mediaType == MediaType.PROFILE) {
-                        maxSize = 72;
-                    } else {
-                        maxSize = 100;
-                    }
-                    GifUtil.gifInputToOutput(tempFile.toFile(),target.toFile(),maxSize);
-                }
-                else{
-                    Files.write(target,data);
-                }
+                GifUtil.gifInputToOutput(tempFile.toFile(),target.toFile(),maxSize);
+            }
+            else{
+                Files.write(target,data);
             }
         }catch (IOException e){
+            //TODO 에러 처리
             e.printStackTrace();
         }
     }

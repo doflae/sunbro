@@ -73,7 +73,7 @@ class CustomImage extends IMG{
       node.setAttribute("style",`max-width:${image.naturalWidth}px;aspect-ratio:${ratio};`)
       node.className="ql-img-div"
     }
-    image.classList.add("image_preview")
+    image.classList.add("image-preview")
     image.setAttribute("id","ql")
     node.appendChild(image)
     return node
@@ -128,8 +128,7 @@ class CustomVideo extends Video{
     video.setAttribute('type',"video/mp4");
     video.setAttribute('controlslist','nodownload');
     video.setAttribute('tabindex',"-1");
-    video.setAttribute('style',"max-height:100%;max-width:100%;postion:relative;margin:3px;");
-    video.setAttribute('class',"video_preview");
+    video.setAttribute('class',"ng-video");
     temp.setAttribute('class',"video_preview_tempData")
     node.appendChild(video);
     video.onloadeddata = (e) =>{
@@ -166,7 +165,7 @@ class CustomVideo extends Video{
 };
 
 CustomVideo.blotName = 'myvideo';
-CustomVideo.className = "ql-prevideo";
+CustomVideo.className = "video-preview";
 CustomVideo.tagName = "DIV";
 
 Quill.register('formats/myvideo', CustomVideo, false);
@@ -230,14 +229,12 @@ class Upload extends Component {
       
       if(video.src.startsWith("blob")){
         await fetch(video.src).then(r=>r.blob()).then(
-          blob=>{
-            const newPath = filePath+getRandomGenerator(10)+"."+blob.type.split("/")[1]
-            video.setAttribute("src", "/api/file/get?name="+newPath)
-            if(video.videoWidth>0){
-              this.saveFile(blob,newPath,false)
-            }else{
-              this.saveFile(blob,newPath,true)
-            }
+          async blob=>{
+            const dir = getRandomGenerator(10)
+            const originPath = filePath+dir+"/"+dir+".m3u8"
+            const thumbPath = filePath+dir+"/thumb.jpg"
+            video.setAttribute("src", "/api/file/get?name="+originPath)
+            await this.saveVideo(elem,blob,originPath,thumbPath)
           }
         )
       }
@@ -253,7 +250,7 @@ class Upload extends Component {
           blob=>{
             const newPath = newOriginFilePath+"."+blob.type.split("/")[1]
             elem.setAttribute("src", "/api/file/get?name="+newPath)
-            this.saveFile(blob,newPath,false)
+            this.saveImage(blob,newPath)
           }
         )
       }
@@ -262,7 +259,7 @@ class Upload extends Component {
           blob=>{
             const newPath = "/27"+newOriginFilePath+"."+blob.type.split("/")[1]
             elem.parentElement.dataset.small = "/api/file/get?name="+newPath
-            this.saveFile(blob,newPath,false)
+            this.saveImage(blob,newPath)
           }
         )
       }
@@ -271,9 +268,9 @@ class Upload extends Component {
     send = async (filePath) =>{
       const mediaElems = this.quill.querySelectorAll("#ql")
       Object.values(mediaElems).forEach(media=>this.removeId(media))
-      const videos = this.quill.querySelectorAll(".ql-prevideo")
+      const videos = this.quill.querySelectorAll(".video-preview")
       const videoQuery = Object.values(videos).map(async video=> await this.sendVideo(filePath,video))
-      const images = this.quill.querySelectorAll(".image_preview")
+      const images = this.quill.querySelectorAll(".image-preview")
       const imageQuery = Object.values(images).map(async image=> await this.sendImage(filePath,image))
       await Promise.all([...imageQuery,...videoQuery])
     }
@@ -315,7 +312,8 @@ class Upload extends Component {
       //썸네일은 0.5배로 min height 240 max height 500
       //썸네일 저장소는 사이즈로 구분안되기 때문에 thumb/...로 변경
       if(isMore && mediaElem!==null){
-        const newPath = filePath+getRandomGenerator(10)
+        const fileName = getRandomGenerator(10)
+        const newPath = filePath+fileName
         const ResizedFilePath = newPath+"thumb.jpg";
         const tag = mediaElem.tagName
         const div = document.createElement("div")
@@ -331,9 +329,9 @@ class Upload extends Component {
           }
           const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
           mediaElem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
-          this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
+          this.saveImage(blob,OriginalFilePath,"THUMBNAIL")
           ResizeThumbnailImage(blob).then(resizedImage=>{
-            this.saveFile(resizedImage,ResizedFilePath,false,"THUMBNAIL")
+            this.saveImage(resizedImage,ResizedFilePath,"THUMBNAIL")
           })
           const dataset = mediaElem.parentElement.dataset
           if(dataset.small.startsWith("blob")){
@@ -341,7 +339,7 @@ class Upload extends Component {
               blob=>{
                 const newPath = "/27"+OriginalFilePath
                 mediaElem.parentElement.dataset.small = "/api/file/get?name="+newPath
-                this.saveFile(blob,newPath,false)
+                this.saveImage(blob,newPath)
                 div.dataset.small = "/api/file/get?name="+newPath
                 const smallImg = new Image();
                 smallImg.src = div.dataset.small
@@ -355,14 +353,11 @@ class Upload extends Component {
         }else if(tag==="VIDEO"){
           //비디오는 원본 보낼시 리사이징 백엔드에서 완료
           //thumbnailImg만 원본FileOriginName+thumb.jpg
-          await fetch(mediaElem.src).then(r=>r.blob()).then(blob=>{
-            const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
+          await fetch(mediaElem.src).then(r=>r.blob()).then(async blob=>{
+            const OriginalFilePath = newPath+"/"+fileName+".m3u8"
+            const thumbPath = newPath+"/thumb.jpg"
             mediaElem.setAttribute("src","/api/file/get?name="+OriginalFilePath)
-            if(mediaElem.videoWidth>0){
-              this.saveFile(blob,OriginalFilePath,false,"THUMBNAIL")
-            }else{
-              this.saveFile(blob,OriginalFilePath,true,"THUMBNAIL")
-            }
+            await this.saveVideo(mediaElem.parentElement,blob,thumbPath)
           })
           data.append("thumbnailImg","/api/file/get?name="+ResizedFilePath);
         }else if(tag==="IFRAME"){
@@ -407,14 +402,42 @@ class Upload extends Component {
       }
     }
 
-    saveFile = (file,path,needConvert,mediaType="BOARD") => {
+    saveVideo = async (node,file,path,thumbPath) =>{
+      this.mediaFileSend=true
+      const formData = new FormData();
+      formData.append('file',file);
+      formData.append('path',path);
+      node.dataset.url = node.firstElementChild.getAttribute("src");
+      await Axios.post("/file/upload-video",formData,{
+        headers:{
+          'Content-Type':'multipart/form-data',
+        }
+      }).then(res=>{
+        if(res.data) return res.data
+      }).then(data=>{
+        if(data.success){
+          //thumb.jpg
+          const ratio = data.data.split(":")
+          node.setAttribute("style",`max-width:${ratio[0]}px;aspect-ratio:${(ratio[0]/ratio[1]).toFixed(5)}`)
+          const image = new Image();
+          image.className="ng-thumb"
+          image.src = "/api/file/get?name="+thumbPath
+          image.onerror = (e) =>{e.preventDefault(); e.target.style.display="none";}
+          node.appendChild(image)
+          node.removeChild(node.firstElementChild)
+        }else{
+          //login
+        }
+      })
+    }
+
+    saveImage = (file,path,mediaType="BOARD") => {
       this.mediaFileSend = true
       const formData = new FormData();
       formData.append('file',file);
       formData.append('path',path);
-      formData.append('needConvert',needConvert)
       formData.append("mediaType",mediaType)
-      Axios.post("/file/upload",formData,{
+      Axios.post("/file/upload-image",formData,{
         headers:{
           'Content-Type':'multipart/form-data',
         }

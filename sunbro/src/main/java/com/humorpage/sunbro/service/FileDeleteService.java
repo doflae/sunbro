@@ -1,5 +1,6 @@
 package com.humorpage.sunbro.service;
 
+import com.humorpage.sunbro.model.Board;
 import com.humorpage.sunbro.respository.BoardRepository;
 import com.humorpage.sunbro.utils.TemporaryFileStore;
 import org.apache.commons.io.FileUtils;
@@ -30,7 +31,6 @@ public class FileDeleteService {
     private BoardRepository boardRepository;
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("/yyyy/MM/dd/");
-    private final String baseDir = "C://mediaFiles";
     private final Pattern srcPattern = Pattern.compile("\"/file/get\\?name=([^\"]*)");
 
     //게시글 수정 시 글 파싱 후 삭제된 미디어 파일들 삭제
@@ -40,7 +40,7 @@ public class FileDeleteService {
         String mediaDir = null;
         File dir = null;
         if (contentMatcher.find()){
-            mediaDir = baseDir+contentMatcher.group(1);
+            mediaDir = FileViewService.baseDir+contentMatcher.group(1);
             File f = new File(mediaDir);
             dir = f.getParentFile();
         }
@@ -51,12 +51,12 @@ public class FileDeleteService {
                     .map(Path::toFile)
                     .collect(Collectors.toList());
             while(contentMatcher.find()){
-                File f = new File(baseDir+contentMatcher.group(1));
+                File f = new File(FileViewService.baseDir+contentMatcher.group(1));
                 filesInFolder.remove(f);
             }
             Matcher thumbMatcher = srcPattern.matcher(thumbNailImg);
             while(thumbMatcher.find()){
-                File f = new File(baseDir+thumbMatcher.group(1));
+                File f = new File(FileViewService.baseDir+thumbMatcher.group(1));
                 filesInFolder.remove(f);
             }
             filesInFolder.forEach(file->{
@@ -66,10 +66,9 @@ public class FileDeleteService {
     }
 
     //게시글 삭제시 mediaDir, created 조합 후 file path 찾아 삭제
-    public void deleteDir(String target, Long board_id) throws IOException{
-        LocalDateTime created = boardRepository.findByIdOnlyCreated(board_id);
-        String createPath = formatter.format(created);
-        File f = new File(baseDir+createPath+target);
+    public void deleteDir(String target, Board board) throws IOException{
+        String createPath = formatter.format(board.getCreated());
+        File f = new File(FileViewService.baseDir+createPath+target);
         FileUtils.deleteDirectory(f);
     }
 
@@ -92,7 +91,7 @@ public class FileDeleteService {
             }
         }
         deleteList.forEach(target->{
-            File f = new File(baseDir+target);
+            File f = new File(FileViewService.baseDir+target);
             try{
                 temporaryFileStore.delete(f.toPath());
             }catch (Exception ignored){

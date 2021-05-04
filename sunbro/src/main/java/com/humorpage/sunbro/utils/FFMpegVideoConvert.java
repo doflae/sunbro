@@ -5,10 +5,12 @@ import net.bramp.ffmpeg.FFmpeg;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.builder.FFmpegBuilder;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
+import net.bramp.ffmpeg.probe.FFmpegStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -16,7 +18,7 @@ public class FFMpegVideoConvert {
 
     private final FFmpeg ffmpeg;
     private final FFprobe ffprobe;
-
+    private final String baseDir = "C://mediaFiles";
 
     @Autowired
     public FFMpegVideoConvert(FFmpeg ffmpeg, FFprobe ffprobe){
@@ -24,38 +26,22 @@ public class FFMpegVideoConvert {
         this.ffprobe = ffprobe;
     }
 
-    //need Absolute Path
-    public void extractThumbNail(String input, String output) throws VideoConvertException{
-
-        FFmpegBuilder builder = new FFmpegBuilder()
-                .addExtraArgs("-itsoffset","-1")
-                .setInput(input)
-                .addOutput(output)
-                //if video height >= 1000px -> height 500px
-                //else if height>500px -> height / 2
-                //else height
-                .addExtraArgs("-filter:v","scale=-1:'if(gt(ih\\,500)\\,if(gt(ih\\,1000),500,ih/2),ih)',crop=iw:ih")
-                .addExtraArgs("-vframes","1").done();
-        try{
-            ffmpeg.run(builder);
-        }catch (Exception e){
-            throw new VideoConvertException(e);
-        }
-    }
-
-    //input은 임시저장소의 절대경로
-    public boolean checkVideoCodec(String tempFile) throws IOException {
+    public String checkVideoRatio(String tempFile) throws IOException {
         FFmpegProbeResult probeResult = ffprobe.probe(tempFile);
-        String codec = probeResult.getStreams().get(0).codec_name;
-        return codec.equals("hevc");
+        FFmpegStream fFmpegStream = probeResult.getStreams().get(0);
+        return fFmpegStream.width+":"+fFmpegStream.height;
     }
 
-    public void convertVideo(String input, String output) throws VideoConvertException{
+    public void convertVideo(String input, String dir, String filename) throws VideoConvertException{
         FFmpegBuilder builder = new FFmpegBuilder()
                 .setInput(input)
-                .addOutput(output)
-                .addExtraArgs("-c:v","libx264")
-                .addExtraArgs("-c:a","aac").done();
+                .addOutput(baseDir+dir+filename+".m3u8")
+                .addExtraArgs("-b:v","1M")
+                .addExtraArgs("-g","60")
+                .addExtraArgs("-hls_init_time","5")
+                .addExtraArgs("-hls_time","2")
+                .addExtraArgs("-hls_list_size","0")
+                .addExtraArgs("-hls_base_url","get?name="+dir).done();
         try{
             ffmpeg.run(builder);
         }catch (Exception e){
@@ -74,12 +60,6 @@ public class FFMpegVideoConvert {
         }
     }
 
-    public static class VideoExtractCodecInfoException extends Exception{
-        public VideoExtractCodecInfoException(Throwable ex){super(ex);}
-
-        @Override
-        public String toString(){return "Failed to get video code info";}
-    }
 
     public static class VideoThumbNailException extends Exception{
         public VideoThumbNailException(Throwable ex){ super(ex);}
@@ -87,6 +67,7 @@ public class FFMpegVideoConvert {
         @Override
         public String toString(){return "Unable to get thumbnail from video file";}
     }
+
     public static class VideoConvertException extends Exception{
         public VideoConvertException(Throwable ex){
             super(ex);

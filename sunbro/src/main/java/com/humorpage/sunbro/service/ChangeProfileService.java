@@ -15,7 +15,6 @@ public class ChangeProfileService {
     @Autowired
     FileDeleteService fileDeleteService;
 
-    private final String baseDir = "C://mediaFiles";
 
     public void ChangeImage(UserSimple saveTarget, String path){
         String beforeProfileImage = saveTarget.getUserImg();

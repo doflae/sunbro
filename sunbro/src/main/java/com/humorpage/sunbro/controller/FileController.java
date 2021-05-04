@@ -2,10 +2,9 @@ package com.humorpage.sunbro.controller;
 
 
 import com.humorpage.sunbro.result.CommonResult;
-import com.humorpage.sunbro.service.FileUploadService;
-import com.humorpage.sunbro.service.FileViewService;
-import com.humorpage.sunbro.service.MediaType;
-import com.humorpage.sunbro.service.ResponseService;
+import com.humorpage.sunbro.result.SingleResult;
+import com.humorpage.sunbro.service.*;
+import com.humorpage.sunbro.utils.FFMpegVideoConvert;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +33,9 @@ public class FileController {
     @Autowired
     private ResponseService responseService;
 
+    @Autowired
+    private VideoService videoService;
+
 
     @GetMapping(value = "/get")
     public ResponseEntity<byte[]> getMediaFile(String name) throws IOException{
@@ -42,23 +44,40 @@ public class FileController {
 
 
     /**
-     * @param file 멀티 미디어 파일
-     * @param path 상대 경로 + 파일네임
-     * @param needConvert 비디오의 경우 코덱 변환 여부
-     * @param mediaType 멀티 미디어 파일 사용 용도
+     * 비디오 업로드
+     * @param file 비디오
+     * @param path 저장 경로
+     * @return 비디오 비율 w/h
      */
-    @PostMapping(path = "/upload",
+    @PostMapping(path = "/upload-video",
             consumes = MULTIPART_FORM_DATA_VALUE,
             produces = APPLICATION_JSON_VALUE,
             headers = "Accept=application/json")
-    public CommonResult upload(MultipartFile file,
-                               @RequestParam(required = false) String path,
-                               @RequestParam(required = false, defaultValue = "false") boolean needConvert,
+    public SingleResult<String> videoUpload(MultipartFile file,
+                                            String path,
+                                            Authentication authentication){
+        if(authentication!=null && authentication.isAuthenticated()){
+            return responseService.getSingleResult(videoService.videoUpload(file,path));
+        }
+        return responseService.getFailSingleResult();
+    }
+
+    /**
+     * @param file 멀티 미디어 파일
+     * @param path 상대 경로 + 파일네임
+     * @param mediaType 멀티 미디어 파일 사용 용도
+     */
+    @PostMapping(path = "/upload-image",
+            consumes = MULTIPART_FORM_DATA_VALUE,
+            produces = APPLICATION_JSON_VALUE,
+            headers = "Accept=application/json")
+    public CommonResult imageUpload(MultipartFile file,
+                               String path,
                                @RequestParam(required = false, defaultValue = "BOARD") MediaType mediaType,
                                @RequestParam(required = false, defaultValue = "false") boolean needResize,
                                Authentication authentication) {
         if(authentication!=null && authentication.isAuthenticated()){
-            fileUploadService.fileUpload(file,path,needConvert,mediaType,needResize);
+            fileUploadService.imageUpload(file,path,mediaType,needResize);
             return responseService.getSuccessResult();
         }else{
             return responseService.getFailResult();

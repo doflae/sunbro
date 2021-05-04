@@ -35,7 +35,7 @@
     transform: scale(1);
 }
 
-.ql-editor .ql-prevideo{
+.ql-editor .video-preview{
     position: relative;
     height: 500px;
     display: flex;

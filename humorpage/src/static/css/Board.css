@@ -19,7 +19,6 @@
 }
 .board_video{
     position: relative;
-    min-height: 500px;
     display: flex;
     justify-content: center;
     background: black;

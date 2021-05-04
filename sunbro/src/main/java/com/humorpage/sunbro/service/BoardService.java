@@ -41,13 +41,18 @@ public class BoardService {
         return boardThumbnailList;
     }
 
-    @Transactional(rollbackFor = {IOException.class,BoardNotFoundException.class})
+    //TODO IOException 처리
+    @Transactional(rollbackFor = BoardNotFoundException.class, noRollbackFor = IOException.class)
     public void delete(Long bid, UserSimple userSimple)
             throws IOException, BoardNotFoundException{
         Board board = boardRepository.findById(bid).orElseThrow(()->new BoardNotFoundException("BoardID"));
         if(board.getAuthorNum().equals(userSimple.getUserNum())){
-            boardRepository.delete(board);
-            fileDeleteService.deleteDir(board.getMediaDir(), board.getId());
+            try {
+                boardRepository.delete(board);
+                fileDeleteService.deleteDir(board.getMediaDir(), board);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 }
