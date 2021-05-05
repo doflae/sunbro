@@ -72,19 +72,10 @@ video.ffprobe.path = ffprobe.exe 경로
 
 ```
 
-### DB 및 proxy 설정
+### DB 설정
 
 최상단 디렉토리에 있는 sql 파일을 이용하여 사용 가능합니다.
 
-react의 package.json파일 내 
-```
-"proxy": "http://localhost:8080"
-```
-8080을 사용하는 spring boot의 port번호로 변경하시면 됩니다.
-
-### 배포 단계
-현재 배포 단계에 있어 cors는 spring boot 내 해결 되었으므로 proxy는 사용하지 않습니다.
-react의 index.js에서 axios.defaults.baseURL을 사용하여 백엔드 서버의 url주소와 연결하였습니다.
 
 
 
