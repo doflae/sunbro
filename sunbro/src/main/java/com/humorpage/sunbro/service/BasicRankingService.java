@@ -1,9 +1,7 @@
 package com.humorpage.sunbro.service;
 
-import com.humorpage.sunbro.model.BoardThumbnail;
-import com.humorpage.sunbro.respository.BoardThumbnailRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.humorpage.sunbro.model.BoardDetail;
+import com.humorpage.sunbro.respository.BoardDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -17,33 +15,33 @@ import java.util.stream.Collectors;
 public class BasicRankingService implements RankingService {
 
     @Autowired
-    private BoardThumbnailRepository boardThumbnailRepository;
+    private BoardDetailRepository boardDetailRepository;
 
     @Autowired
     private RedisTemplate redisTemplate;
 
     @Override
-    public List<BoardThumbnail> getRanking(RankingType type){
+    public List<BoardDetail> getRanking(RankingType type){
         LocalDateTime now = LocalDateTime.now();
-        List<BoardThumbnail> boards;
+        List<BoardDetail> boards;
         switch (type){
             case ALL:
-                boards = boardThumbnailRepository.findAll();
+                boards = boardDetailRepository.findAll();
                 break;
             case WEEK:
-                boards = boardThumbnailRepository.findByCreatedGreaterThan(now.minusDays(7));
+                boards = boardDetailRepository.findByCreatedGreaterThan(now.minusDays(7));
                 break;
             case MONTH:
-                boards =  boardThumbnailRepository.findByCreatedGreaterThan(now.minusMonths(1));
+                boards =  boardDetailRepository.findByCreatedGreaterThan(now.minusMonths(1));
                 break;
             case DAILY:
-                boards = boardThumbnailRepository.findByCreatedGreaterThan(now.minusDays(1));
+                boards = boardDetailRepository.findByCreatedGreaterThan(now.minusDays(1));
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
         }
         return boards.stream()
-                .sorted(Comparator.comparing(BoardThumbnail::getLikes).reversed())
+                .sorted(Comparator.comparing(BoardDetail::getLikes).reversed())
                 .collect(Collectors.toList());
     }
 }

@@ -58,9 +58,9 @@ public class CommentController {
         //depth가 0인 댓글
         if(board_id!=null) {
             if (comment_id == null) {
-                commentList = commentRepository.findTop3ByBoardAndPidIsNullOrderByLikesDesc(board_id);
+                commentList = commentRepository.findTop3ByBoardIdAndPidIsNullOrderByLikesDesc(board_id);
             } else {
-                commentList = commentRepository.findByBoardAndIdGreaterThanAndPidIsNullOrderByIdAsc(board_id, comment_id, PageRequest.of(0, page_size));
+                commentList = commentRepository.findByBoardIdAndIdGreaterThanAndPidIsNullOrderByIdAsc(board_id, comment_id, PageRequest.of(0, page_size));
             }
         }
         //대댓글 -> board id 대신 parent comment id가 주어짐
@@ -97,7 +97,7 @@ public class CommentController {
             return responseService.getFailSingleResult();
         }
         try{
-            commentService.save(userSimple,board_id, comment_id,comment);
+            commentService.save(board_id, comment_id,comment);
         }catch (DataIntegrityViolationException e){
             return responseService.getDetailSingleResult(false,1,e.getMessage(),null);
         }
@@ -108,46 +108,40 @@ public class CommentController {
     @ApiOperation(value = "댓글 좋아요", notes = "comment_id를 받아 좋아요 on")
     @GetMapping(value = "/likeon")
     public CommonResult likeComment(@RequestParam("id") Long comment_id, Authentication authentication){
-        UserSimple userSimple;
-        try{
-            userSimple = (UserSimple) authentication.getPrincipal();
-        }catch (NullPointerException e){
-            return responseService.getDetailResult(false, -1, "Token Expired");
+        if(authentication!=null && authentication.isAuthenticated()){
+           UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            likesService.savelikeComment(userSimple.getUserNum(),comment_id);
+            return responseService.getSuccessResult();
         }
-        likesService.savelikeComment(userSimple.getUserNum(),comment_id);
-        return responseService.getSuccessResult();
+        return responseService.getDetailResult(false, -1, "Token Expired");
     }
 
     @ApiOperation(value = "댓글 좋아요 취소", notes = "comment_id를 받아 좋아요 off")
     @GetMapping(value = "/likeoff")
     public CommonResult likeCancelComment(@RequestParam(value = "id") Long comment_id, Authentication authentication){
-        UserSimple userSimple;
-        try{
-            userSimple = (UserSimple) authentication.getPrincipal();
-        }catch (NullPointerException e){
-            return responseService.getDetailResult(false, -1, "Token expired");
+        if(authentication!=null && authentication.isAuthenticated()){
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            likesService.deletelikeComment(userSimple.getUserNum(),comment_id);
+            return responseService.getSuccessResult();
         }
-        likesService.deletelikeComment(userSimple.getUserNum(),comment_id);
-        return responseService.getSuccessResult();
+        return responseService.getDetailResult(false, -1, "Token expired");
     }
 
     @PostMapping(value = "/delete")
     CommonResult deleteComment(@RequestParam Long comment_id, Authentication authentication){
-        if(authentication==null) return responseService.getFailResult();
-        try{
+        if(authentication!=null && authentication.isAuthenticated()){
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
 
             Comment comment = commentRepository
                     .findById(comment_id).orElseThrow(()->
                             new CommentNotFoundException("ID",String.valueOf(comment_id)));
-            if(comment.getAuthor().getUserNum().equals(userSimple.getUserNum())){
+            if(comment.getAuthorNum().equals(userSimple.getUserNum())){
                 commentService.delete(comment);
             }else{
                 return responseService.getFailResult();
             }
             return responseService.getSuccessResult();
-        }catch (NullPointerException e){
-            return responseService.getFailResult();
         }
+        return responseService.getFailResult();
     }
 }

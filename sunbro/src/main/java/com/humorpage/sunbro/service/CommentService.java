@@ -27,12 +27,10 @@ public class CommentService {
     @Autowired
     private FileDeleteService fileDeleteService;
 
-    public void save(UserSimple userSimple,
-                     Long board_id,
+    public void save(Long board_id,
                      Long comment_id,
                      Comment comment) throws DataIntegrityViolationException {
-        comment.setAuthor(userSimple);
-        comment.setBoard(board_id);
+        comment.setBoardId(board_id);
         if(comment_id>0) comment.setPid(comment_id);
         commentRepository.save(comment);
     }

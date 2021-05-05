@@ -30,10 +30,6 @@ public class Comment implements Serializable {
     @JsonIgnore
     private Long pid=null;
 
-    @ManyToOne
-    @JoinColumn(name = "author_num")
-    private UserSimple author;
-
     @Column(name="content")
     private String content;
 
@@ -42,7 +38,16 @@ public class Comment implements Serializable {
 
     @Column(name="board_id")
     @JsonIgnore
-    private Long board;
+    private Long boardId;
+
+    @Column(name = "author_num")
+    private Long authorNum;
+
+    @Column(name = "author_name")
+    private String authorName;
+
+    @Column(name = "author_img")
+    private String authorImg;
 
 
     @Basic(fetch = FetchType.LAZY)

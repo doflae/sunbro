@@ -32,11 +32,8 @@ public class Board implements Serializable {
     @Column(name="content")
     private String content;
 
-    @Column(name = "thumbnailImg")
-    private String thumbnailImg;
-
-    @Column(name = "author_num")
-    private Long authorNum;
+    @Column(name = "thumbnail")
+    private String thumbnail;
 
     @Column(name = "created",insertable = false)
     private LocalDateTime created;
@@ -47,4 +44,12 @@ public class Board implements Serializable {
     @Column(name = "media_dir")
     private String mediaDir;
 
+    @Column(name = "author_num")
+    private Long authorNum;
+
+    @Column(name = "author_name")
+    private String authorName;
+
+    @Column(name = "author_img")
+    private String authorImg;
 }

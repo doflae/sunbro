@@ -5,8 +5,8 @@ export const UploadProviderImpl = ({...props}) =>{
     // option 0 : uploadPage
     //        1 : updatePage
     const [uploadPageOption, setUploadPageOption] = useState(-1);
-    const [uploadPageRef, setUploadPageRef] = useState(useRef());
-    const [updatePageRef, setUpdatePageRef] = useState(useRef());
+    const uploadPageRef = useRef();
+    const updatePageRef = useRef();
 
     const onOffUploadPage = (pageOption) =>{
         if(updatePageRef.current) updatePageRef.current.style.display="";

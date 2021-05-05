@@ -46,7 +46,7 @@ public class User implements UserDetails {
 
     private String role;
 
-    @Column(name="profileImg")
+    @Column(name="profile_img")
     private String userImg="";
 
     @Column(name="gender")

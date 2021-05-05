@@ -2,7 +2,7 @@ package com.humorpage.sunbro.service;
 
 import com.humorpage.sunbro.advice.exception.BoardNotFoundException;
 import com.humorpage.sunbro.model.Board;
-import com.humorpage.sunbro.model.BoardThumbnail;
+import com.humorpage.sunbro.model.BoardDetail;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.BoardLikesRepository;
 import com.humorpage.sunbro.respository.BoardRepository;
@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class BoardService {
@@ -28,24 +27,24 @@ public class BoardService {
     @Autowired
     private FileDeleteService fileDeleteService;
 
-    public List<BoardThumbnail> setTransientBoard(
-            List<BoardThumbnail> boardThumbnailList,
+    public List<BoardDetail> setTransientBoard(
+            List<BoardDetail> boardDetailList,
             Authentication authentication){
         if(authentication!=null && authentication.isAuthenticated()){
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
-            boardThumbnailList.forEach(boardThumbnail -> {
+            boardDetailList.forEach(boardThumbnail -> {
                 boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
             });
         }
-        return boardThumbnailList;
+        return boardDetailList;
     }
 
     //TODO IOException 처리
     @Transactional(rollbackFor = BoardNotFoundException.class, noRollbackFor = IOException.class)
     public void delete(Long bid, UserSimple userSimple)
             throws IOException, BoardNotFoundException{
-        Board board = boardRepository.findById(bid).orElseThrow(()->new BoardNotFoundException("BoardID"));
+        Board board = boardRepository.findById(bid).orElseThrow(()->new BoardNotFoundException("ID",String.valueOf(bid)));
         if(board.getAuthorNum().equals(userSimple.getUserNum())){
             try {
                 boardRepository.delete(board);

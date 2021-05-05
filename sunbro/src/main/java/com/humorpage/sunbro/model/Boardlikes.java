@@ -23,7 +23,7 @@ public class Boardlikes implements Serializable {
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name="board_id",updatable = false,insertable = false)
-    private BoardThumbnail boardThumbnail;
+    private BoardDetail boardDetail;
 
     @JsonBackReference
     @ManyToOne

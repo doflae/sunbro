@@ -50,6 +50,10 @@ function CommentUploader({...props}){
             if(c) data.append('id',c.id)
             data.append('content', content)
             data.append('board_id',props.board_id)
+            const user = props.user
+            data.append('authorNum',user,userNum)
+            data.append('authorName',user.name)
+            data.append('authorImg',user.userImg?user.userImg:"")
             if(props.comment_id) data.append('comment_id',props.comment_id)
             const blob = {};
             blob.commentImg = commentImg

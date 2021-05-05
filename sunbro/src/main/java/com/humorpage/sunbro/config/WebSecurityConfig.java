@@ -36,6 +36,17 @@ import java.util.Collections;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Autowired
+    private final UserService userService;
+
+    @Autowired
+    private final JwtTokenService jwtTokenService;
+
+    @Autowired
+    private final CookieService cookieService;
+
+    @Autowired
+    private final RedisTokenService redisTokenService;
 
     @Bean
     @Override
@@ -45,6 +56,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        JwtAuthenticationFilter jwtAuthenticationFilter
+                = new JwtAuthenticationFilter(
+                        jwtTokenService,
+                        cookieService,
+                        redisTokenService,
+                        userService);
+        http.addFilterBefore(jwtAuthenticationFilter,UsernamePasswordAuthenticationFilter.class);
+
         http
                 .httpBasic().disable() // rest api 이므로 기본설정 사용안함. 기본설정은 비인증시 로그인폼 화면으로 리다이렉트 된다.
                 .cors().configurationSource(corsConfigurationSource())
@@ -53,12 +72,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt token으로 인증하므로 세션은 필요없으므로 생성안함.
                 .and()
                 .authorizeRequests() // 다음 리퀘스트에 대한 사용권한 체크
-                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .antMatchers("/**").permitAll() // 가입 및 인증 주소는 누구나 접근가능
-                //.antMatchers(HttpMethod.GET, "api/**").permitAll() // api로 시작하는 GET요청 리소스는 누구나 접근가능
-                .anyRequest().hasRole("USER"); // 그외 나머지 요청은 모두 인증된 회원만 접근 가능
+                .antMatchers("**/upload*","/api/user/**").hasRole("USER")
+                .antMatchers("/**").permitAll();
     }
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){

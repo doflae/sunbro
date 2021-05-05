@@ -16,9 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.util.StringUtils;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api/board")
@@ -32,7 +30,7 @@ public class BoardController {
     private UserRepository userRepository;
 
     @Autowired
-    private BoardThumbnailRepository boardThumbnailRepository;
+    private BoardDetailRepository boardDetailRepository;
 
     @Autowired
     private ResponseService responseService;
@@ -50,31 +48,24 @@ public class BoardController {
     private FileUploadService fileUploadService;
 
     @Autowired
-    private BoardDetailRepository boardDetailRepository;
-
-    @Autowired
     private BoardService boardService;
 
     @Autowired
     private AssignDirectoryService assignDirectoryService;
 
     @Autowired
-    private BoardSimpleRepository boardSimpleRepository;
-
-    @Autowired
     private FileDeleteService fileDeleteService;
 
-    @GetMapping(value = "/simple/{bid}")
-    SingleResult<BoardSimple> getBoardSimple(@PathVariable Long bid,
+    @GetMapping(value = "/get/{bid}")
+    SingleResult<Board> getBoard(@PathVariable Long bid,
                                              Authentication authentication){
-        try {
-            BoardSimple boardSimple = boardSimpleRepository
-                    .findById(bid).orElseThrow(()-> new BoardNotFoundException("BoardID"));
-            if(boardSimple.getAuthor().equals(authentication.getPrincipal())){
-                return responseService.getSingleResult(boardSimple);
+        if(authentication!=null && authentication.isAuthenticated()){
+            Board board = boardRepository
+                    .findById(bid).orElseThrow(()-> new BoardNotFoundException("ID",String.valueOf(bid)));
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            if(board.getAuthorNum().equals(userSimple.getUserNum())){
+                return responseService.getSingleResult(board);
             }
-        }catch (BoardNotFoundException e){
-            return responseService.getFailSingleResult();
         }
         return responseService.getFailSingleResult();
     }
@@ -90,7 +81,7 @@ public class BoardController {
     @GetMapping(value = "/detail/{bid}")
     SingleResult<BoardDetail> getBoardDetail(@PathVariable Long bid){
         try {
-            BoardDetail boardDetail = boardDetailRepository.findById(bid).orElseThrow(()->new BoardNotFoundException("BoardID"));
+            BoardDetail boardDetail = boardDetailRepository.findById(bid).orElseThrow(()->new BoardNotFoundException("ID",String.valueOf(bid)));
             return responseService.getSingleResult(boardDetail);
         }catch (BoardNotFoundException e){
             return responseService.getFailSingleResult();
@@ -131,7 +122,7 @@ public class BoardController {
             board.setAuthorNum(userSimple.getUserNum());
             if(board.getId()!=null){
                 try{
-                    fileDeleteService.refreshDir(board.getContent(),board.getThumbnailImg());
+                    fileDeleteService.refreshDir(board.getContent(),board.getThumbnail());
                 }catch (IOException ignored){
 
                 }
@@ -169,20 +160,21 @@ public class BoardController {
     }
 
     @GetMapping("/recently")
-    ListResult<BoardThumbnail> recently(@RequestParam(value = "board_id",required = false) Long board_id, Authentication authentication){
-        List<BoardThumbnail> boardThumbnailList;
+    ListResult<BoardDetail> recently(@RequestParam(value = "board_id",required = false) Long board_id, Authentication authentication){
+        List<BoardDetail> boardDetailList;
         if(board_id==null){
-            boardThumbnailList = boardThumbnailRepository.findByOrderByIdDesc(PageRequest.of(0,5));
+            boardDetailList = boardDetailRepository.findByOrderByIdDesc(PageRequest.of(0,5));
+            System.out.println(boardDetailList);
         }else{
-            boardThumbnailList = boardThumbnailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,5));
+            boardDetailList = boardDetailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,5));
         }
-        return responseService.getListResult(boardService.setTransientBoard(boardThumbnailList,authentication));
+        return responseService.getListResult(boardService.setTransientBoard(boardDetailList,authentication));
     }
 
     @GetMapping("/rank")
-    ListResult<BoardThumbnail> ranked(@RequestParam(required = false, defaultValue = "DAILY") RankingType rankType, Authentication authentication){
-        List<BoardThumbnail> boardThumbnailList = cacheRankingService.getRanking(rankType);
-        return responseService.getListResult(boardService.setTransientBoard(boardThumbnailList,authentication));
+    ListResult<BoardDetail> ranked(@RequestParam(required = false, defaultValue = "DAILY") RankingType rankType, Authentication authentication){
+        List<BoardDetail> boardDetailList = cacheRankingService.getRanking(rankType);
+        return responseService.getListResult(boardService.setTransientBoard(boardDetailList,authentication));
     }
 
     @GetMapping("/content/{board_id}")
@@ -192,20 +184,20 @@ public class BoardController {
 
     @GetMapping("/user")
     @ApiOperation(value = "유저 key값", notes="유저 key값을 받아 조회 last_id는 가장 최근 조회 게시물")
-    ListResult<BoardThumbnail> user(Long usernum,
-                                    @RequestParam(required = false) Long last_id){
+    ListResult<BoardDetail> user(Long usernum,
+                                 @RequestParam(required = false) Long last_id){
         if(usernum>0){
-            if(last_id==null||last_id==0) return responseService.getListResult(boardThumbnailRepository.findByAuthorNumOrderByIdDesc(usernum,PageRequest.of(0,10)));
-            else return responseService.getListResult(boardThumbnailRepository.findByAuthorNumAndIdLessThanOrderByIdDesc(usernum,last_id,PageRequest.of(0,10)));
+            if(last_id==null||last_id==0) return responseService.getListResult(boardDetailRepository.findByAuthorNumOrderByIdDesc(usernum,PageRequest.of(0,10)));
+            else return responseService.getListResult(boardDetailRepository.findByAuthorNumAndIdLessThanOrderByIdDesc(usernum,last_id,PageRequest.of(0,10)));
         }
         return responseService.getFailedListResult();
     }
 
     @GetMapping("/search")
-    ListResult<BoardThumbnail> Search(@RequestParam(required = false, defaultValue = "") String title,
-                   @RequestParam(required = false, defaultValue = "") String uid,
-                   @RequestParam(required = false, defaultValue = "") String content,Authentication authentication) {
-        List<BoardThumbnail> boardThumbnailList=null;
+    ListResult<BoardDetail> Search(@RequestParam(required = false, defaultValue = "") String title,
+                                   @RequestParam(required = false, defaultValue = "") String uid,
+                                   @RequestParam(required = false, defaultValue = "") String content, Authentication authentication) {
+        List<BoardDetail> boardDetailList =null;
         if (StringUtils.isEmpty(title) && StringUtils.isEmpty(content) && StringUtils.isEmpty(uid)) {
             return responseService.getFailedListResult();
         }
@@ -214,23 +206,23 @@ public class BoardController {
             try{
                 UserSimple target = userSimpleRepository
                         .findByUid(uid).orElseThrow(()-> new UserNotFoundException("ID",uid));
-                boardThumbnailList = boardThumbnailRepository.findAllByAuthor(target.getUserNum());
+                boardDetailList = boardDetailRepository.findAllByAuthorNum(target.getUserNum());
             }
             catch (UserNotFoundException ignored){
 
             }
         }
         else if(StringUtils.isEmpty(title) && StringUtils.isEmpty(uid)){
-            boardThumbnailList = boardThumbnailRepository.findByContentContaining(content);
+            boardDetailList = boardDetailRepository.findByContentContaining(content);
         }
         else if (StringUtils.isEmpty(content) && StringUtils.isEmpty(uid)){
-            boardThumbnailList = boardThumbnailRepository.findByTitleContaining(title);
+            boardDetailList = boardDetailRepository.findByTitleContaining(title);
         }else if (StringUtils.isEmpty(uid)){
-            boardThumbnailList = boardThumbnailRepository.findByTitleContainingOrContentContaining(title,content);
+            boardDetailList = boardDetailRepository.findByTitleContainingOrContentContaining(title,content);
         }
 
-        if (boardThumbnailList==null)
+        if (boardDetailList ==null)
             return responseService.getListResult(null);
-        return responseService.getListResult(boardService.setTransientBoard(boardThumbnailList,authentication));
+        return responseService.getListResult(boardService.setTransientBoard(boardDetailList,authentication));
     }
 }

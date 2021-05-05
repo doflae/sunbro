@@ -1,18 +1,26 @@
 package com.humorpage.sunbro.model;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Formula;
 import org.springframework.format.annotation.DateTimeFormat;
 
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Table(name="board")
-public class BoardDetail {
+public class BoardDetail implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,14 +35,26 @@ public class BoardDetail {
     @Column(name="content")
     private String content;
 
-    @ManyToOne(fetch = FetchType.EAGER,optional = false)
-    @JoinColumn(name = "author_num")
-    private UserSimple author;
+    @Column(name = "thumbnail")
+    private String thumbnail;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created")
-    @CreationTimestamp
+    @Column(name = "created",insertable = false)
     private LocalDateTime created;
+
+    @Column(name = "more")
+    private boolean more;
+
+    @Column(name = "media_dir")
+    private String mediaDir;
+
+    @Column(name = "author_num")
+    private Long authorNum;
+
+    @Column(name = "author_name")
+    private String authorName;
+
+    @Column(name = "author_img")
+    private String authorImg;
 
     @Formula("(select count(*) from boardlikes bl where bl.board_id=id)")
     private int likes;
@@ -50,6 +70,4 @@ public class BoardDetail {
     @Transient
     private boolean like;
 
-    @Column(name = "media_dir")
-    private String mediaDir;
 }

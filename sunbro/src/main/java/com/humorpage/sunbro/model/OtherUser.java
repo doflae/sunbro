@@ -7,5 +7,4 @@ public class OtherUser {
     private String uid;
     private PlatForm platForm;
     private String token;
-
 }

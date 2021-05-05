@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
+@Access(AccessType.FIELD)
 @Table(name="user")
 @Data
 public class UserSimple implements UserDetails {
@@ -32,7 +33,7 @@ public class UserSimple implements UserDetails {
     @Column(name="name", unique = true)
     private String name;
 
-    @Column(name="profileImg",nullable = false)
+    @Column(name="profile_img",nullable = false)
     private String userImg="";
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -49,7 +50,7 @@ public class UserSimple implements UserDetails {
     @Column(name="joined")
     @CreationTimestamp
     @JsonIgnore
-    private LocalDateTime created;
+    private LocalDateTime joined;
 
     private String role;
     @Override

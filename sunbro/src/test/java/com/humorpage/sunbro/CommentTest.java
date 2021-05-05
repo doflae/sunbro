@@ -32,7 +32,6 @@ public class CommentTest {
         Comment comment = new Comment();
         comment.setPid(12412L);
         comment.setContent("asdasdasd");
-        comment.setBoard(188L);
         UserSimple user = new UserSimple();
         user.setAge(20);
         user.setGender(Gender.Male);
@@ -40,7 +39,6 @@ public class CommentTest {
         user.setRole("USER");
         user.setName("seeeeeeeeeeeee");
         user.setUid("seeeeeeeee");
-        comment.setAuthor(user);
         commentRepository.save(comment);
     }
 }

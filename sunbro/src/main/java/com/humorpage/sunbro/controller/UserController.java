@@ -3,7 +3,6 @@ package com.humorpage.sunbro.controller;
 import com.humorpage.sunbro.model.*;
 import com.humorpage.sunbro.respository.BoardForTableRepository;
 import com.humorpage.sunbro.respository.BoardLikesRepository;
-import com.humorpage.sunbro.respository.BoardThumbnailRepository;
 import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
@@ -43,13 +42,12 @@ public class UserController {
     )
     @GetMapping("/log")
     SingleResult<User> myUser(Authentication authentication){
-        try{
+        if(authentication!=null && authentication.isAuthenticated()){
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             User user = userRepository.findByUserNum(userSimple.getUserNum());
             return responseService.getSingleResult(user);
-        }catch (Exception e){
-            return responseService.getFailSingleResult();
         }
+        return responseService.getFailSingleResult();
     }
 
 
@@ -78,13 +76,12 @@ public class UserController {
     ListResult<BoardForTable> myLikes(@RequestParam(required = false, defaultValue = "10") int size,
                                        @RequestParam int num,
                                        Authentication authentication){
-        try{
+        if(authentication!=null && authentication.isAuthenticated()){
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             List<Long> boardLikesList = boardLikesRepository.findAllByUsercustom(userSimple.getUserNum());
             List<BoardForTable> boardList = boardForTableRepository.findByIdInOrderByIdDesc(boardLikesList,PageRequest.of(num,size));
             return responseService.getListResult(boardList);
-        }catch (NullPointerException e){
-            return responseService.getFailedListResult();
         }
+        return responseService.getFailedListResult();
     }
 }

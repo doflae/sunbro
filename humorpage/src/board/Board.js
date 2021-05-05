@@ -13,7 +13,6 @@ import {uploadWrapper} from "../upload/UploadWrapper"
 import Axios from "axios"
 import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
-import ReactResizeDetector from "react-resize-detector"
 import ReactHlsPlayer from "react-hls-player"
 
 const caches = {};
@@ -23,7 +22,9 @@ function Board({
 }){
     const cache = board.id in caches? caches[board.id]:{};
     const [content, setContent] = useState(cache.content || board.content);
-    const [onOff, setOnOff] = useState(cache.onOff || !board.more);
+    const [onOff, setOnOff] = useState(cache.onOff ||
+                                    {onOff:!board.more,
+                                        controled:false});
     const [offset, setOffset] = useState(null);
     const [dUpBtnOnOff, setDUpBtnOnOff] = useState(false);
     const [isDeleted, setIsDeleted] = useState(cache.isDeleted || false);
@@ -38,7 +39,6 @@ function Board({
             props.onOffUploadPage(1)
         })
     }
-    
 
     useEffect(()=>{
         return ()=>{
@@ -46,7 +46,6 @@ function Board({
         }
     },[onOff,isDeleted,content])
 
-    //todo:test
     const DeleteBoard = ()=>(e)=>{
         if(window.confirm("삭제하시겠습니까?")){
             const formData = new FormData();
@@ -63,10 +62,20 @@ function Board({
         }
     }
 
-    const measure = () =>{
-        if(boardRef.current){
-            props.measure()
+    const setControlOnOff = (onoff) =>{
+        setOnOff({onOff:onoff,controled:true})
+    }
+
+    const measure = ()=>{
+        if(onOff.controled && boardRef.current){
+            props.measure(props.idx)
+            setOnOff({onOff:onOff.onOff,controled:false})
         }
+    }
+    
+    const _measure = () =>{
+        console.log("remeasure")
+        props.measure(props.idx)
     }
 
 
@@ -79,10 +88,7 @@ function Board({
     }
 
     if(board==null) return null;
-    if(board.author==null){
-        board.author = {userNum:"#",name:"@user123",userImg:""}
-    }
-    const isAuthor = props.user!=null && board.author.userNum===props.user.userNum;
+    const isAuthor = props.user!=null && board.authorNum===props.user.userNum;
     if(isDeleted) return null;
     return (
             <BoardPaddingStyled
@@ -92,13 +98,13 @@ function Board({
                 <BoardStyled >
                     <BoardTop>
                         <BoardTopLeft>
-                        <BoardAuthorImageStyled src={"/api/file/get?name=/72"+board.author.userImg}
+                        <BoardAuthorImageStyled src={"/api/file/get?name=/72"+board.authorImg}
                             alt="" onError={(e)=>{
                                 e.target.onError=null;e.target.src=userDefaultImg;
                             }}/>
                         </BoardTopLeft>
                         <BoardTopCenter className="board_top_center">
-                            <AuthorName><Link to={`/userpage/${board.author.usernum}`}>{board.author.name}</Link></AuthorName>
+                            <AuthorName><Link to={`/userpage/${board.authorNum}`}>{board.authorName}</Link></AuthorName>
                             <Created className="created">{getTime(board.created)}</Created>
                         </BoardTopCenter>
                         <BoardTopRight>
@@ -120,15 +126,14 @@ function Board({
                     <div className="board_main">
                         <MainContentComponent content={content} 
                         measure={measure}
-                        thumbnail={board.thumbnailImg} onOff={onOff}></MainContentComponent>
+                        thumbnail={board.thumbnail} onOff={onOff.onOff}></MainContentComponent>
                     </div>
                     <div>
                         <GetDetailBtn
                             id = {id}
-                            clear = {props.clear}
                             isMore={board.more}
                             onOff={onOff}
-                            setOnOff={setOnOff}
+                            setControlOnOff = {setControlOnOff}
                             offset={offset}
                             setOffset={setOffset}
                             boardRef={boardRef}
@@ -152,16 +157,11 @@ function Board({
                             </ShareBtnStyled>   
                         </BoardBottomButtonStyled>
                     </div>
-                    <ReactResizeDetector handleWidth={false}
-                    skipOnMount={true}
-                    refreshMode={"throttle"}
-                    onResize={props.measure}>
                     <CommentBox 
                         board_id={id}
                         comment_cnt = {comments_num} 
                         commentBtnRef = {commentBtnRef}
                         failedHandler={()=>{setIsDeleted(true)}}/>
-                    </ReactResizeDetector>
                 </BoardStyled>
             </BoardPaddingStyled>
     )
@@ -173,12 +173,11 @@ const GetDetailBtn = ({...props}) => {
 
     const getDetail = () => async (e) =>{
         let target = e.target
-        if(props.onOff){
+        if(props.onOff.onOff){
             //접기
             target.innerText="펼치기"
             detailBtnRef.current.style.marginTop = "-35px";
-            props.setOnOff(false)
-            props.clear();
+            props.setControlOnOff(false)
             window.scrollTo({top:props.offset,behavior:'smooth'})
         }else{
             //펼치기
@@ -196,8 +195,7 @@ const GetDetailBtn = ({...props}) => {
                     }
                 })
             }
-            props.setOnOff(true)
-            props.clear();
+            props.setControlOnOff(true)
             window.scrollTo({top:current.offsetTop+60,behavior:'smooth'})
         }
     }
@@ -313,16 +311,15 @@ const MainContentComponent = ({content,thumbnail,onOff,...props}) =>{
             root.querySelectorAll(".ng-thumb").forEach(elem=>{
                 elem.style.removeProperty("display");
             })
+            props.measure()
         }
     },[onOff])
     if(onOff){
         return <div ref={boardRef} 
-                dangerouslySetInnerHTML={{__html:sanitizeNonNull(content)}}
-                onLoad={props.measure}></div>
+                dangerouslySetInnerHTML={{__html:sanitizeNonNull(content)}}/>
     }else{
         return <BoardThumbnailStyled
         ref = {boardRef}
-        onLoad={props.measure}
         dangerouslySetInnerHTML={{__html:sanitizeNonNull(thumbnail)}}/>
     }
 }

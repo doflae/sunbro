@@ -51,7 +51,6 @@ public class FileUploadService {
             byte[] data = file.getBytes();
             File dir = new File(FileViewService.baseDir +path);
             dir.getParentFile().mkdirs();
-            Path target = Paths.get(FileViewService.baseDir +path);
             if(needResize){
                 Path tempFile = temporaryFileStore.store(data);
                 int maxSize;
@@ -60,10 +59,10 @@ public class FileUploadService {
                 } else {
                     maxSize = 100;
                 }
-                GifUtil.gifInputToOutput(tempFile.toFile(),target.toFile(),maxSize);
+                GifUtil.gifInputToOutput(tempFile.toFile(),dir,maxSize);
             }
             else{
-                Files.write(target,data);
+                Files.write(dir.toPath(),data);
             }
         }catch (IOException e){
             //TODO 에러 처리

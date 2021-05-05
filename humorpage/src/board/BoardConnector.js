@@ -24,7 +24,8 @@ class BoardConnector extends Component{
         this.state = {
             boards:[]
         };
-        this.clear = this.clear.bind(this)
+        this._measureCallbacks = {}
+        this._remeasure = this._remeasure.bind(this)
     }
 
 
@@ -85,21 +86,32 @@ class BoardConnector extends Component{
         </NextBoardBtnStyled>
     }
 
-    clear = () =>{
-        cache.clearAll();
+    _remeasure = (idx) =>{
+        if(idx in this._measureCallbacks){
+            this._measureCallbacks[idx]();
+            this.listRef.current.recomputeRowHeights(idx)
+        }else{
+            for(let i = idx;i<cache._rowCount;i++){
+                cache.clear(i,0)
+            }
+        }
     }
 
     rowRenderer = ({ index, key, parent, style }) => {
         const {boards} = this.state
+        const callbackMeasure = measure =>{
+            this._measureCallbacks[index] = measure
+        }
         return (
             <CellMeasurer cache={cache} parent={parent} key={key} columnIndex={0} rowIndex={index}>
-                {({measure})=>(
-                    <Board
-                    board={boards[index]} 
-                    measure={measure}
-                    clear={this.clear}
+                {({measure})=>{
+                    callbackMeasure(measure);
+                    return <Board
+                    board={boards[index]}
+                    idx = {index}
+                    measure={this._remeasure}
                     style={style}/>
-                )}
+                }}
             </CellMeasurer>
         );
     };

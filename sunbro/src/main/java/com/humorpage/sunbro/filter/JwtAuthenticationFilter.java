@@ -18,28 +18,30 @@ import org.thymeleaf.util.StringUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 // import 생략
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
     private final UserService userService;
 
-    @Autowired
     private final JwtTokenService jwtTokenService;
 
-    @Autowired
     private final CookieService cookieService;
 
-    @Autowired
     private final RedisTokenService redisTokenService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    //TODO:수정
+    private static final List<String> EXCLUDE_URL = Arrays.asList("/api/file/get");
 
     //Provider 주입
     public JwtAuthenticationFilter(JwtTokenService jwtTokenService, CookieService cookieService, RedisTokenService redisTokenService, UserService userService) {
@@ -50,8 +52,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+    protected boolean shouldNotFilter(HttpServletRequest request){
+        return EXCLUDE_URL.stream().anyMatch(exclude-> exclude.equalsIgnoreCase(request.getServletPath()));
+    }
 
+    @Override
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         final Cookie jwtToken = cookieService.getCookie(httpServletRequest, JwtTokenService.ACCESS_TOKEN_NAME);
 
         Long userNum = null;
