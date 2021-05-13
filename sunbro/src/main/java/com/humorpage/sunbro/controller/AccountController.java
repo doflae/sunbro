@@ -32,6 +32,7 @@ import javax.validation.Valid;
 @RequestMapping(value = "/api/account")
 public class AccountController {
 
+    //TODO: singleton
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
@@ -117,14 +118,13 @@ public class AccountController {
     @ApiOperation(value = "회원 정보 수정")
     @PostMapping(value="/update")
     CommonResult update(@Valid @ModelAttribute UserSimple user, Authentication authentication){
-        UserSimple userSimple;
         try{
-            userSimple = (UserSimple) authentication.getPrincipal();
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            changeProfileService.ChangeProfile(userSimple,user);
+            return responseService.getSuccessResult();
         }catch (Exception e){
             return responseService.getDetailResult(false,-1,"Need to Login");
         }
-        changeProfileService.ChangeProfile(userSimple,user);
-        return responseService.getSuccessResult();
     }
 
 
@@ -136,7 +136,6 @@ public class AccountController {
 
         UserSimple userSimple=null;
         try{
-            System.out.println(otherUser.toString());
             if(connectSocialService.AuthBySocial(otherUser)){
                 String userId = otherUser.getPlatForm().name()+otherUser.getUid();
                 userSimple = userSimpleRepository.findByUid(userId)
@@ -209,7 +208,8 @@ public class AccountController {
 
     @ApiOperation(value = "로그아웃", notes = "refresh token access token 세션 삭제 및 cookie 만료기간 0")
     @GetMapping(value = "/logout")
-    public CommonResult logout(HttpServletRequest req, HttpServletResponse res){
+    public CommonResult logout(HttpServletRequest req,
+                               HttpServletResponse res){
         Cookie jwtAccessToken = cookieService.getCookie(req, JwtTokenService.ACCESS_TOKEN_NAME);
         if(jwtAccessToken!=null){
             Cookie delcookie = new Cookie(jwtAccessToken.getName(),null);
@@ -249,8 +249,10 @@ public class AccountController {
     @ApiOperation(value = "회원 탈퇴", notes = "authentication의 정보, 입력받은 id, pw 대조하여 확인 후 유저 삭제")
     @PostMapping(value = "/withdrawal")
     CommonResult withdrawal(@ApiParam(value = "id",required = true)@RequestParam String uid,
-                               @ApiParam(value = "pw", required = true)@RequestParam String password,
-                               Authentication authentication, HttpServletResponse res, HttpServletRequest req) {
+                            @ApiParam(value = "pw", required = true)@RequestParam String password,
+                            Authentication authentication,
+                            HttpServletResponse res,
+                            HttpServletRequest req) {
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             if (!userSimple.getUid().equals(uid)){

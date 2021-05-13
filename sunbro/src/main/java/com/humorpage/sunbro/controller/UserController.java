@@ -42,12 +42,13 @@ public class UserController {
     )
     @GetMapping("/log")
     SingleResult<User> myUser(Authentication authentication){
-        if(authentication!=null && authentication.isAuthenticated()){
+        try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             User user = userRepository.findByUserNum(userSimple.getUserNum());
             return responseService.getSingleResult(user);
+        }catch(NullPointerException e){
+            return responseService.getFailSingleResult();
         }
-        return responseService.getFailSingleResult();
     }
 
 
@@ -56,7 +57,7 @@ public class UserController {
             notes = "token에 저장되어있는 로그인 정보를 사용"
     )
     @GetMapping("/board")
-    ListResult<BoardForTable> myboard(@RequestParam(required = false, defaultValue = "10") int size,
+    ListResult<BoardForTable> myBoard(@RequestParam(required = false, defaultValue = "10") int size,
                                        @RequestParam int num,
                                        Authentication authentication){
         try{
@@ -76,12 +77,13 @@ public class UserController {
     ListResult<BoardForTable> myLikes(@RequestParam(required = false, defaultValue = "10") int size,
                                        @RequestParam int num,
                                        Authentication authentication){
-        if(authentication!=null && authentication.isAuthenticated()){
+        try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             List<Long> boardLikesList = boardLikesRepository.findAllByUsercustom(userSimple.getUserNum());
             List<BoardForTable> boardList = boardForTableRepository.findByIdInOrderByIdDesc(boardLikesList,PageRequest.of(num,size));
             return responseService.getListResult(boardList);
+        }catch (NullPointerException e){
+            return responseService.getFailedListResult();
         }
-        return responseService.getFailedListResult();
     }
 }

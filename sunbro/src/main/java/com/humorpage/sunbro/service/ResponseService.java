@@ -69,6 +69,15 @@ public class ResponseService {
         return result;
     }
 
+    public <T> ListResult<T> getDetailListResult(boolean res, int code, String msg, List<T> data){
+        ListResult<T> result = new ListResult<>();
+        result.setList(data);
+        result.setCode(code);
+        result.setSuccess(res);
+        result.setMsg(msg);
+        return result;
+    }
+
     public <T> SingleResult<T> getDetailSingleResult(boolean res, int code, String msg, T data){
         SingleResult<T> result = new SingleResult<>();
         result.setCode(code);

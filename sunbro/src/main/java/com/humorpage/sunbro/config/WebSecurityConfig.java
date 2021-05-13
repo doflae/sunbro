@@ -72,8 +72,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt token으로 인증하므로 세션은 필요없으므로 생성안함.
                 .and()
                 .authorizeRequests() // 다음 리퀘스트에 대한 사용권한 체크
-                .antMatchers("**/upload*","/api/user/**").hasRole("USER")
-                .antMatchers("/**").permitAll();
+                .antMatchers("/api/**/upload/**",
+                        "/api/**/delete/**",
+                        "/api/**/like/**",
+                        "/api/user/**",
+                        "/api/account/update/**",
+                        "/api/account/logout",
+                        "/api/account/withdrawal",
+                        "/api/board/dir"
+                        ).hasRole("USER")
+                .anyRequest().permitAll();
     }
 
     @Bean

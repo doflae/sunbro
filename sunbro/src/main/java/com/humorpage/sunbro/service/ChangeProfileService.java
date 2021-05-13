@@ -12,8 +12,6 @@ public class ChangeProfileService {
     @Autowired
     UserSimpleRepository userSimpleRepository;
 
-    @Autowired
-    FileDeleteService fileDeleteService;
 
 
     public void ChangeImage(UserSimple saveTarget, String path){
@@ -21,7 +19,6 @@ public class ChangeProfileService {
         if(!beforeProfileImage.equals(path)){
             saveTarget.setUserImg(path);
             userSimpleRepository.save(saveTarget);
-            fileDeleteService.deleteFiles(beforeProfileImage,MediaType.PROFILE);
         }
     }
     public void ChangeProfile(UserSimple saveTarget, UserSimple newUserInfo){
@@ -32,7 +29,6 @@ public class ChangeProfileService {
         if(!beforeProfileImage.equals(newUserInfo.getUserImg())){
             saveTarget.setUserImg(newUserInfo.getUserImg());
             userSimpleRepository.save(saveTarget);
-            fileDeleteService.deleteFiles(beforeProfileImage,MediaType.PROFILE);
         }
     }
 }

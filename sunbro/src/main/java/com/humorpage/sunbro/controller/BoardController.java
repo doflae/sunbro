@@ -59,23 +59,20 @@ public class BoardController {
     @GetMapping(value = "/get/{bid}")
     SingleResult<Board> getBoard(@PathVariable Long bid,
                                              Authentication authentication){
-        if(authentication!=null && authentication.isAuthenticated()){
+        try{
             Board board = boardRepository
                     .findById(bid).orElseThrow(()-> new BoardNotFoundException("ID",String.valueOf(bid)));
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             if(board.getAuthorNum().equals(userSimple.getUserNum())){
                 return responseService.getSingleResult(board);
             }
-        }
+        }catch (Exception ignored){}
         return responseService.getFailSingleResult();
     }
 
     @GetMapping(value = "/dir")
-    SingleResult<String> getDirectory(Authentication authentication){
-        if(authentication!=null && authentication.isAuthenticated()){
-            return responseService.getSingleResult(assignDirectoryService.assignDirectory());
-        }
-        return responseService.getFailSingleResult();
+    SingleResult<String> getDirectory(){
+        return responseService.getSingleResult(assignDirectoryService.assignDirectory());
     }
 
     @GetMapping(value = "/detail/{bid}")
@@ -88,9 +85,11 @@ public class BoardController {
         }
     }
 
+    //TODO: 삭제 쿼리 하나로
+    //TODO: cascade에 의해 부모 댓글 삭제 시 자식 댓글 삭제되는데 쿼리 확인
     @PostMapping(value="/delete")
     CommonResult deleteBoard(@RequestParam List<Long> boardList, Authentication authentication){
-        if(authentication!=null && authentication.isAuthenticated()){
+        try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             boardList.forEach(bid->{
                 try{
@@ -100,8 +99,9 @@ public class BoardController {
                 }
             });
             return responseService.getSuccessResult();
+        }catch (NullPointerException e){
+            return responseService.getFailResult();
         }
-        return responseService.getFailResult();
     }
 
 
@@ -117,7 +117,7 @@ public class BoardController {
     @PostMapping(value = "/upload")
     CommonResult postForm(@ModelAttribute Board board,
                           Authentication authentication){
-        if(authentication!=null && authentication.isAuthenticated()){
+        try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             board.setAuthorNum(userSimple.getUserNum());
             if(board.getId()!=null){
@@ -129,34 +129,33 @@ public class BoardController {
             }
             boardRepository.save(board);
             return responseService.getSuccessResult();
+        }catch (NullPointerException e){
+            return responseService.getDetailResult(false,-1,"Need to Login");
         }
-        return responseService.getDetailResult(false,-1,"Need to Login");
     }
 
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")
-    @GetMapping(value = "/likeon")
+    @GetMapping(value = "/like/on")
     CommonResult likeBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
-        UserSimple userSimple;
         try{
-            userSimple = (UserSimple)authentication.getPrincipal();
+            UserSimple userSimple = (UserSimple)authentication.getPrincipal();
+            likesService.saveLikeBoard(userSimple.getUserNum(),board_id);
+            return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
         }
-        likesService.saveLikeBoard(userSimple.getUserNum(),board_id);
-        return responseService.getSuccessResult();
     }
 
     @ApiOperation(value="좋아요 취소",notes = "board_id를 받아 좋아요 off")
-    @GetMapping(value = "likeoff")
+    @GetMapping(value = "/like/off")
     CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
-        UserSimple userSimple;
         try{
-            userSimple = (UserSimple) authentication.getPrincipal();
+            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
+            likesService.deletelikeBoard(userSimple.getUserNum(),board_id);
+            return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
         }
-        likesService.deletelikeBoard(userSimple.getUserNum(),board_id);
-        return responseService.getSuccessResult();
     }
 
     @GetMapping("/recently")
@@ -164,7 +163,6 @@ public class BoardController {
         List<BoardDetail> boardDetailList;
         if(board_id==null){
             boardDetailList = boardDetailRepository.findByOrderByIdDesc(PageRequest.of(0,5));
-            System.out.println(boardDetailList);
         }else{
             boardDetailList = boardDetailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,5));
         }
