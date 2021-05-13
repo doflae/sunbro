@@ -5,8 +5,8 @@ import {authWrapper} from "../auth/AuthWrapper"
 import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
 import {uploadWrapper} from "../upload/UploadWrapper"
-import {throttle} from "../utils/Utils"
 import {boardWrapper} from "./BoardWrapper"
+import { observeTrigger } from '../utils/Utils';
 
 export const cache = new CellMeasurerCache({
     defaultWidth:100,
@@ -17,7 +17,8 @@ class BoardConnector extends Component{
     constructor(props){
         super(props);
         this.listRef = React.createRef();
-        this.mainBoxRef = React.createRef()
+        this.observer = React.createRef();
+        this.mainBoxRef = React.createRef();
         this.lastBoard = 0;
         this.lastElementid = 0;
         this.lastIndex = 0;
@@ -48,6 +49,7 @@ class BoardConnector extends Component{
     }
 
     getBoard = () =>{
+        console.log("getboard")
         let resturl = `/board/recently?`
         if(this.lastBoard!==0){
             resturl+=`board_id=${this.lastBoard}`
@@ -60,22 +62,10 @@ class BoardConnector extends Component{
                     boards:[...boards,...resData]
                 })
                 this.lastBoard = resData[resData.length-1]['id']
-            }else{
-                window.removeEventListener("scroll",throttle(this.infiniteScroll,300))
             }
         })
     }
 
-    infiniteScroll = () => {
-        const { documentElement, body } = document;
-
-        const scrollHeight = Math.max(documentElement.scrollHeight, body.scrollHeight);
-        const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
-        const clientHeight = documentElement.clientHeight;
-        if (scrollTop + clientHeight >= scrollHeight-600) {
-            this.getBoard();
-        }
-    }
     
     nextBtnRenderer = () =>{
         const {boards} = this.state
@@ -118,11 +108,9 @@ class BoardConnector extends Component{
 
     componentDidMount(){
         this.getBoard()
-        window.addEventListener("scroll",throttle(this.infiniteScroll,300))
-    }
-
-    componentWillUnmount(){
-        window.removeEventListener("scroll",throttle(this.infiniteScroll,300))
+        if(this.observer.current){
+            observeTrigger(this.getBoard,this.observer.current);
+        }
     }
 
     render(){
@@ -155,14 +143,18 @@ class BoardConnector extends Component{
                 </WindowScroller>
             </BoardMainBoxStyled>
             {this.nextBtnRenderer()}
+            <ObserverBoxStyled
+            ref={this.observer}
+            />
         </React.Fragment>
         );
     }
 }
 
-const BoardZoneHeader = uploadWrapper(({...props}) =>{
+const BoardZoneHeader = authWrapper(uploadWrapper(({...props}) =>{
     const goUpload = () => (e) =>{
-      props.onOffUploadPage(0);
+        if(props.user) props.onOffUploadPage(0);
+        else props.setAuthPageOption(0);
     }
     return <BoardZoneHeaderStyled>
         <HeaderBtnLeftZone>
@@ -193,7 +185,12 @@ const BoardZoneHeader = uploadWrapper(({...props}) =>{
             </HeaderBtnStyled>
         </HeaderBtnRightZone>
     </BoardZoneHeaderStyled>
-})
+}))
+
+const ObserverBoxStyled = styled.div`
+    height:300px;
+    width:100%;
+`
 
 const BoardMainBoxStyled = styled.div`
     min-width: 496px;

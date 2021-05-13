@@ -6,15 +6,19 @@ import CommentUploader from "./CommentUploader"
 import styled from "styled-components"
 import {SeeMoreBtnStyled} from "./CommentStyled"
 
+const caches = {};
+
 function CommentBox({
-    ...props
+    measure,board_id,...props
 }){
-    const [commentList, setCommentList] = useState([]);
-    const [lastId, setLastId] = useState(null);
-    const [keyList, setKeyList] = useState(new Set());
-    const [onOff, setOnOff] = useState(false);
-    const [onOffSeeMore, setOnOffSeeMore] = useState(false);
-    const commentCnt = props.comment_cnt
+    const cache = board_id in caches?caches[board_id]:{};
+    const [commentList, setCommentList] = useState(cache.commentList||[]);
+    const [lastId, setLastId] = useState(cache.lastId||null);
+    const [keyList, setKeyList] = useState(cache.keyList||new Set());
+    const [onOff, setOnOff] = useState(cache.onOff||false);
+    const [onOffSeeMore, setOnOffSeeMore] = useState(cache.onOffSeeMore||false);
+    const [onChanged, setOnChanged] = useState(false);
+    const [onLoading, setOnLoading] = useState(false)
 
     useEffect(()=>{
         const target = props.commentBtnRef.current
@@ -23,26 +27,34 @@ function CommentBox({
                 getData();
             }
             setOnOff(!onOff)
+            setOnChanged(true)
         }
-    })
+    },[])
 
     useEffect(()=>{
-        if(commentList.length>=commentCnt){
-            setOnOffSeeMore(false);
-        }else{
-            setOnOffSeeMore(true);
+        return ()=>{
+            caches[board_id] = {
+                commentList:commentList,
+                lastId:lastId,
+                keyList:keyList,
+                onOff:onOff,
+                onOffSeeMore:onOffSeeMore
+            }
         }
-    },[commentList,commentCnt])
+    },[])
 
     const getData = () =>{
-        const id = props.board_id
+        setOnLoading(true)
+        const id = board_id
         let resturl = `/comment/list?board_id=${id}`
+        console.log(lastId)
         if(lastId){
             resturl+=`&comment_id=${lastId}`
         }
         props.request("get",resturl).then(res=>{
             if(res.status===200) return res.data
         }).then(res=>{
+            console.log(res)
             let temp = [];
             let resLastId = 0;
             res.list.forEach((comment)=>{
@@ -52,14 +64,16 @@ function CommentBox({
                 }
                 resLastId = comment.id
             })
+            setOnOffSeeMore(!!res.code)
             setCommentList(commentList.concat([...temp]));
             setLastId(resLastId)
             setKeyList(keyList)
-        })
+        }).then(()=>{setOnLoading(false)})
     }
 
     const seeMore = () => (e) =>{
         getData();
+        setOnChanged(true)
     }
     
     const appendComment = (comment) =>{
@@ -71,15 +85,23 @@ function CommentBox({
     const CommentListRender = (commentList, board_id) => {
         if(commentList.length===0) return null;
         return commentList.map(c =>
-            <Comment key={c.id} comment={c} board_id={board_id}/>
+            <Comment key={c.id} comment={c}
+            measure={measure}
+            board_id={board_id}/>
         )
     }
+    useEffect(()=>{
+        if(onChanged && !onLoading){
+            measure()
+            setOnChanged(false)
+        }
+    },[onChanged,onLoading])
 
     if(onOff===false) return null;
     return <CommentBoxStyled>
-        {CommentListRender(commentList,props.board_id)}
+        {CommentListRender(commentList,board_id)}
         <SeeMoreBtn on={onOffSeeMore} seeMore={seeMore}/>
-        <CommentUploader board_id={props.board_id}
+        <CommentUploader board_id={board_id}
                     comment_id={0}
                     failedMsg={"삭제된 글입니다."}
                     failedHandler={props.failedHandler}

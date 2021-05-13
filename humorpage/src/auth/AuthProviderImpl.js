@@ -41,7 +41,6 @@ export class AuthProviderImpl extends Component{
         credential_form.append('uid',credentials['id'])
         credential_form.append('password',credentials['password'])
         return Axios.post("/account/login",credential_form).then(response =>{
-            console.log(response)
             if ("user" in response.headers){
                 this.setState({
                     user:JSON.parse(response.headers['user']),

@@ -109,8 +109,8 @@ class CustomImage extends IMG{
     image.src = this.getUrl(value)
     this.getSmUrl(node, value)
     image.onload = () => {
-      const ratio = (image.naturalWidth/image.naturalHeight).toFixed(5)
-      node.setAttribute("style",`max-width:${image.naturalWidth}px;aspect-ratio:${Math.ceil10(ratio,-4)};`)
+      const ratio = Math.ceil10(image.naturalWidth/image.naturalHeight,-4)
+      node.setAttribute("style",`max-width:${image.naturalWidth}px;aspect-ratio:${ratio};`)
       node.className="ql-img-div"
     }
     node.appendChild(image)
@@ -173,7 +173,7 @@ class CustomImage extends IMG{
     formData.append('file',file);
     formData.append('path',path);
     formData.append("mediaType",mediaType)
-    Axios.post("/file/upload-image",formData,{
+    Axios.post("/file/upload/image",formData,{
       headers:{
         'Content-Type':'multipart/form-data',
       }
@@ -254,7 +254,7 @@ class CustomVideo extends Video{
       const newPath = filePath+fileName
       if(video.src.startsWith("blob")){
         let blob = await fetch(video.src).then(r=>r.blob())
-        const thumbFilePath = newPath+"thumb.jpg";
+        const thumbFilePath = newPath+"/thumb.jpg";
         const OriginalFilePath = newPath+"/"+fileName+".m3u8"
         node.dataset.url = "/api/file/get?name="+OriginalFilePath
         await this.save(node,blob,OriginalFilePath,thumbFilePath)
@@ -274,7 +274,7 @@ class CustomVideo extends Video{
     const formData = new FormData();
     formData.append('file',file);
     formData.append('path',path);
-    await Axios.post("/file/upload-video",formData,{
+    await Axios.post("/file/upload/video",formData,{
       headers:{
         'Content-Type':'multipart/form-data',
       }

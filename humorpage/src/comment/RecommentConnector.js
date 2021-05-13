@@ -67,7 +67,7 @@ const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) 
 							cancel={updateHandler}
 							/>
 	return <Styled.RecommentStyled>
-			<Styled.CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
+			<Styled.CommentUserImageStyled className="comment-userimg" src={"/api/file/get?name=/72"+c.authorImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
 			
@@ -75,11 +75,11 @@ const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) 
 					<Styled.CommentSubsciprtStyled>
 						<Styled.CommentLeftStyled>
 							<Styled.CommentAuthorStyled>
-								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
+								<Link to={`/userpage/${c.authorNum}`}>{c.authorName}</Link>
 								</Styled.CommentAuthorStyled>
 						</Styled.CommentLeftStyled>
 						<ControlCommentBtn
-							author_num={c.author.userNum}
+							author_num={c.authorNum}
 							user={props.user}
 							deleteHandler={deleteHandler}
 							updateHandler={updateHandler}
@@ -93,7 +93,7 @@ const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) 
 			<Styled.CommentOptionStlyed>
 				<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
 				<RecommentBtn recommentClick={recommentClickHandler}
-					authorName={c.author.name}
+					authorName={c.authorName}
 					id={c.id}
 					onOff={recommentOnId===c.id}/>
 			</Styled.CommentOptionStlyed>

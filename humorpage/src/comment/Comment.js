@@ -24,11 +24,11 @@ const Comment = ({...props}) =>{
 	const [recommentOnId, setRecommentOnId] = useState(0);
 	const [onOffrecomment, setOnOffrecomment] = useState(false);
 	const [onOffSeeMore, setOnOffSeeMore] = useState(true);
-	const [pageSize, setPageSize] = useState(3)
+	const [loaded, setLoaded] = useState(false);
 	const optionRef = useRef()
 
 	const getData = () => {
-		let resturl = `/comment/list?parent_id=${c.id}&page_size=${pageSize}`
+		let resturl = `/comment/list?parent_id=${c.id}`
 		if(recommentLastId>0){
 			resturl+=`&comment_id=${recommentLastId}`
 		}
@@ -46,11 +46,10 @@ const Comment = ({...props}) =>{
 				}
 				resLastId=c.id
 			})
+			setOnOffSeeMore(!!res.code)
 			setRecommentList(recommentList.concat([...temp]))
 			setRecommentLastId(resLastId)
 			setKeyList(keyList)
-			if(res.list.length<pageSize) setOnOffSeeMore(false);
-			setPageSize(10)
 		})
 	}
 
@@ -114,16 +113,24 @@ const Comment = ({...props}) =>{
 			setOnOffrecomment(true)
 		)
 	}
+	useEffect(()=>{
+		if(loaded){
+			props.measure()
+		}
+	},[loaded])
 
 	if(c==null) return null;
-	if(isDeleted) return null;
+	if(isDeleted) {
+		props.measure()
+		return null;
+	}
 	if(updateMode) return <CommentUploader c={c}
 						board_id={props.board_id}
 						success={successHandler}
 						cancel={updateHandler}/>
 	return <React.Fragment>
 		<Styled.CommentStyled>
-			<Styled.CommentUserImageStyled src={"/api/file/get?name=/72"+c.author.userImg} alt="" onError={(e)=>{
+			<Styled.CommentUserImageStyled src={"/api/file/get?name=/72"+c.authorImg} alt="" onError={(e)=>{
 					e.preventDefault(); e.target.onerror=null;e.target.src=userDefaultImg;
 				}}/>
 				
@@ -131,11 +138,11 @@ const Comment = ({...props}) =>{
 					<Styled.CommentSubsciprtStyled>
 						<Styled.CommentLeftStyled>
 							<Styled.CommentAuthorStyled>
-								<Link to={`/userpage/${c.author.usernum}`}>{c.author.name}</Link>
+								<Link to={`/userpage/${c.authorNum}`}>{c.authorName}</Link>
 								</Styled.CommentAuthorStyled>
 						</Styled.CommentLeftStyled>
 						<ControlCommentBtn
-							author_num={c.author.userNum}
+							author_num={c.authorNum}
 							user={props.user}
 							getDistance={getDistance}
 							deleteHandler={deleteHandler}
@@ -145,12 +152,13 @@ const Comment = ({...props}) =>{
 					<CommentContext 
 						content={c.content} 
 						media={c.media}
-						blob={c.blob}/>
+						blob={c.blob}
+						setLoaded={setLoaded}/>
 			</Styled.CommentMainStyled>
 			<Styled.CommentOptionStlyed ref = {optionRef}>
 				<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
 				<RecommentBtn recommentClick={recommentClickHandler}
-					authorName={c.author.name}
+					authorName={c.authorName}
 					id={c.id}
 					getRecomment = {getRecomment}
 					onOff={recommentOnId===c.id}
@@ -191,7 +199,7 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 
 	const likeHandler = () => (e) => {
 		if(likeCnt.like){
-			Axios.get(`/comment/likeoff?id=${id}`).then(res=>{
+			Axios.get(`/comment/like/off?id=${id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
 					history.push("/login")
 				}
@@ -202,7 +210,7 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 			})
 			setFilter("")
 		}else{
-			Axios.get(`/comment/likeon?id=${id}`).then(res=>{
+			Axios.get(`/comment/like/on?id=${id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
 					history.push("/login")
 				}
@@ -226,7 +234,7 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 	</Styled.LikeStyled>
 }
 
-export const CommentContext = ({content,media,blob}) =>{
+export const CommentContext = ({content,media,blob,...props}) =>{
 	let src_small =null;
 	let src_large = null;
 	let largeOnOff = false
@@ -264,6 +272,9 @@ export const CommentContext = ({content,media,blob}) =>{
 		onError = {e=>{e.preventDefault(); e.target.onerror=null; e.target.style.display="none";}}/>
 		else return null
 	}
+	useEffect(()=>{
+		props.setLoaded(true)
+	},[])
 	return <Styled.CommentContextStyled>
 		<p dangerouslySetInnerHTML={{__html:contentChecked}}></p>
 		{renderImage()}		

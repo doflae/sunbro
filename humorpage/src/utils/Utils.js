@@ -285,3 +285,12 @@ export const debounce = (fn,delay=1000) =>{
         },delay);
     }
 }
+
+export const observeTrigger = (fn,el) =>{
+    const Observer = new IntersectionObserver(
+        ([{isIntersecting}])=>{
+            if(isIntersecting) fn()
+        }
+    )
+    Observer.observe(el)
+}

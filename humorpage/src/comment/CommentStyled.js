@@ -150,6 +150,7 @@ export const CommentMainStyled = styled.div`
 export const CommentSubsciprtStyled = styled.div`
 	font-size: 0.8em;
 	padding-top: 2px;
+	margin-right:5px;
 	display:flex;
 `
 

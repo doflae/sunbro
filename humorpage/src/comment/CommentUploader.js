@@ -32,6 +32,11 @@ function CommentUploader({...props}){
     },[])
     
     const submitComment = () => (e) =>{
+        const user = props.user
+        if(user==null){
+            props.setAuthPageOption(0);
+            return
+        }
         let data = new FormData();
         let content = contentRef.current.innerText
         if(cname!=null){
@@ -50,8 +55,7 @@ function CommentUploader({...props}){
             if(c) data.append('id',c.id)
             data.append('content', content)
             data.append('board_id',props.board_id)
-            const user = props.user
-            data.append('authorNum',user,userNum)
+            data.append('authorNum',user.userNum)
             data.append('authorName',user.name)
             data.append('authorImg',user.userImg?user.userImg:"")
             if(props.comment_id) data.append('comment_id',props.comment_id)
@@ -65,7 +69,7 @@ function CommentUploader({...props}){
                     if(mediaRef.current!=null) mediaRef.current.style.display="none";
                     contentRef.current.innerText="";
                     setImageOnOff(false)
-                    const comment = res.data.data
+                    const comment = res.data
                     comment.blob = blob;
                     comment.media = null;
                     if(props.success) props.success(comment)

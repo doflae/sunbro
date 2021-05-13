@@ -6,7 +6,8 @@ import { Link } from "react-router-dom";
 import {sanitizeNonNull, 
     getTime, 
     convertUnitOfNum, 
-    copyToClipboard} from "../utils/Utils"
+    copyToClipboard,
+    throttle} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
 import {boardWrapper} from "./BoardWrapper"
 import {uploadWrapper} from "../upload/UploadWrapper"
@@ -22,12 +23,11 @@ function Board({
 }){
     const cache = board.id in caches? caches[board.id]:{};
     const [content, setContent] = useState(cache.content || board.content);
-    const [onOff, setOnOff] = useState(cache.onOff ||
-                                    {onOff:!board.more,
-                                        controled:false});
+    const [onOff, setOnOff] = useState(cache.onOff || !board.more);
     const [offset, setOffset] = useState(null);
     const [dUpBtnOnOff, setDUpBtnOnOff] = useState(false);
     const [isDeleted, setIsDeleted] = useState(cache.isDeleted || false);
+    const [loaded, setLoaded] = useState(false);
     const boardRef = useRef();
     const commentBtnRef = useRef();
     const id = board.id
@@ -62,21 +62,17 @@ function Board({
         }
     }
 
-    const setControlOnOff = (onoff) =>{
-        setOnOff({onOff:onoff,controled:true})
-    }
+    const measure = throttle(() =>{
+        if(boardRef.current) props.measure(props.idx)
+        console.log("measure")
+    },100)
 
-    const measure = ()=>{
-        if(onOff.controled && boardRef.current){
-            props.measure(props.idx)
-            setOnOff({onOff:onOff.onOff,controled:false})
+    useEffect(()=>{
+        if(loaded){
+            setLoaded(false)
+            measure()
         }
-    }
-    
-    const _measure = () =>{
-        console.log("remeasure")
-        props.measure(props.idx)
-    }
+    },[loaded])
 
 
     const ShareBoard = () => (e) =>{
@@ -124,16 +120,17 @@ function Board({
                         {board.title}
                     </BoardTitleStyled>
                     <div className="board_main">
-                        <MainContentComponent content={content} 
-                        measure={measure}
-                        thumbnail={board.thumbnail} onOff={onOff.onOff}></MainContentComponent>
+                        <MainContentComponent content={content}
+                        thumbnail={board.thumbnail} 
+                        setLoaded={setLoaded}
+                        onOff={onOff}/>
                     </div>
                     <div>
                         <GetDetailBtn
                             id = {id}
                             isMore={board.more}
                             onOff={onOff}
-                            setControlOnOff = {setControlOnOff}
+                            setOnOff = {setOnOff}
                             offset={offset}
                             setOffset={setOffset}
                             boardRef={boardRef}
@@ -161,6 +158,7 @@ function Board({
                         board_id={id}
                         comment_cnt = {comments_num} 
                         commentBtnRef = {commentBtnRef}
+                        measure = {measure}
                         failedHandler={()=>{setIsDeleted(true)}}/>
                 </BoardStyled>
             </BoardPaddingStyled>
@@ -173,11 +171,11 @@ const GetDetailBtn = ({...props}) => {
 
     const getDetail = () => async (e) =>{
         let target = e.target
-        if(props.onOff.onOff){
+        if(props.onOff){
             //접기
-            target.innerText="펼치기"
-            detailBtnRef.current.style.marginTop = "-35px";
-            props.setControlOnOff(false)
+            target.innerText="더 보기(more)"
+            detailBtnRef.current.style.marginTop = "-30px";
+            props.setOnOff(false)
             window.scrollTo({top:props.offset,behavior:'smooth'})
         }else{
             //펼치기
@@ -195,7 +193,7 @@ const GetDetailBtn = ({...props}) => {
                     }
                 })
             }
-            props.setControlOnOff(true)
+            props.setOnOff(true)
             window.scrollTo({top:current.offsetTop+60,behavior:'smooth'})
         }
     }
@@ -211,7 +209,7 @@ const LikeBtn = authWrapper(({id,like,likes,...props}) =>{
     })
     const likeHandler = ()=>(e) =>{
         if(onOffLike.onOff){
-            Axios.get(`/board/likeoff?id=${id}`).then(res=>{
+            Axios.get(`/board/like/off?id=${id}`).then(res=>{
                 if (!res.data.success){
                     props.setAuthPageOption(0);
                 }
@@ -221,7 +219,7 @@ const LikeBtn = authWrapper(({id,like,likes,...props}) =>{
                 likeCnt:onOffLike.likeCnt-1
             })
         }else{
-            Axios.get(`/board/likeon?id=${id}`).then(res=>{
+            Axios.get(`/board/like/on?id=${id}`).then(res=>{
                 if (!res.data.success){
                     props.setAuthPageOption(0);
                 }
@@ -311,8 +309,9 @@ const MainContentComponent = ({content,thumbnail,onOff,...props}) =>{
             root.querySelectorAll(".ng-thumb").forEach(elem=>{
                 elem.style.removeProperty("display");
             })
-            props.measure()
+            props.setLoaded(true)
         }
+        console.log(onOff)
     },[onOff])
     if(onOff){
         return <div ref={boardRef} 
