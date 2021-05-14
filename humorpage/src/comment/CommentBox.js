@@ -9,7 +9,7 @@ import {SeeMoreBtnStyled} from "./CommentStyled"
 const caches = {};
 
 function CommentBox({
-    measure,board_id,...props
+    board_id,...props
 }){
     const cache = board_id in caches?caches[board_id]:{};
     const [commentList, setCommentList] = useState(cache.commentList||[]);
@@ -17,8 +17,6 @@ function CommentBox({
     const [keyList, setKeyList] = useState(cache.keyList||new Set());
     const [onOff, setOnOff] = useState(cache.onOff||false);
     const [onOffSeeMore, setOnOffSeeMore] = useState(cache.onOffSeeMore||false);
-    const [onChanged, setOnChanged] = useState(false);
-    const [onLoading, setOnLoading] = useState(false)
 
     useEffect(()=>{
         const target = props.commentBtnRef.current
@@ -27,7 +25,6 @@ function CommentBox({
                 getData();
             }
             setOnOff(!onOff)
-            setOnChanged(true)
         }
     },[])
 
@@ -44,10 +41,8 @@ function CommentBox({
     },[])
 
     const getData = () =>{
-        setOnLoading(true)
         const id = board_id
         let resturl = `/comment/list?board_id=${id}`
-        console.log(lastId)
         if(lastId){
             resturl+=`&comment_id=${lastId}`
         }
@@ -68,12 +63,11 @@ function CommentBox({
             setCommentList(commentList.concat([...temp]));
             setLastId(resLastId)
             setKeyList(keyList)
-        }).then(()=>{setOnLoading(false)})
+        })
     }
 
     const seeMore = () => (e) =>{
         getData();
-        setOnChanged(true)
     }
     
     const appendComment = (comment) =>{
@@ -86,16 +80,9 @@ function CommentBox({
         if(commentList.length===0) return null;
         return commentList.map(c =>
             <Comment key={c.id} comment={c}
-            measure={measure}
             board_id={board_id}/>
         )
     }
-    useEffect(()=>{
-        if(onChanged && !onLoading){
-            measure()
-            setOnChanged(false)
-        }
-    },[onChanged,onLoading])
 
     if(onOff===false) return null;
     return <CommentBoxStyled>

@@ -1,37 +1,36 @@
 import React, {useRef,useState,useEffect} from "react"
 import {IconStyled} from "../MainStyled"
 import Dropzone from "react-dropzone"
-import {getToday,
+import {
     getRandomGenerator,
     isEmpty,
     ResizeImage,
     splitCname} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
+import {boardWrapper} from "../board/BoardWrapper"
 import Axios from "axios"
 import styled from "styled-components"
+import ReactDomServer from "react-dom/server"
+
 
 function CommentUploader({...props}){
     const c = props.c
     const inputSet = c&&c.content?splitCname(c.content):null
     const cname = props.cname || (inputSet?inputSet.cname:null)
     const content = c&&c.content?inputSet.content:""
-    const [imageOnOff,setImageOnOff] = useState(false);
-    const [commentImg, setCommentImg] = useState(null);
-    const [commentResizedImg, setCommentResizedImg] = useState({});
-    const [mediaFormat, setMediaFormat] = useState(null);
-    const mediaRef = useRef();
+    const [Img, setImg] = useState(null);
     const dropzoneRef = useRef();
     const contentRef = useRef();
 
     useEffect(()=>{
         if(c&&c.media){
-            setCommentImg(`/api/file/get?name=${c.media}`)
-            setCommentResizedImg(`/api/file/get?name=/200${c.media}`)
-            setImageOnOff(true)
+            const div = document.createElement("div")
+            div.outerHTML = c.media
+            setImg(div)
         }
     },[])
     
-    const submitComment = () => (e) =>{
+    const submitComment = async () =>{
         const user = props.user
         if(user==null){
             props.setAuthPageOption(0);
@@ -42,16 +41,16 @@ function CommentUploader({...props}){
         if(cname!=null){
             content=`<span class="recomment_target">@${cname}</span>`+content
         }
-        if(!isEmpty(commentImg)){
-            if(commentImg.startsWith("blob")){
-                const filePath = "/"+getToday()+"/"+getRandomGenerator(10)+'.'+mediaFormat;
-                saveFile(filePath)
-                data.append('media',filePath)
-            }else{
-                data.append('media',c.media)
+        let tmpUrl = {}
+        if(Img){
+            tmpUrl = Img.dataset
+            const src = Img.dataset.lg
+            if(src.startsWith("blob")){
+                await saveFile()
             }
+            data.append('media',Img.outerHTML)
         }
-        if(!isEmpty(content)||!isEmpty(commentImg)){
+        if(!isEmpty(content)||!!Img){
             if(c) data.append('id',c.id)
             data.append('content', content)
             data.append('board_id',props.board_id)
@@ -59,21 +58,23 @@ function CommentUploader({...props}){
             data.append('authorName',user.name)
             data.append('authorImg',user.userImg?user.userImg:"")
             if(props.comment_id) data.append('comment_id',props.comment_id)
-            const blob = {};
-            blob.commentImg = commentImg
-            blob.commentResizedImg = commentResizedImg
             props.request('post',"/comment/upload",data).then(res=>{
                 if(res.status===200) return res.data
             }).then(res=>{
                 if(res.success){
-                    if(mediaRef.current!=null) mediaRef.current.style.display="none";
-                    contentRef.current.innerText="";
-                    setImageOnOff(false)
                     const comment = res.data
-                    comment.blob = blob;
-                    comment.media = null;
+                    //아직 업로드 안된 미디어 파일 대신 blob url 사용
+                    if(Img){
+                        Img.dataset.sm = tmpUrl.sm
+                        Img.dataset.lg = tmpUrl.lg
+                        comment.media = Img.outerHTML;
+                    }
+                    //수정모드
                     if(props.success) props.success(comment)
-                    else props.appendComment(comment)
+                    //업로드모드
+                    else if(props.appendComment) props.appendComment(comment)
+                    if(contentRef.current) contentRef.current.innerText="";
+                    setImg(null)
                 }else if(res.code){
                     //삭제된 상위 글
                     //caller에서 callbackcancel
@@ -94,52 +95,70 @@ function CommentUploader({...props}){
 
     const onDrop = (acceptFile) => {
         if(acceptFile[0]) {
-            setMediaFormat(acceptFile[0].type.split("/")[1]);
-            ResizeImage(acceptFile[0],200).then(resizedImage=>{
-                setCommentResizedImg({200:URL.createObjectURL(resizedImage)});
+            const div = document.createElement("div")
+            div.className="ql-img-div"
+            const img = new Image();
+            img.onload = () =>{
+                const ratio = Math.ceil10(img.naturalWidth/img.naturalHeight,-4)
+                div.style.aspectRatio=ratio
+                div.dataset.width=img.naturalWidth
+                setImg(div)
+            }
+            ResizeImage(acceptFile[0],100).then(resizedImage=>{
+                div.dataset.sm = URL.createObjectURL(resizedImage)
             })
             ResizeImage(acceptFile[0]).then(defaultImage=>{
-                setCommentImg(URL.createObjectURL(defaultImage))
-                setImageOnOff(true)
+                div.dataset.lg = URL.createObjectURL(defaultImage)
+                img.src = div.dataset.lg
+                div.style.width="100px"
+                div.appendChild(img)
             })
         }
     }
-    const saveFile = (path) => {
-        Object.keys(commentResizedImg).forEach(key=>{
-            fetch(commentResizedImg[key]).then(r=>r.blob()).then(blob=>{
-                var x = new Image();
-                x.onload = () =>{
-                    const formData = new FormData();
-                    formData.append('file',blob);
-                    formData.append('path',`/${key}`+path);
-                    formData.append('needResize',key<Math.max(x.width,x.height))
-                    formData.append('mediaType',"COMMENT")
-                    Axios.post("/file/upload-image",formData,{
-                        headers:{
-                            'Content-Type':'multipart/form-data',
-                        }
-                    })
-                }
-                x.src = URL.createObjectURL(blob);
-            })
-        })
-        fetch(commentImg).then(r=>r.blob()).then(blob=>{
+    const saveFile = async() => {
+        let sm = Img.dataset.sm
+        let lg = Img.dataset.lg
+        Img.removeChild(Img.firstElementChild)
+        Img.className = "ng-img-div"
+        await fetch(sm).then(r=>r.blob()).then(blob=>{
             const formData = new FormData();
-            formData.append('file',blob);
-            formData.append('path',path);
-            formData.append('mediaType',"COMMENT")
-            Axios.post("/file/upload-image",formData,{
-              headers:{
-                'Content-Type':'multipart/form-data',
-              }
+            const filePath = props.boardMediaDir[props.board_id]+"/cmt/"
+            const newName = getRandomGenerator(10)
+            const type = blob.type.split("/")[1]
+            const fileName = filePath+newName+"."+type
+            formData.append("file",blob)
+            formData.append("path",fileName)
+            formData.append('needResize',type==="gif")
+            formData.append("mediaType","COMMENT")
+            Axios.post("/file/upload/image",formData,{
+                headers:{
+                    'Content-Type':'multipart/form-data',
+                }
             })
+            Img.dataset.sm = "/api/file/get?name="+fileName
+        })
+        await fetch(lg).then(r=>r.blob()).then(blob=>{
+            const formData = new FormData();
+            const filePath = props.boardMediaDir[props.board_id]+"/cmt/"
+            const newName = getRandomGenerator(10)
+            const type = blob.type.split("/")[1]
+            const fileName = filePath+newName+"."+type
+            formData.append("file",blob)
+            formData.append("path",fileName)
+            formData.append('needResize',false)
+            formData.append("mediaType","COMMENT")
+            Axios.post("/file/upload/image",formData,{
+                headers:{
+                    'Content-Type':'multipart/form-data',
+                }
+            })
+            Img.dataset.lg = "/api/file/get?name="+fileName
         })
     }
-    const imageDelete = () => (e) =>{
-        mediaRef.current.style.display="none"
-        URL.revokeObjectURL(commentImg);
-        URL.revokeObjectURL(commentResizedImg)
-        setImageOnOff(false);
+    const imageDelete = () => {
+        URL.revokeObjectURL(Img.dataset.sm);
+        URL.revokeObjectURL(Img.dataset.lg);
+        setImg(null);
     }
     const imageHandler = () => (e) =>{
         if(dropzoneRef) dropzoneRef.current.open();
@@ -152,19 +171,14 @@ function CommentUploader({...props}){
             aria-label="댓글을 입력해주세요..."
             dangerouslySetInnerHTML={{__html:content}}
             ref={contentRef}></CommentTextAreaStyled>
-        <CommentPreImgZoneStyled>
-            <ImageResized src={commentImg}
-                mediaRef={mediaRef}
-                setImageOnOff={setImageOnOff}/>
-            <ImageDeleteBtn onOff={imageOnOff} imageDelete={imageDelete}></ImageDeleteBtn>
-        </CommentPreImgZoneStyled>
+        <CommentPreImgZone Img={Img} imageDelete={imageDelete}/>
         <CommentUploadBtnStyled>
             <CommentBottomStyled>
                 <CameraStyled 
                 theme="camera_lg"
                 onClick={imageHandler()}/>
             <CommentBtnStyled 
-            onClick={submitComment()}
+            onClick={submitComment}
             type="submit">
                 등록
             </CommentBtnStyled>
@@ -192,20 +206,23 @@ function CommentUploader({...props}){
     </CommentUploaderStyled>
 }
 
-const ImageResized = ({src,mediaRef, setImageOnOff}) =>{
-    if(src) return <img alt=""
-        className="comment_preimg"
-        ref={mediaRef}
-        src={src}
-        onLoad={e=>{e.target.style.removeProperty("display")}}
-        onError={e=>{e.target.onerror=null;e.target.style.display="none";
-        setImageOnOff(false);}}/>
+const CommentPreImgZone = ({Img,imageDelete}) =>{
+    const ImgZoneRef = useRef()
+    useEffect(()=>{
+        if(ImgZoneRef.current){
+            ImgZoneRef.current.lastElementChild.addEventListener('click',imageDelete)
+        }
+    },[Img])
+    if(Img){
+        const html = Img.outerHTML+ReactDomServer.renderToString(
+            <ImageDeleteBtnStyled/>
+        )
+        return <CommentPreImgZoneStyled 
+        ref={ImgZoneRef}
+        dangerouslySetInnerHTML={{__html:html}}>
+        </CommentPreImgZoneStyled>
+    }
     return null;
-}
-
-const ImageDeleteBtn = ({onOff, imageDelete}) => {
-    if(onOff) return <ImageDeleteBtnStyled onClick={imageDelete()}></ImageDeleteBtnStyled>
-    else return null;
 }
 
 const RecommentTargetStyled = styled.span`
@@ -312,4 +329,4 @@ const ImageDeleteBtnStyled = styled.button`
     }
 `
 
-export default authWrapper(CommentUploader);
+export default boardWrapper(authWrapper(CommentUploader));

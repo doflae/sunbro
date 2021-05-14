@@ -158,17 +158,18 @@ export const dataUrltoBlob = (dataURL) =>{
 
 //input file or dataUrl
 //return Promise=>resizedImage(blob data)
-export const ResizeImage = (data, maxSize=474) =>{
+//사진이 더 작을 경우에만 줄임
+export const ResizeImage = (data, maxSize=400) =>{
     const fileReader = new FileReader();
     var canvas = document.createElement("canvas");
     var image = new Image();
     var resize = () => {
         var width = image.width;
         var height = image.height;
-        if(width>height){
+        if(width>height && width>maxSize){
             height *= maxSize / width;
             width = maxSize;
-        }else{
+        }else if(height>width && height>maxSize){
             width *= maxSize / height;
             height = maxSize;
         }

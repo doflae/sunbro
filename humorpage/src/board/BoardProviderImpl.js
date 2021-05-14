@@ -7,8 +7,17 @@ export class BoardProviderImpl extends Component{
         this.state={
             boardDetail:null,
             boardKey:null,
+            boardMediaDir:{}
         }
     }
+
+    setBoardDir = (boardDirs) =>{
+        const {boardMediaDir} = this.state
+        this.setState({
+            boardMediaDir:{...boardMediaDir,...boardDirs}
+        })
+    }
+
     setBoardKey = (key) =>{
         const setKey = () =>{
             this.setState({boardKey:key});
@@ -25,6 +34,7 @@ export class BoardProviderImpl extends Component{
     render = () =>
         <BoardContext.Provider value={{...this.state,
             setBoard:this.setBoard,
+            setBoardDir:this.setBoardDir,
             setBoardKey:this.setBoardKey}}>
             {this.props.children}
         </BoardContext.Provider>

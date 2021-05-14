@@ -7,9 +7,7 @@ import {boardWrapper} from "../board/BoardWrapper"
 import {uploadWrapper} from "./UploadWrapper"
 import Axios from "axios"
 import {
-  getRandomGenerator,
-  isEmpty, 
-  ResizeThumbnailImage,
+  isEmpty,
   changeDateTimeToPath,
   sanitizeUrl} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"

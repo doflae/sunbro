@@ -4,7 +4,8 @@ import {authWrapper} from "../auth/AuthWrapper"
 import {withRouter, Link, useHistory} from "react-router-dom"
 import {sanitizeHarder,
 		convertUnitOfNum, 
-		isEmpty} from "../utils/Utils"
+		isEmpty,
+		observeTrigger} from "../utils/Utils"
 import Axios from "axios";
 import RecommentConnector from "./RecommentConnector"
 import * as Styled from "./CommentStyled"
@@ -24,7 +25,6 @@ const Comment = ({...props}) =>{
 	const [recommentOnId, setRecommentOnId] = useState(0);
 	const [onOffrecomment, setOnOffrecomment] = useState(false);
 	const [onOffSeeMore, setOnOffSeeMore] = useState(true);
-	const [loaded, setLoaded] = useState(false);
 	const optionRef = useRef()
 
 	const getData = () => {
@@ -113,17 +113,9 @@ const Comment = ({...props}) =>{
 			setOnOffrecomment(true)
 		)
 	}
-	useEffect(()=>{
-		if(loaded){
-			props.measure()
-		}
-	},[loaded])
 
 	if(c==null) return null;
-	if(isDeleted) {
-		props.measure()
-		return null;
-	}
+	if(isDeleted) return null;
 	if(updateMode) return <CommentUploader c={c}
 						board_id={props.board_id}
 						success={successHandler}
@@ -151,9 +143,7 @@ const Comment = ({...props}) =>{
 					</Styled.CommentSubsciprtStyled>
 					<CommentContext 
 						content={c.content} 
-						media={c.media}
-						blob={c.blob}
-						setLoaded={setLoaded}/>
+						media={c.media}/>
 			</Styled.CommentMainStyled>
 			<Styled.CommentOptionStlyed ref = {optionRef}>
 				<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
@@ -234,50 +224,55 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 	</Styled.LikeStyled>
 }
 
-export const CommentContext = ({content,media,blob,...props}) =>{
-	let src_small =null;
-	let src_large = null;
-	let largeOnOff = false
-	if(blob!=null){
-		src_small = Object.keys(blob.commentResizedImg).map(key=>{
-			return blob.commentResizedImg[key]
-		})
-		src_large = blob.commentImg
-	}else{
-		if(!isEmpty(media)){
-			src_small = `/api/file/get?name=/200${media}`
-			src_large = `/api/file/get?name=${media}`
+export const CommentContext = ({content,media,...props}) =>{
+	const contentChecked = isEmpty(content)?"":sanitizeHarder(content)
+	const ContentRef = useRef()
+	let onOff = false
+	const renderContent = () =>{
+		if(media){
+			return contentChecked+media
 		}
+		return contentChecked
 	}
-	const contentChecked = isEmpty(content)?null:sanitizeHarder(content)
-	const ImageClickHandler = () => (e) =>{
-		let target = e.target;
-		if(largeOnOff){
-			target.src = src_small
-			target.setAttribute("width","100px")
-			target.setAttribute("height","100px")
-			largeOnOff=false
-		}else{
-			target.removeAttribute("width")
-			target.removeAttribute("height")
-			target.src = src_large
-			largeOnOff=true
-		}
-	}
-	const renderImage = () =>{
-		if(media!=null || blob!=null) return <Styled.CommentImgStyled onClick = {ImageClickHandler()}
-		src={src_small} alt="" 
-		width="100px" height="100px"
-		onLoad={e=>{e.target.style.removeProperty("display");}}
-		onError = {e=>{e.preventDefault(); e.target.onerror=null; e.target.style.display="none";}}/>
-		else return null
-	}
+
 	useEffect(()=>{
-		props.setLoaded(true)
+		if(media && ContentRef.current){
+			const target = ContentRef.current.querySelector(".ng-img-div")
+			observeTrigger(()=>{
+				var img = new Image()
+				img.src = target.dataset.sm
+				target.appendChild(img)
+				img.onload = () =>{
+					target.firstChild.classList.add('loaded');
+				}
+				var imgLarge = new Image();
+				imgLarge.src = target.dataset.lg
+				imgLarge.onload = () =>{
+					imgLarge.classList.add("loaded")
+				}
+				target.appendChild(imgLarge)
+			},target)
+			target.addEventListener("click",()=>{
+				console.log("click",onOff)
+				if(onOff){
+					//large 상태
+					target.style.width="100px"
+				}else{
+					//small 상태
+					if(target.dataset.sm){
+						//그대로 lg url 요청
+						target.lastElementChild.src = target.dataset.lg
+						target.dataset.sm = "";
+					}
+					//이미 lg img 요청했기에 사이즈만 변경
+					target.style.width=`${target.dataset.width}px`
+				}
+				onOff=!onOff
+			})
+		}
 	},[])
-	return <Styled.CommentContextStyled>
-		<p dangerouslySetInnerHTML={{__html:contentChecked}}></p>
-		{renderImage()}		
+	return <Styled.CommentContextStyled ref={ContentRef}>
+		<p dangerouslySetInnerHTML={{__html:renderContent()}}></p>
 	</Styled.CommentContextStyled>
 }
 

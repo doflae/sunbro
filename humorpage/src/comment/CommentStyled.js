@@ -200,9 +200,6 @@ export const RecommentBtnStyled = styled.div`
 	cursor: pointer;
 `
 
-export const CommentImgStyled = styled.img`
-	margin-top: 5px;
-`
 export const CommentContextStyled = styled.div`
 	padding-top:5px;
 	& *{

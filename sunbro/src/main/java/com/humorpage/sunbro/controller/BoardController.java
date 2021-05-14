@@ -115,7 +115,7 @@ public class BoardController {
     /*TODO 업로드 트랜잭션화
      */
     @PostMapping(value = "/upload")
-    CommonResult postForm(@ModelAttribute Board board,
+    CommonResult upload(@ModelAttribute Board board,
                           Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();

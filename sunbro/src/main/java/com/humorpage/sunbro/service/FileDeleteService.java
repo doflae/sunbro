@@ -34,6 +34,7 @@ public class FileDeleteService {
     private final Pattern srcPattern = Pattern.compile("\"/file/get\\?name=([^\"]*)");
 
     //게시글 수정 시 글 파싱 후 삭제된 미디어 파일들 삭제
+    //TODO: 댓글, m3u8 파일 새로운 디렉토리에 넣어서 관리-> 삭제되는지 테스트
     public void refreshDir(String contentAfter,
                            String thumbNailImg) throws IOException {
         Matcher contentMatcher = srcPattern.matcher(contentAfter);

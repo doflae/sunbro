@@ -17,7 +17,6 @@ import {IconStyled} from "../MainStyled"
 import ReactHlsPlayer from "react-hls-player"
 
 const caches = {};
-
 function Board({
     board,setRef,...props
 }){
@@ -29,6 +28,7 @@ function Board({
     const [isDeleted, setIsDeleted] = useState(cache.isDeleted || false);
     const [loaded, setLoaded] = useState(false);
     const boardRef = useRef();
+    const resizedRef = useRef();
     const commentBtnRef = useRef();
     const id = board.id
     const comments_num = board.comments_num
@@ -39,6 +39,14 @@ function Board({
             props.onOffUploadPage(1)
         })
     }
+    useEffect(()=>{
+        if(resizedRef.current) {
+            const resizedObserver = new ResizeObserver(entries =>{
+                measure()
+            })
+            resizedObserver.observe(resizedRef.current)
+        }
+    },[])
 
     useEffect(()=>{
         return ()=>{
@@ -64,16 +72,7 @@ function Board({
 
     const measure = throttle(() =>{
         if(boardRef.current) props.measure(props.idx)
-        console.log("measure")
     },100)
-
-    useEffect(()=>{
-        if(loaded){
-            setLoaded(false)
-            measure()
-        }
-    },[loaded])
-
 
     const ShareBoard = () => (e) =>{
         //todo:배포시 변경
@@ -91,7 +90,7 @@ function Board({
                 className="ng-board-main"
                 style={props.style}
                 ref = {boardRef}>
-                <BoardStyled >
+                <BoardStyled ref={resizedRef}>
                     <BoardTop>
                         <BoardTopLeft>
                         <BoardAuthorImageStyled src={"/api/file/get?name=/72"+board.authorImg}
@@ -121,8 +120,7 @@ function Board({
                     </BoardTitleStyled>
                     <div className="board_main">
                         <MainContentComponent content={content}
-                        thumbnail={board.thumbnail} 
-                        setLoaded={setLoaded}
+                        thumbnail={board.thumbnail}
                         onOff={onOff}/>
                     </div>
                     <div>
@@ -158,7 +156,6 @@ function Board({
                         board_id={id}
                         comment_cnt = {comments_num} 
                         commentBtnRef = {commentBtnRef}
-                        measure = {measure}
                         failedHandler={()=>{setIsDeleted(true)}}/>
                 </BoardStyled>
             </BoardPaddingStyled>
@@ -309,9 +306,7 @@ const MainContentComponent = ({content,thumbnail,onOff,...props}) =>{
             root.querySelectorAll(".ng-thumb").forEach(elem=>{
                 elem.style.removeProperty("display");
             })
-            props.setLoaded(true)
         }
-        console.log(onOff)
     },[onOff])
     if(onOff){
         return <div ref={boardRef} 

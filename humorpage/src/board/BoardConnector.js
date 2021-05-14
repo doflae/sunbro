@@ -6,7 +6,7 @@ import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
 import {uploadWrapper} from "../upload/UploadWrapper"
 import {boardWrapper} from "./BoardWrapper"
-import { observeTrigger } from '../utils/Utils';
+import { observeTrigger,changeDateTimeToPath } from '../utils/Utils';
 
 export const cache = new CellMeasurerCache({
     defaultWidth:100,
@@ -44,12 +44,10 @@ class BoardConnector extends Component{
             else r = mid
         }
         const t = onBoard[l]
-        console.log(t.offsetTop+t.offsetHeight+50)
         window.scrollTo({top:t.offsetTop+t.offsetHeight+50,behavior:"smooth"})
     }
 
     getBoard = () =>{
-        console.log("getboard")
         let resturl = `/board/recently?`
         if(this.lastBoard!==0){
             resturl+=`board_id=${this.lastBoard}`
@@ -58,6 +56,11 @@ class BoardConnector extends Component{
         this.props.request('get',resturl).then(res=>{
             const resData = res.data.list
             if(0<resData.length && resData.length<6){
+                const boardDirs = {}
+                resData.forEach(element => {
+                    boardDirs[element.id]=changeDateTimeToPath(element.created)+element.mediaDir
+                })
+                this.props.setBoardDir(boardDirs)
                 this.setState({
                     boards:[...boards,...resData]
                 })
