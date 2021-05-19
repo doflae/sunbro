@@ -14,6 +14,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
@@ -56,18 +57,16 @@ public class BoardDetail implements Serializable{
     @Column(name = "author_img")
     private String authorImg;
 
-    @Formula("(select count(*) from boardlikes bl where bl.board_id=id)")
+    @Column(name="likes")
     private int likes;
 
-    //depth 0이상인 댓글은 thumbnail에 표시용
-    @Formula("(select count(*) from comment c where c.board_id=id)")
-    private int total_comments_num;
-
-    //depth 0인 댓글만 => 댓글 더보기 버튼 제어용
-    @Formula("(select count(*) from comment c where c.board_id=id and c.parent_id=0)")
-    private int comments_num;
+    @Column(name="comments_cnt")
+    private int comments_cnt;
 
     @Transient
     private boolean like;
+
+    @Transient
+    private List<Comment> comments;
 
 }

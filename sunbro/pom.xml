@@ -66,12 +66,14 @@
             <artifactId>jjwt-api</artifactId>
             <version>0.11.1</version>
         </dependency>
+
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
             <version>0.11.1</version>
             <scope>runtime</scope>
         </dependency>
+
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
@@ -90,6 +92,8 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
             <version>2.4.1</version>
         </dependency>
+
+
         <!--for Mail -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

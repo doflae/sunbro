@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,8 +73,8 @@ public class FileDeleteService {
     }
 
     //댓글, 프로필, 썸네일은 변경 혹은 삭제 시 리사이징 된 파일도 삭제
-    /*TODO 썸네일 및 게시글의 미디어 파일 이미지 small 사이즈 생성
-        이후 image lazy loading 사용
+    /*TODO 미디어 파일 경로 수정 및 mediaType 제거
+        프로필 사진은 항상 120px로 고정 원본 제거
      */
     public void deleteFiles(String path, MediaType mediaType){
         List<String> deleteList = new ArrayList<>(Collections.singletonList(path));

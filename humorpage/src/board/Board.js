@@ -7,7 +7,8 @@ import {sanitizeNonNull,
     getTime, 
     convertUnitOfNum, 
     copyToClipboard,
-    throttle} from "../utils/Utils"
+    throttle,
+    debounce} from "../utils/Utils"
 import {authWrapper} from "../auth/AuthWrapper"
 import {boardWrapper} from "./BoardWrapper"
 import {uploadWrapper} from "../upload/UploadWrapper"
@@ -31,7 +32,6 @@ function Board({
     const resizedRef = useRef();
     const commentBtnRef = useRef();
     const id = board.id
-    const comments_num = board.comments_num
 
     //todo:update후 바로 적용
     const UpdateBoard = ()=> async (e)=>{
@@ -99,6 +99,7 @@ function Board({
                             }}/>
                         </BoardTopLeft>
                         <BoardTopCenter className="board_top_center">
+                            {/* TODO: 유저 페이지 구현 */}
                             <AuthorName><Link to={`/userpage/${board.authorNum}`}>{board.authorName}</Link></AuthorName>
                             <Created className="created">{getTime(board.created)}</Created>
                         </BoardTopCenter>
@@ -136,13 +137,14 @@ function Board({
                             content={content}
                             />
                         <BoardBottomButtonStyled>
-                            <LikeBtn id={id} like={board.like} likes={board.likes}/>
+                            <LikeBtn id={id} created={board.created}
+                            like={board.like} likes={board.likes}/>
                             <CommentBtnStyled
                                 ref={commentBtnRef}>
                                 <CommentIconStlyed
                                     theme="comment_lg"/>
                                 <NumberStyled>
-                                    {convertUnitOfNum(board.total_comments_num)}
+                                    {convertUnitOfNum(board.comments_cnt)}
                                 </NumberStyled>
                             </CommentBtnStyled>
                             <ShareBtnStyled>
@@ -154,7 +156,6 @@ function Board({
                     </div>
                     <CommentBox 
                         board_id={id}
-                        comment_cnt = {comments_num} 
                         commentBtnRef = {commentBtnRef}
                         failedHandler={()=>{setIsDeleted(true)}}/>
                 </BoardStyled>
@@ -199,37 +200,43 @@ const GetDetailBtn = ({...props}) => {
         onClick={getDetail()}>더 보기(more)</GetDetailBtnStyled>
 }
 
-const LikeBtn = authWrapper(({id,like,likes,...props}) =>{
+const LikeBtn = authWrapper(({id,created,like,likes,...props}) =>{
     const [onOffLike, setOnOffLike] = useState({
         onOff:like,
         likeCnt:likes
     })
-    const likeHandler = ()=>(e) =>{
+    const likeHandler = () =>{
         if(onOffLike.onOff){
-            Axios.get(`/board/like/off?id=${id}`).then(res=>{
-                if (!res.data.success){
-                    props.setAuthPageOption(0);
-                }
-            })
             setOnOffLike({
                 onOff:false,
                 likeCnt:onOffLike.likeCnt-1
             })
         }else{
-            Axios.get(`/board/like/on?id=${id}`).then(res=>{
-                if (!res.data.success){
-                    props.setAuthPageOption(0);
-                }
-            })
             setOnOffLike({
                 onOff:true,
                 likeCnt:onOffLike.likeCnt+1
             })
         }
+        debounce(debounceLike,50000);
+    }
+    const debounceLike = () =>{
+        if(onOffLike.onOff){
+            Axios.get(`/board/like/off?id=${id}&created=${created}`).then(res=>{
+                if (!res.data.success){
+                    props.setAuthPageOption(0);
+                }
+            })
+        }else{
+            Axios.get(`/board/like/on?id=${id}&created=${created}`).then(res=>{
+                if (!res.data.success){
+                    props.setAuthPageOption(0);
+                }
+            })
+        }
     }
     if(onOffLike.onOff===true){
         return <LikeStyled
-            onClick={likeHandler()}>
+            onClick={likeHandler}>
                 <LikeBtnStyled 
                 theme="like_lg"
                 color="invert(34%) sepia(88%) saturate(862%) hue-rotate(329deg) brightness(98%) contrast(98%)"/>

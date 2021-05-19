@@ -6,6 +6,7 @@ import com.humorpage.sunbro.model.BoardDetail;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.BoardLikesRepository;
 import com.humorpage.sunbro.respository.BoardRepository;
+import com.humorpage.sunbro.respository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,13 @@ public class BoardService {
     @Autowired
     private FileDeleteService fileDeleteService;
 
-    public List<BoardDetail> setTransientBoard(
+    @Autowired
+    private RedisRankingService redisRankingService;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+    public void setTransientBoard(
             List<BoardDetail> boardDetailList,
             Authentication authentication){
         if(authentication!=null && authentication.isAuthenticated()){
@@ -37,10 +44,24 @@ public class BoardService {
                 boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
             });
         }
-        return boardDetailList;
+    }
+
+
+    public void getTopNComment(
+            List<BoardDetail> boardDetailList,
+            Long page_size,
+            Authentication authentication
+    ){
+            boardDetailList.forEach(boardDetail -> {
+                boardDetail.setComments(
+                        commentRepository.findByIdIn(
+                                redisRankingService.getCommentRanking(
+                                    boardDetail.getId(),0L,page_size)));
+            });
     }
 
     //TODO IOException 처리
+    //IOException 발생 시 log를 남기든, 예외 처리 필요
     @Transactional(rollbackFor = BoardNotFoundException.class, noRollbackFor = IOException.class)
     public void delete(Long bid, UserSimple userSimple)
             throws IOException, BoardNotFoundException{

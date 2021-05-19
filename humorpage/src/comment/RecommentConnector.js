@@ -2,7 +2,6 @@ import React, { useState } from "react"
 import userDefaultImg from "../static/img/userDefault.png";
 import {Link} from 'react-router-dom'
 import {authWrapper} from "../auth/AuthWrapper"
-import {getCname} from "../utils/Utils"
 import {CommentLikeBtn, 
 	CommentContext, 
 	RecommentBtn,

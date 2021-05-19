@@ -53,11 +53,11 @@ function CommentUploader({...props}){
         if(!isEmpty(content)||!!Img){
             if(c) data.append('id',c.id)
             data.append('content', content)
-            data.append('board_id',props.board_id)
+            data.append('boardId',props.board_id)
             data.append('authorNum',user.userNum)
             data.append('authorName',user.name)
             data.append('authorImg',user.userImg?user.userImg:"")
-            if(props.comment_id) data.append('comment_id',props.comment_id)
+            if(props.comment_id) data.append('parentId',props.comment_id)
             props.request('post',"/comment/upload",data).then(res=>{
                 if(res.status===200) return res.data
             }).then(res=>{

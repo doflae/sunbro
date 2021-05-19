@@ -2,27 +2,25 @@ package com.humorpage.sunbro.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
+@RequiredArgsConstructor
 @Entity
 @Data
 @Table(name="commentlikes")
-public class Commentlikes implements Serializable {
+public class Commentlikes {
 
     @Id
+    @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JsonBackReference
-    @ManyToOne
-    @JoinColumn(name="comment_id")
-    private Comment comment;
+    @Column(name="comment_id")
+    final private Long commentId;
 
-
-    @JsonBackReference
-    @ManyToOne
-    @JoinColumn(name="user_num")
-    private UserSimple user;
+    @Column(name="user_num")
+    final private Long userNum;
 }

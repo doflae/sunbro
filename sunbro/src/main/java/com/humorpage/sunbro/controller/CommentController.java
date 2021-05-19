@@ -1,7 +1,6 @@
 package com.humorpage.sunbro.controller;
 
 
-import com.humorpage.sunbro.advice.exception.BoardNotFoundException;
 import com.humorpage.sunbro.advice.exception.CommentNotFoundException;
 import com.humorpage.sunbro.model.Comment;
 import com.humorpage.sunbro.model.UserSimple;
@@ -12,7 +11,6 @@ import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.*;
 import io.swagger.annotations.ApiOperation;
-import org.apache.tools.ant.util.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +34,7 @@ public class CommentController {
     private CommentService commentService;
 
     @Autowired
-    private LikesService likesService;
+    private LikeService likeService;
 
     @Autowired
     private CommentLikesRepository commentLikesRepository;
@@ -62,14 +60,14 @@ public class CommentController {
             if (comment_id == 0) {
                 page_size = 3;
             }
-            commentList = commentRepository.findByBoardIdAndIdGreaterThanAndPidIsNullOrderByIdAsc(board_id, comment_id, PageRequest.of(0, page_size+1));
+            commentList = commentRepository.findByBoardIdAndIdGreaterThanAndParentIdIsNullOrderByIdAsc(board_id, comment_id, PageRequest.of(0, page_size+1));
         }
         //대댓글 -> board id 대신 parent comment id가 주어짐
         else if(parent_id!=null){
             if (comment_id == null){
-                commentList = commentRepository.findByPidIsOrderByIdAsc(parent_id, PageRequest.of(0,page_size+1));
+                commentList = commentRepository.findByParentIdIsOrderByIdAsc(parent_id, PageRequest.of(0,page_size+1));
             }else{
-                commentList = commentRepository.findByPidIsAndIdGreaterThanOrderByIdAsc(parent_id, comment_id, PageRequest.of(0,page_size+1));
+                commentList = commentRepository.findByParentIdIsAndIdGreaterThanOrderByIdAsc(parent_id, comment_id, PageRequest.of(0,page_size+1));
             }
         }
         try{
@@ -92,13 +90,11 @@ public class CommentController {
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
     @PostMapping(value = "/upload")
     public SingleResult<Comment> uploadComment(@Valid Comment comment,
-                                            @RequestParam(required = false,defaultValue = "0") Long board_id,
-                                            @RequestParam(required = false,defaultValue = "0") Long comment_id,
                                             Authentication authentication) {
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             if(userSimple.getUserNum().equals(comment.getAuthorNum())){
-                commentService.save(board_id, comment_id,comment);
+                commentService.save(comment);
             }
             return responseService.getSingleResult(comment);
         }catch (DataIntegrityViolationException|NullPointerException e){
@@ -111,7 +107,7 @@ public class CommentController {
     public CommonResult likeComment(@RequestParam("id") Long comment_id, Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            likesService.savelikeComment(userSimple.getUserNum(),comment_id);
+            likeService.saveLikeComment(userSimple.getUserNum(),comment_id);
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
@@ -123,7 +119,7 @@ public class CommentController {
     public CommonResult likeCancelComment(@RequestParam(value = "id") Long comment_id, Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            likesService.deletelikeComment(userSimple.getUserNum(),comment_id);
+            likeService.deleteLikeComment(userSimple.getUserNum(),comment_id);
             return responseService.getSuccessResult();
         }catch(NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token expired");

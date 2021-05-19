@@ -5,7 +5,8 @@ import {withRouter, Link, useHistory} from "react-router-dom"
 import {sanitizeHarder,
 		convertUnitOfNum, 
 		isEmpty,
-		observeTrigger} from "../utils/Utils"
+		observeTrigger,
+		debounce} from "../utils/Utils"
 import Axios from "axios";
 import RecommentConnector from "./RecommentConnector"
 import * as Styled from "./CommentStyled"
@@ -182,42 +183,53 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 		like:like,
 		cnt:likes
 	})
-	const [filter,setFilter] = useState(like?
-		"invert(53%) sepia(74%) saturate(1309%) hue-rotate(177deg) brightness(89%) contrast(91%)":
-		"")
 	let history = useHistory();
 
-	const likeHandler = () => (e) => {
+	const likeHandler = () => {
+		if(likeCnt.like){
+			setLikeCnt({
+				like:!likeCnt.like,
+				cnt:likeCnt.cnt-1
+			})
+		}else{
+			setLikeCnt({
+				like:!likeCnt.like,
+				cnt:likeCnt.cnt+1
+			})
+		}
+		debounce(debounceLike,50000);
+	}
+
+	const debounceLike = () =>{
 		if(likeCnt.like){
 			Axios.get(`/comment/like/off?id=${id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
 					history.push("/login")
 				}
 			})
-			setLikeCnt({
-				like:!likeCnt.like,
-				cnt:likeCnt.cnt-1
-			})
-			setFilter("")
 		}else{
 			Axios.get(`/comment/like/on?id=${id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
 					history.push("/login")
 				}
 			})
-			setLikeCnt({
-				like:!likeCnt.like,
-				cnt:likeCnt.cnt+1
-			})
-			setFilter("invert(34%) sepia(88%) saturate(862%) hue-rotate(329deg) brightness(98%) contrast(98%)")
 		}
 	}
-
+	if(likeCnt.like){
+		return <Styled.LikeStyled>
+		<Styled.LikeBtnStyled
+		theme="like_sm"
+		onClick={likeHandler}/>
+		<Styled.NumberStyled>
+			{convertUnitOfNum(likeCnt.cnt)}
+		</Styled.NumberStyled>
+	</Styled.LikeStyled>
+	}
 	return <Styled.LikeStyled>
 		<Styled.LikeBtnStyled
-		color={filter}
+		color="invert(34%) sepia(88%) saturate(862%) hue-rotate(329deg) brightness(98%) contrast(98%)"
 		theme="like_sm"
-		onClick={likeHandler()}/>
+		onClick={likeHandler}/>
 		<Styled.NumberStyled>
 			{convertUnitOfNum(likeCnt.cnt)}
 		</Styled.NumberStyled>

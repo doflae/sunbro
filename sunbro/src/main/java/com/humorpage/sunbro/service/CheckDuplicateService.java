@@ -22,7 +22,7 @@ public class CheckDuplicateService {
     private EmailAuthService emailAuthService;
 
     /**
-     * 이후 Enum이든 뭐든 status code 정리해서 케이스 별로 프론트에서 코드->메세지
+     * TODO status code 정리해서 케이스 별로 프론트에서 코드->메세지
      * 1. 해당 메일로 인증코드를 전송하였습니다. 메일을 확인해주세요.
      * 2. 이미 사용중인 계정입니다.
      * 3. 메일 전송이 완료되었습니다. 메일을 확인해주세요.

@@ -28,7 +28,7 @@ public class Comment implements Serializable {
 
     @Column(name = "parent_id")
     @JsonIgnore
-    private Long pid=null;
+    private Long parentId;
 
     @Column(name="content")
     private String content;
@@ -49,15 +49,13 @@ public class Comment implements Serializable {
     @Column(name = "author_img")
     private String authorImg;
 
-
-    @Basic(fetch = FetchType.LAZY)
-    @Formula("(select count(*) from commentlikes cl where cl.comment_id=id)")
+    @Column(name = "likes")
     private int likes;
+
+    @Column(name = "children_cnt")
+    private int children_cnt;
 
     @Transient
     private boolean like;
 
-    @Basic(fetch = FetchType.LAZY)
-    @Formula("(select count(*) from comment c where c.parent_id=id)")
-    private int children_cnt;
 }

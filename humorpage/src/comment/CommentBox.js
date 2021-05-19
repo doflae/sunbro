@@ -49,7 +49,6 @@ function CommentBox({
         props.request("get",resturl).then(res=>{
             if(res.status===200) return res.data
         }).then(res=>{
-            console.log(res)
             let temp = [];
             let resLastId = 0;
             res.list.forEach((comment)=>{

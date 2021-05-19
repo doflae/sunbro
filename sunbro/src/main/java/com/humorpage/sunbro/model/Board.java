@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @Table(name="board")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Board implements Serializable {
+public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

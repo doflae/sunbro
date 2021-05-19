@@ -3,6 +3,7 @@ package com.humorpage.sunbro.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -12,7 +13,6 @@ public class RedisTokenService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-
 
     public String getData(String key){
         ValueOperations<String,String> valueOperations = stringRedisTemplate.opsForValue();

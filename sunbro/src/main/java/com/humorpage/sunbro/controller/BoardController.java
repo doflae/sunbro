@@ -36,13 +36,13 @@ public class BoardController {
     private ResponseService responseService;
 
     @Autowired
-    private LikesService likesService;
+    private LikeService likeService;
 
     @Autowired
     private UserSimpleRepository userSimpleRepository;
 
     @Autowired
-    private CacheRankingService cacheRankingService;
+    private RedisRankingService redisRankingService;
 
     @Autowired
     private FileUploadService fileUploadService;
@@ -139,7 +139,7 @@ public class BoardController {
     CommonResult likeBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple)authentication.getPrincipal();
-            likesService.saveLikeBoard(userSimple.getUserNum(),board_id);
+            likeService.saveLikeBoard(userSimple.getUserNum(),board_id);
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
@@ -151,7 +151,7 @@ public class BoardController {
     CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            likesService.deletelikeBoard(userSimple.getUserNum(),board_id);
+            likeService.deleteLikeBoard(userSimple.getUserNum(),board_id);
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
@@ -166,13 +166,21 @@ public class BoardController {
         }else{
             boardDetailList = boardDetailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,5));
         }
-        return responseService.getListResult(boardService.setTransientBoard(boardDetailList,authentication));
+        boardService.setTransientBoard(boardDetailList,authentication);
+        return responseService.getListResult(boardDetailList);
     }
 
     @GetMapping("/rank")
-    ListResult<BoardDetail> ranked(@RequestParam(required = false, defaultValue = "DAILY") RankingType rankType, Authentication authentication){
-        List<BoardDetail> boardDetailList = cacheRankingService.getRanking(rankType);
-        return responseService.getListResult(boardService.setTransientBoard(boardDetailList,authentication));
+    ListResult<BoardDetail> ranked(
+            RankingType rankType,
+            Long last_id,
+            Authentication authentication){
+        List<Long> boardIdList =
+                redisRankingService.getBoardRanking(rankType,last_id,5L);
+        List<BoardDetail> boardDetailList = boardDetailRepository.findByIdIn(boardIdList);
+        boardService.setTransientBoard(boardDetailList,authentication);
+        boardService.getTopNComment(boardDetailList,3L,authentication);
+        return responseService.getListResult(boardDetailList);
     }
 
     @GetMapping("/content/{board_id}")
@@ -180,6 +188,7 @@ public class BoardController {
         return responseService.getSingleResult(boardRepository.findByIdOnlyContent(id));
     }
 
+    //TODO: 유저 페이지 구현
     @GetMapping("/user")
     @ApiOperation(value = "유저 key값", notes="유저 key값을 받아 조회 last_id는 가장 최근 조회 게시물")
     ListResult<BoardDetail> user(Long usernum,
@@ -221,6 +230,7 @@ public class BoardController {
 
         if (boardDetailList ==null)
             return responseService.getListResult(null);
-        return responseService.getListResult(boardService.setTransientBoard(boardDetailList,authentication));
+        boardService.setTransientBoard(boardDetailList,authentication);
+        return responseService.getListResult(boardDetailList);
     }
 }

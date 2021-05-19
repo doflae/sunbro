@@ -12,4 +12,6 @@ import java.util.List;
 public interface CommentLikesRepository extends JpaRepository<Commentlikes, Long> {
     @Query(value = "select comment_id from commentlikes where user_num=?1", nativeQuery = true)
     List<Long> findAllByUsercustom(Long user_id);
+
+    Commentlikes findByCommentIdAndUserNum(Long commentId, Long userNum);
 }

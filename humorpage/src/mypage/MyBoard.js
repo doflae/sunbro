@@ -26,9 +26,9 @@ function MyBoard({
         :null}
         <TitleZoneStyled align="left" onClick={goToBoard()}>
             <TitleStyled>{board.title}</TitleStyled> 
-            <CommentNumStyled>{convertUnitOfNum(board.total_comments_num)}</CommentNumStyled>
+            <CommentNumStyled>{convertUnitOfNum(board.comments_cnt)}</CommentNumStyled>
         </TitleZoneStyled>
-        <td align="center">{convertUnitOfNum(board.total_likes_num)}</td>
+        <td align="center">{convertUnitOfNum(board.likes)}</td>
     </tr>
     </React.Fragment>
 }
