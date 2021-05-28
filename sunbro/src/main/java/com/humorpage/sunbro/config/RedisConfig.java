@@ -1,17 +1,15 @@
 package com.humorpage.sunbro.config;
 
-import lombok.extern.slf4j.Slf4j;
+import com.humorpage.sunbro.SunbroApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultScriptExecutor;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@Slf4j
 @Configuration
-@EnableTransactionManagement
 public class RedisConfig {
 
     @Bean
@@ -27,5 +25,4 @@ public class RedisConfig {
         redisTemplate.setScriptExecutor(executor);
         return redisTemplate;
     }
-
 }

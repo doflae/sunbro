@@ -12,10 +12,11 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.thymeleaf.util.StringUtils;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -120,14 +121,11 @@ public class BoardController {
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
             board.setAuthorNum(userSimple.getUserNum());
-            if(board.getId()!=null){
-                try{
-                    fileDeleteService.refreshDir(board.getContent(),board.getThumbnail());
-                }catch (IOException ignored){
-
-                }
+            try{
+                boardService.save(board);
+            }catch (IOException ignored){
+                //TODO 미디어 파일 쓰기 실패 처리
             }
-            boardRepository.save(board);
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false,-1,"Need to Login");
@@ -136,10 +134,12 @@ public class BoardController {
 
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")
     @GetMapping(value = "/like/on")
-    CommonResult likeBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
+    CommonResult likeBoard(@RequestParam(value = "id") Long board_id,
+                           LocalDateTime created,
+                           Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple)authentication.getPrincipal();
-            likeService.saveLikeBoard(userSimple.getUserNum(),board_id);
+            likeService.saveLikeBoard(userSimple.getUserNum(),board_id,created);
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
@@ -148,10 +148,12 @@ public class BoardController {
 
     @ApiOperation(value="좋아요 취소",notes = "board_id를 받아 좋아요 off")
     @GetMapping(value = "/like/off")
-    CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id, Authentication authentication){
+    CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id,
+                                 LocalDateTime created,
+                                 Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            likeService.deleteLikeBoard(userSimple.getUserNum(),board_id);
+            likeService.deleteLikeBoard(userSimple.getUserNum(),board_id,created);
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
@@ -185,7 +187,8 @@ public class BoardController {
 
     @GetMapping("/content/{board_id}")
     SingleResult<String> detail(@PathVariable("board_id") Long id){
-        return responseService.getSingleResult(boardRepository.findByIdOnlyContent(id));
+        return responseService.getSingleResult(
+                boardRepository.findById(id).orElse(new Board()).getContent());
     }
 
     //TODO: 유저 페이지 구현
@@ -205,11 +208,11 @@ public class BoardController {
                                    @RequestParam(required = false, defaultValue = "") String uid,
                                    @RequestParam(required = false, defaultValue = "") String content, Authentication authentication) {
         List<BoardDetail> boardDetailList =null;
-        if (StringUtils.isEmpty(title) && StringUtils.isEmpty(content) && StringUtils.isEmpty(uid)) {
+        if (!StringUtils.hasText(title) && !StringUtils.hasText(content) && !StringUtils.hasText(uid)) {
             return responseService.getFailedListResult();
         }
 
-        if(StringUtils.isEmpty(title) && StringUtils.isEmpty(content)){
+        if(!StringUtils.hasText(title) && !StringUtils.hasText(content)){
             try{
                 UserSimple target = userSimpleRepository
                         .findByUid(uid).orElseThrow(()-> new UserNotFoundException("ID",uid));
@@ -219,12 +222,12 @@ public class BoardController {
 
             }
         }
-        else if(StringUtils.isEmpty(title) && StringUtils.isEmpty(uid)){
+        else if(!StringUtils.hasText(title) && !StringUtils.hasText(uid)){
             boardDetailList = boardDetailRepository.findByContentContaining(content);
         }
-        else if (StringUtils.isEmpty(content) && StringUtils.isEmpty(uid)){
+        else if (!StringUtils.hasText(content) && !StringUtils.hasText(uid)){
             boardDetailList = boardDetailRepository.findByTitleContaining(title);
-        }else if (StringUtils.isEmpty(uid)){
+        }else if (!StringUtils.hasText(uid)){
             boardDetailList = boardDetailRepository.findByTitleContainingOrContentContaining(title,content);
         }
 

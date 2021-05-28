@@ -1,6 +1,5 @@
 package com.humorpage.sunbro.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
@@ -31,6 +30,17 @@ public class AsyncConfig extends AsyncConfigurerSupport {
         executor.setMaxPoolSize(16);
         executor.setQueueCapacity(1000);
         executor.setThreadNamePrefix("fileUpload-");
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean("redisExecutor")
+    public Executor redisExecutor(){
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(16);
+        executor.setQueueCapacity(1000);
+        executor.setThreadNamePrefix("redis-");
         executor.initialize();
         return executor;
     }

@@ -3,7 +3,7 @@ package com.humorpage.sunbro.service;
 import com.humorpage.sunbro.utils.RandomGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.util.StringUtils;
+import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,7 +21,7 @@ public class AssignDirectoryService {
         String todayKey = "dir:"+dirFormat.format(today);
         String key = RandomGenerator.RandomnameGenerate(10);
         String tmp = redisTokenService.getData(todayKey+key);
-        while(!StringUtils.isEmpty(tmp)){
+        while(StringUtils.hasText(tmp)){
             key = RandomGenerator.RandomnameGenerate(10);
             tmp = redisTokenService.getData(todayKey+key);
         }

@@ -14,8 +14,7 @@ const RecommentConnector = ({...props}) => {
 	if(props.onOff===false) return null;
 	return <React.Fragment>
 		{props.recommentList.map(c => <Recomment recommentOnId={props.recommentOnId}
-						on={c.like} c={c} key={c.id} board_id={props.board_id}
-						comment_id={props.comment_id}
+						on={c.like} c={c} key={c.id}
 		recommentClickHandler={props.recommentClickHandler}/>)}
 		<SeeMoreBtn hasMore={props.onOffSeeMore} getData = {props.getData}/>
 		</React.Fragment>
@@ -60,8 +59,8 @@ const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) 
 	if(c==null) return null;
 	if(isDeleted) return null;
 	if(updateMode) return <CommentUploader c={c}
-							comment_id={props.comment_id}
-							board_id={props.board_id}
+							comment_id={c.parentId}
+							board_id={c.boardId}
 							success={successHandler}
 							cancel={updateHandler}
 							/>
@@ -90,7 +89,7 @@ const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) 
 						blob={c.blob}/>
 			</Styled.CommentMainStyled>
 			<Styled.CommentOptionStlyed>
-				<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
+				<CommentLikeBtn comment_id={c.id} board_id={c.boardId} like={c.like} likes={c.likes}/>
 				<RecommentBtn recommentClick={recommentClickHandler}
 					authorName={c.authorName}
 					id={c.id}

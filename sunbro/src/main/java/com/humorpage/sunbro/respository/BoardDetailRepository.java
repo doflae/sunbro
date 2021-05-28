@@ -4,13 +4,20 @@ import com.humorpage.sunbro.model.BoardDetail;
 import com.humorpage.sunbro.model.UserSimple;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Component
+@Transactional(readOnly = true)
 public interface BoardDetailRepository extends JpaRepository<BoardDetail, Long> {
 
     Optional<BoardDetail> findById(Long board_id);
@@ -34,4 +41,12 @@ public interface BoardDetailRepository extends JpaRepository<BoardDetail, Long> 
     List<BoardDetail> findByAuthorNumOrderByIdDesc(Long author_num, Pageable pageable);
 
     List<BoardDetail> findByAuthorNumAndIdLessThanOrderByIdDesc(Long author_num, Long last_id, Pageable pageable);
+
+    @Modifying
+    @Query(value = "UPDATE board SET likes=likes+1 WHERE id=?1",nativeQuery = true)
+    void incrementBoardLikes(Long board_id);
+
+    @Modifying
+    @Query(value = "UPDATE board SET likes=likes-1 WHERE id=?1",nativeQuery = true)
+    void decrementBoardLikes(Long board_id);
 }

@@ -26,18 +26,16 @@ public class Comment implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "parent_id")
-    @JsonIgnore
-    private Long parentId;
-
-    @Column(name="content")
     private String content;
 
-    @Column(name="media")
+    private int likes;
+
     private String media;
 
+    @Column(name = "parent_id")
+    private Long parentId;
+
     @Column(name="board_id")
-    @JsonIgnore
     private Long boardId;
 
     @Column(name = "author_num")
@@ -49,11 +47,8 @@ public class Comment implements Serializable {
     @Column(name = "author_img")
     private String authorImg;
 
-    @Column(name = "likes")
-    private int likes;
-
     @Column(name = "children_cnt")
-    private int children_cnt;
+    private int childrenCnt;
 
     @Transient
     private boolean like;

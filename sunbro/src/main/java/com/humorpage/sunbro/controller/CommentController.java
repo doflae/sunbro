@@ -77,7 +77,7 @@ public class CommentController {
                 commentList.remove(page_size);
             }
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> commentlikesList= new HashSet<>(commentLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
+            HashSet<Long> commentlikesList= new HashSet<>(commentLikesRepository.findByUserCustom(userSimple.getUserNum()));
             commentList.forEach(comment -> {
                 comment.setLike(commentlikesList.contains(comment.getId()));
             });
@@ -87,6 +87,7 @@ public class CommentController {
         return responseService.getDetailListResult(true,more,"",commentList);
     }
 
+    //삭제된 글, 댓글에 대한 삽입 시 글이 삭제되었는지, 댓글이 삭제되었는지는 구별하지 않는다.
     @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
     @PostMapping(value = "/upload")
     public SingleResult<Comment> uploadComment(@Valid Comment comment,
@@ -104,10 +105,12 @@ public class CommentController {
 
     @ApiOperation(value = "댓글 좋아요", notes = "comment_id를 받아 좋아요 on")
     @GetMapping(value = "/like/on")
-    public CommonResult likeComment(@RequestParam("id") Long comment_id, Authentication authentication){
+    public CommonResult likeComment(@RequestParam("comment-id") Long commentId,
+                                    @RequestParam("board-id") Long boardId,
+                                    Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            likeService.saveLikeComment(userSimple.getUserNum(),comment_id);
+            likeService.saveLikeComment(userSimple.getUserNum(),commentId,boardId);
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
@@ -116,10 +119,12 @@ public class CommentController {
 
     @ApiOperation(value = "댓글 좋아요 취소", notes = "comment_id를 받아 좋아요 off")
     @GetMapping(value = "/like/off")
-    public CommonResult likeCancelComment(@RequestParam(value = "id") Long comment_id, Authentication authentication){
+    public CommonResult likeCancelComment(@RequestParam("comment-id") Long commentId,
+                                          @RequestParam("board-id") Long boardId,
+                                          Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            likeService.deleteLikeComment(userSimple.getUserNum(),comment_id);
+            likeService.deleteLikeComment(userSimple.getUserNum(),commentId,boardId);
             return responseService.getSuccessResult();
         }catch(NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token expired");

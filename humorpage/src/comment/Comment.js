@@ -118,7 +118,7 @@ const Comment = ({...props}) =>{
 	if(c==null) return null;
 	if(isDeleted) return null;
 	if(updateMode) return <CommentUploader c={c}
-						board_id={props.board_id}
+						board_id={c.boardId}
 						success={successHandler}
 						cancel={updateHandler}/>
 	return <React.Fragment>
@@ -147,19 +147,20 @@ const Comment = ({...props}) =>{
 						media={c.media}/>
 			</Styled.CommentMainStyled>
 			<Styled.CommentOptionStlyed ref = {optionRef}>
-				<CommentLikeBtn id={c.id} like={c.like} likes={c.likes}/>
+				<CommentLikeBtn comment_id={c.id} board_id={c.boardId}
+				like={c.like} likes={c.likes}/>
 				<RecommentBtn recommentClick={recommentClickHandler}
 					authorName={c.authorName}
 					id={c.id}
 					getRecomment = {getRecomment}
 					onOff={recommentOnId===c.id}
-					cnt={c.children_cnt}/>
+					cnt={c.childrenCnt}/>
 			</Styled.CommentOptionStlyed>
 		</Styled.CommentStyled>
 		<Styled.RecommentBox>
 			<RecommentConnector id={c.id}
 					comment_id={c.id}
-					board_id={props.board_id}
+					board_id={c.boardId}
 					onOff={onOffrecomment}
 					getData={getData}
 					recommentOnId={recommentOnId}
@@ -169,7 +170,7 @@ const Comment = ({...props}) =>{
 			<CommentUploader 
 					onOff = {uploaderSetting.onOff}
 					cname = {uploaderSetting.target}
-					board_id={props.board_id}
+					board_id={c.boardId}
 					comment_id={c.id}
 					failedMsg = {"삭제된 댓글입니다."}
 					failedHandler={()=>{setIsDeleted(true)}}
@@ -177,7 +178,7 @@ const Comment = ({...props}) =>{
 		</Styled.RecommentBox>
 	</React.Fragment>
 }
-export const CommentLikeBtn = ({id,like,likes}) =>{
+export const CommentLikeBtn = ({comment_id,board_id,like,likes}) =>{
 
 	const [likeCnt,setLikeCnt] = useState({
 		like:like,
@@ -202,13 +203,13 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 
 	const debounceLike = () =>{
 		if(likeCnt.like){
-			Axios.get(`/comment/like/off?id=${id}`).then(res=>{
+			Axios.get(`/comment/like/off?comment-id=${comment_id}&board-id${board_id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
 					history.push("/login")
 				}
 			})
 		}else{
-			Axios.get(`/comment/like/on?id=${id}`).then(res=>{
+			Axios.get(`/comment/like/on?comment-id=${comment_id}&board-id${board_id}`).then(res=>{
 				if(res.status===200 && !res.data.success){
 					history.push("/login")
 				}
@@ -236,7 +237,7 @@ export const CommentLikeBtn = ({id,like,likes}) =>{
 	</Styled.LikeStyled>
 }
 
-export const CommentContext = ({content,media,...props}) =>{
+export const CommentContext = ({content,media}) =>{
 	const contentChecked = isEmpty(content)?"":sanitizeHarder(content)
 	const ContentRef = useRef()
 	let onOff = false

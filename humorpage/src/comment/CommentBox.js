@@ -75,17 +75,16 @@ function CommentBox({
         setKeyList(keyList)
     }
 
-    const CommentListRender = (commentList, board_id) => {
+    const CommentListRender = () => {
         if(commentList.length===0) return null;
         return commentList.map(c =>
-            <Comment key={c.id} comment={c}
-            board_id={board_id}/>
+            <Comment key={c.id} comment={c}/>
         )
     }
 
     if(onOff===false) return null;
     return <CommentBoxStyled>
-        {CommentListRender(commentList,board_id)}
+        {CommentListRender()}
         <SeeMoreBtn on={onOffSeeMore} seeMore={seeMore}/>
         <CommentUploader board_id={board_id}
                     comment_id={0}

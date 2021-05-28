@@ -79,7 +79,7 @@ public class UserController {
                                        Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            List<Long> boardLikesList = boardLikesRepository.findAllByUsercustom(userSimple.getUserNum());
+            List<Long> boardLikesList = boardLikesRepository.findAllByUserCustom(userSimple.getUserNum());
             List<BoardForTable> boardList = boardForTableRepository.findByIdInOrderByIdDesc(boardLikesList,PageRequest.of(num,size));
             return responseService.getListResult(boardList);
         }catch (NullPointerException e){

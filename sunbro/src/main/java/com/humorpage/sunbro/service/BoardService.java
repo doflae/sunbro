@@ -34,12 +34,23 @@ public class BoardService {
     @Autowired
     private CommentRepository commentRepository;
 
+    public void save(Board board) throws IOException {
+        if(board.getId()==null){
+            boardRepository.save(board);
+            redisRankingService.addBoard(board.getId());
+        }else{
+            fileDeleteService.refreshDir(board.getContent(),board.getThumbnail());
+            boardRepository.save(board);
+        }
+    }
+
     public void setTransientBoard(
             List<BoardDetail> boardDetailList,
-            Authentication authentication){
+            Authentication authentication)
+    {
         if(authentication!=null && authentication.isAuthenticated()){
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUsercustom(userSimple.getUserNum()));
+            HashSet<Long> boardlikesList = new HashSet<>(boardLikesRepository.findAllByUserCustom(userSimple.getUserNum()));
             boardDetailList.forEach(boardThumbnail -> {
                 boardThumbnail.setLike(boardlikesList.contains(boardThumbnail.getId()));
             });
@@ -50,8 +61,8 @@ public class BoardService {
     public void getTopNComment(
             List<BoardDetail> boardDetailList,
             Long page_size,
-            Authentication authentication
-    ){
+            Authentication authentication)
+    {
             boardDetailList.forEach(boardDetail -> {
                 boardDetail.setComments(
                         commentRepository.findByIdIn(
@@ -69,6 +80,7 @@ public class BoardService {
         if(board.getAuthorNum().equals(userSimple.getUserNum())){
             try {
                 boardRepository.delete(board);
+                redisRankingService.deleteBoard(bid);
                 fileDeleteService.deleteDir(board.getMediaDir(), board);
             }catch (Exception e){
                 e.printStackTrace();

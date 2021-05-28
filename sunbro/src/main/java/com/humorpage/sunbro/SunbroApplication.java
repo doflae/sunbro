@@ -6,6 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;
@@ -17,10 +19,10 @@ public class SunbroApplication {
 		SpringApplication.run(SunbroApplication.class, args);
 	}
 
-	@Bean
-	public FilterRegistrationBean registration(JwtAuthenticationFilter filter){
-		FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
-		registrationBean.setEnabled(false);
-		return registrationBean;
-	}
+//	@Bean
+//	public FilterRegistrationBean registration(JwtAuthenticationFilter filter){
+//		FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
+//		registrationBean.setEnabled(false);
+//		return registrationBean;
+//	}
 }
