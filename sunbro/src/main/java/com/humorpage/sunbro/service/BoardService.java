@@ -7,16 +7,19 @@ import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.BoardLikesRepository;
 import com.humorpage.sunbro.respository.BoardRepository;
 import com.humorpage.sunbro.respository.CommentRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
 @Service
+@Slf4j
 public class BoardService {
 
     @Autowired
@@ -26,7 +29,7 @@ public class BoardService {
     private BoardRepository boardRepository;
 
     @Autowired
-    private FileDeleteService fileDeleteService;
+    private FileService fileService;
 
     @Autowired
     private RedisRankingService redisRankingService;
@@ -37,9 +40,11 @@ public class BoardService {
     public void save(Board board) throws IOException {
         if(board.getId()==null){
             boardRepository.save(board);
+            File f = new File(FileService.baseDir+board.getMediaDir()+"/cmt");
+            f.mkdirs();
             redisRankingService.addBoard(board.getId());
         }else{
-            fileDeleteService.refreshDir(board.getContent(),board.getThumbnail());
+            fileService.refreshDir(board.getMediaDir(),board.getContent(),board.getThumbnail());
             boardRepository.save(board);
         }
     }
@@ -81,7 +86,7 @@ public class BoardService {
             try {
                 boardRepository.delete(board);
                 redisRankingService.deleteBoard(bid);
-                fileDeleteService.deleteDir(board.getMediaDir(), board);
+                fileService.deleteDir(board.getMediaDir());
             }catch (Exception e){
                 e.printStackTrace();
             }

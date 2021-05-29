@@ -8,7 +8,6 @@ import {uploadWrapper} from "./UploadWrapper"
 import Axios from "axios"
 import {
   isEmpty,
-  changeDateTimeToPath,
   sanitizeUrl} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 import * as Styled from "./Styled";
@@ -102,7 +101,7 @@ class Update extends Component {
         })
         return
       }
-      const filePath = changeDateTimeToPath(this.boardDetail.created)+this.boardDetail.mediaDir+"/"
+      const filePath = this.boardDetail.mediaDir+"/"
       // path = /240/path.jpg
       let data = new FormData();
       //썸네일 만들지 여부

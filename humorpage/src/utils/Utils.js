@@ -82,9 +82,6 @@ export const getDate = (datetime) =>{
     return datetime.replaceAll("-",".").split("T")[0]
 }
 
-export const changeDateTimeToPath = (datetime) =>{
-    return "/"+datetime.split("T")[0].replaceAll("-","/")+"/"
-}
 
 export const getTime = (datetime) =>{
     if(datetime==null) return null

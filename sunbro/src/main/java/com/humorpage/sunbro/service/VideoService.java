@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 
 @Service
@@ -19,16 +18,16 @@ public class VideoService {
     private FFMpegVideoConvert ffMpegVideoConvert;
 
     @Autowired
-    private FileUploadService fileUploadService;
+    private FileService fileService;
 
     public String videoUpload(MultipartFile file, String path){
         try{
             byte[] data = file.getBytes();
             Path tempFile = temporaryFileStore.store(data);
             String ret =  ffMpegVideoConvert.checkVideoRatio(tempFile.toString());
-            File dir = new File(FileViewService.baseDir+path);
+            File dir = new File(FileService.baseDir+path);
             dir.getParentFile().mkdirs();
-            fileUploadService.videoUpload(tempFile,path);
+            fileService.videoUpload(tempFile,path);
             return ret;
         }
         catch (Exception e){

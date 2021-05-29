@@ -4,6 +4,7 @@ import com.humorpage.sunbro.model.Comment;
 import com.humorpage.sunbro.respository.BoardRepository;
 import com.humorpage.sunbro.respository.CommentRepository;
 import com.humorpage.sunbro.respository.UserSimpleRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+
+@Slf4j
 @Service
 public class CommentService {
 
@@ -27,7 +31,7 @@ public class CommentService {
     private BoardRepository boardRepository;
 
     @Autowired
-    private FileDeleteService fileDeleteService;
+    private FileService fileService;
 
     @Autowired
     private RedisRankingService redisRankingService;
@@ -41,12 +45,15 @@ public class CommentService {
      * 롤백에서 제외
      */
     @Transactional(isolation = Isolation.READ_COMMITTED,noRollbackFor = {DataIntegrityViolationException.class})
-    public void save(Comment comment) throws DataIntegrityViolationException {
+    public void save(Comment comment)
+            throws DataIntegrityViolationException, IOException {
         //대댓글 입력 및 수정 시 이미 삭제된 댓글의 대댓글이라면 Exception 발생
-        commentRepository.save(comment);
-        //댓글 삽입 먼저 실행 -> 삽입 시 오류 -> 처리
-        //if, 카운트 수정 먼저 실행 -> 오류 발생 x -> 삽입 시 오류 -> 롤백 처리
-        if(comment.getId()==null){
+        if(comment.getId()!=null){
+            commentRepository.save(comment);
+            fileService.refreshDir(comment.getMediaDir(),comment.getMedia(),"");
+        }else{
+            log.info(comment.toString());
+            commentRepository.save(comment);
             jdbcTemplate.update("UPDATE board set comments_cnt=comments_cnt+1 where id=?",comment.getBoardId());
             if(comment.getParentId()!=null){
                 jdbcTemplate.update("UPDATE comment set children_cnt=children_cnt+1 where id=?",comment.getParentId());
@@ -59,10 +66,14 @@ public class CommentService {
     //TODO: 미디어 컬럼 파싱 후 삭제
     //TODO: 대댓글 미디어 경로 부모 댓글에 종속
     public void delete(Comment comment){
-        fileDeleteService.deleteFiles(comment.getMedia(),MediaType.COMMENT);
+        try{
+            fileService.deleteDir(comment.getMediaDir());
+        }catch (IOException ignored){
+
+        }
         commentRepository.delete(comment);
         if(comment.getParentId()!=null){
-            jdbcTemplate.update("UPDATE comment set children_cnt=children_cnt-1 where id=?",comment.getBoardId());
+            jdbcTemplate.update("UPDATE comment set children_cnt=children_cnt-1 where id=?",comment.getParentId());
             jdbcTemplate.update("UPDATE board set comments_cnt=comments_cnt-1 where id=?",comment.getBoardId());
         }else{
             redisRankingService.deleteComment(comment.getBoardId(),comment.getId());

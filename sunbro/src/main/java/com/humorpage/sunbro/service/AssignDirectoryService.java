@@ -3,29 +3,28 @@ package com.humorpage.sunbro.service;
 import com.humorpage.sunbro.utils.RandomGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
 public class AssignDirectoryService {
 
-    private final SimpleDateFormat dirFormat = new SimpleDateFormat("yyyyMMdd:");
+    private final SimpleDateFormat dirFormat = new SimpleDateFormat("/yyyy/MM/dd/");
 
     @Autowired
     private RedisTokenService redisTokenService;
 
     public String assignDirectory(){
         Date today = new Date(System.currentTimeMillis());
-        String todayKey = "dir:"+dirFormat.format(today);
-        String key = RandomGenerator.RandomnameGenerate(10);
-        String tmp = redisTokenService.getData(todayKey+key);
-        while(StringUtils.hasText(tmp)){
-            key = RandomGenerator.RandomnameGenerate(10);
-            tmp = redisTokenService.getData(todayKey+key);
+        String todayDir = dirFormat.format(today);
+        String key = RandomGenerator.randomNameGenerate(10);
+        File file = new File(FileService.baseDir+todayDir+key);
+        while(file.exists()){
+            key = RandomGenerator.randomNameGenerate(10);
+            file = new File(FileService.baseDir+todayDir+key);
         }
-        redisTokenService.setDataExpire(todayKey+key,"0",JwtTokenService.OneDayValidSecond);
-        return key;
+        return todayDir+key;
     }
 }

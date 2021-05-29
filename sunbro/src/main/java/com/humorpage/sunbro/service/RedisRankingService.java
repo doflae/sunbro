@@ -159,7 +159,7 @@ public class RedisRankingService{
                 Arrays.asList(BOARD_SET_KEY,
                         CMT_SET_KEY(board_id),
                         CMT_Z_SET_KEY(board_id)));
-        stringRedisTemplate.execute(RedisScript.of(SET_KEY_AFTER_CHECK_BOARD),keys,board_id,id);
+        stringRedisTemplate.execute(RedisScript.of(SET_KEY_AFTER_CHECK_BOARD),keys,board_id.toString(),id.toString());
     }
 
     /**

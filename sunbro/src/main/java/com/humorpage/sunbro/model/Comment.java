@@ -42,13 +42,16 @@ public class Comment implements Serializable {
     private Long authorNum;
 
     @Column(name = "author_name")
-    private String authorName;
+    private String authorName="";
 
     @Column(name = "author_img")
-    private String authorImg;
+    private String authorImg="";
 
     @Column(name = "children_cnt")
     private int childrenCnt;
+
+    @Column(name = "media_dir")
+    private String mediaDir="";
 
     @Transient
     private boolean like;

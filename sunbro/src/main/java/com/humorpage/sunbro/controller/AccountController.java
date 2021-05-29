@@ -240,7 +240,7 @@ public class AccountController {
                         @RequestParam(required = false, defaultValue = "false") boolean isPlatForm) {
         user.setRole("USER");
         if(!isPlatForm) user.setPassword(passwordEncoder.encode(user.getPassword()));
-        else user.setPassword(passwordEncoder.encode(RandomGenerator.RandomnameGenerate(26)));
+        else user.setPassword(passwordEncoder.encode(RandomGenerator.randomNameGenerate(26)));
         userRepository.save(user);
         return responseService.getSuccessResult();
     }

@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Table(name="board")
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Board {
 
     @Id
@@ -33,7 +33,7 @@ public class Board {
     private String content;
 
     @Column(name = "thumbnail")
-    private String thumbnail;
+    private String thumbnail="";
 
     @Column(name = "created",insertable = false)
     private LocalDateTime created;
@@ -42,14 +42,14 @@ public class Board {
     private boolean more;
 
     @Column(name = "media_dir")
-    private String mediaDir;
+    private String mediaDir="";
 
     @Column(name = "author_num")
     private Long authorNum;
 
     @Column(name = "author_name")
-    private String authorName;
+    private String authorName="";
 
     @Column(name = "author_img")
-    private String authorImg;
+    private String authorImg="";
 }

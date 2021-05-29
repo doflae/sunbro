@@ -55,7 +55,7 @@ public class EmailAuthService {
         String key;
         key = redisTokenService.getData(email);
         if(key==null){
-            key = RandomGenerator.RandomnameGenerate(8);
+            key = RandomGenerator.randomNameGenerate(8);
             try{
                 redisTokenService.setDataExpire(email,key,JwtTokenService.EmailAuthValidSecond);
                 Date expires = new Date(System.currentTimeMillis()+JwtTokenService.EmailAuthValidMilisecond);

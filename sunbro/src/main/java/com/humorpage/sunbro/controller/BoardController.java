@@ -46,16 +46,13 @@ public class BoardController {
     private RedisRankingService redisRankingService;
 
     @Autowired
-    private FileUploadService fileUploadService;
-
-    @Autowired
     private BoardService boardService;
 
     @Autowired
     private AssignDirectoryService assignDirectoryService;
 
     @Autowired
-    private FileDeleteService fileDeleteService;
+    private FileService fileService;
 
     @GetMapping(value = "/get/{bid}")
     SingleResult<Board> getBoard(@PathVariable Long bid,

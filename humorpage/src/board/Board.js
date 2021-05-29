@@ -18,6 +18,7 @@ import {IconStyled} from "../MainStyled"
 import ReactHlsPlayer from "react-hls-player"
 
 const caches = {};
+
 function Board({
     board,setRef,...props
 }){
@@ -27,7 +28,6 @@ function Board({
     const [offset, setOffset] = useState(null);
     const [dUpBtnOnOff, setDUpBtnOnOff] = useState(false);
     const [isDeleted, setIsDeleted] = useState(cache.isDeleted || false);
-    const [loaded, setLoaded] = useState(false);
     const boardRef = useRef();
     const resizedRef = useRef();
     const commentBtnRef = useRef();
@@ -46,13 +46,10 @@ function Board({
             })
             resizedObserver.observe(resizedRef.current)
         }
-    },[])
-
-    useEffect(()=>{
         return ()=>{
             caches[board.id] = {content:content,onOff:onOff,isDeleted:isDeleted}
         }
-    },[onOff,isDeleted,content])
+    },[])
 
     const DeleteBoard = ()=>(e)=>{
         if(window.confirm("삭제하시겠습니까?")){
@@ -157,6 +154,7 @@ function Board({
                     <CommentBox 
                         board_id={id}
                         commentBtnRef = {commentBtnRef}
+                        mediaDir = {board.mediaDir+"/cmt/"}
                         failedHandler={()=>{setIsDeleted(true)}}/>
                 </BoardStyled>
             </BoardPaddingStyled>
@@ -246,7 +244,7 @@ const LikeBtn = authWrapper(({id,created,like,likes,...props}) =>{
         </LikeStyled>
     }else{
         return <LikeStyled 
-            onClick={likeHandler()}>
+            onClick={likeHandler}>
             <LikeBtnStyled theme="like_lg"/>
             <NumberStyled>
                 {convertUnitOfNum(onOffLike.likeCnt)}

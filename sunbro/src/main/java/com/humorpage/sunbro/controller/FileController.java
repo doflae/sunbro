@@ -4,16 +4,12 @@ package com.humorpage.sunbro.controller;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.*;
-import com.humorpage.sunbro.utils.FFMpegVideoConvert;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
@@ -23,12 +19,8 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @RequestMapping("/api/file")
 public class FileController {
 
-
     @Autowired
-    private FileUploadService fileUploadService;
-
-    @Autowired
-    private FileViewService fileViewService;
+    private FileService fileService;
 
     @Autowired
     private ResponseService responseService;
@@ -39,7 +31,7 @@ public class FileController {
 
     @GetMapping(value = "/get")
     public ResponseEntity<byte[]> getMediaFile(String name) throws IOException{
-        return fileViewService.getFile(name);
+        return fileService.getFile(name);
     }
 
 
@@ -61,6 +53,7 @@ public class FileController {
     /**
      * @param file 멀티 미디어 파일
      * @param path 상대 경로 + 파일네임
+     * @param parentPath 댓글 미디어 파일 저장 시 상위 디렉토리 존재 유무 확인 필요
      * @param mediaType 멀티 미디어 파일 사용 용도
      */
     @PostMapping(path = "/upload/image",
@@ -69,9 +62,10 @@ public class FileController {
             headers = "Accept=application/json")
     public CommonResult imageUpload(MultipartFile file,
                                String path,
+                               @RequestParam(required = false, defaultValue = "") String parentPath,
                                @RequestParam(required = false, defaultValue = "BOARD") MediaType mediaType,
                                @RequestParam(required = false, defaultValue = "false") boolean needResize) {
-        fileUploadService.imageUpload(file,path,mediaType,needResize);
+        fileService.imageUpload(file,path,parentPath,mediaType,needResize);
         return responseService.getSuccessResult();
     }
 

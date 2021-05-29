@@ -43,7 +43,7 @@ public class CommentController {
     private CommentRepository commentRepository;
 
     @Autowired
-    private FileDeleteService fileDeleteService;
+    private FileService fileService;
 
 
     @ApiOperation(value = "댓글 열람",notes = "게시글의 id또는 댓글의 id를 받아 해당 글의 댓글 열람")
@@ -98,7 +98,8 @@ public class CommentController {
                 commentService.save(comment);
             }
             return responseService.getSingleResult(comment);
-        }catch (DataIntegrityViolationException|NullPointerException e){
+        }catch (Exception e){
+            e.printStackTrace();
             return responseService.getDetailSingleResult(false,1,e.getMessage(),null);
         }
     }

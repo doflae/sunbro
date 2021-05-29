@@ -46,7 +46,7 @@ function CommentUploader({...props}){
             tmpUrl = Img.dataset
             const src = Img.dataset.lg
             if(src.startsWith("blob")){
-                await saveFile()
+                await saveFile(data)
             }
             data.append('media',Img.outerHTML)
         }
@@ -115,19 +115,25 @@ function CommentUploader({...props}){
             })
         }
     }
-    const saveFile = async() => {
+
+    // mediaDir => 부모 media dir (created/random/...)
+    // data.mediaDir = mediaDir+newName
+    // update => mediaDir 그대로 이용 -> media file 관리에 사용
+    const saveFile = async (data) => {
         let sm = Img.dataset.sm
         let lg = Img.dataset.lg
         Img.removeChild(Img.firstElementChild)
         Img.className = "ng-img-div"
+        const parentPath = props.mediaDir
+        const newName = getRandomGenerator(10)
+        const fileDir = c && c.mediaDir || parentPath+"/"+newName;
         await fetch(sm).then(r=>r.blob()).then(blob=>{
             const formData = new FormData();
-            const filePath = props.boardMediaDir[props.board_id]+"/cmt/"
-            const newName = getRandomGenerator(10)
             const type = blob.type.split("/")[1]
-            const fileName = filePath+newName+"."+type
+            const filePath = fileDir+"/"+newName+"sm."+type;
             formData.append("file",blob)
-            formData.append("path",fileName)
+            formData.append("path",filePath)
+            formData.append("parentPath",parentPath)
             formData.append('needResize',type==="gif")
             formData.append("mediaType","COMMENT")
             Axios.post("/file/upload/image",formData,{
@@ -135,16 +141,16 @@ function CommentUploader({...props}){
                     'Content-Type':'multipart/form-data',
                 }
             })
-            Img.dataset.sm = "/api/file/get?name="+fileName
+            Img.dataset.sm = "/api/file/get?name="+filePath
+            data.append("mediaDir",fileDir)
         })
         await fetch(lg).then(r=>r.blob()).then(blob=>{
             const formData = new FormData();
-            const filePath = props.boardMediaDir[props.board_id]+"/cmt/"
-            const newName = getRandomGenerator(10)
             const type = blob.type.split("/")[1]
-            const fileName = filePath+newName+"."+type
+            const filePath = fileDir+"/"+newName+"lg."+type;
             formData.append("file",blob)
-            formData.append("path",fileName)
+            formData.append("path",filePath)
+            formData.append("parentPath",parentPath)
             formData.append('needResize',false)
             formData.append("mediaType","COMMENT")
             Axios.post("/file/upload/image",formData,{
@@ -152,7 +158,7 @@ function CommentUploader({...props}){
                     'Content-Type':'multipart/form-data',
                 }
             })
-            Img.dataset.lg = "/api/file/get?name="+fileName
+            Img.dataset.lg = "/api/file/get?name="+filePath
         })
     }
     const imageDelete = () => {

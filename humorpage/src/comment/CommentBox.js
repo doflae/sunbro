@@ -78,7 +78,7 @@ function CommentBox({
     const CommentListRender = () => {
         if(commentList.length===0) return null;
         return commentList.map(c =>
-            <Comment key={c.id} comment={c}/>
+            <Comment key={c.id} comment={c} mediaDir={props.mediaDir}/>
         )
     }
 
@@ -89,6 +89,7 @@ function CommentBox({
         <CommentUploader board_id={board_id}
                     comment_id={0}
                     failedMsg={"삭제된 글입니다."}
+                    mediaDir={props.mediaDir}
                     failedHandler={props.failedHandler}
                     appendComment={appendComment}/>
     </CommentBoxStyled>

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useRef, useState } from "react"
 import userDefaultImg from "../static/img/userDefault.png";
 import {Link} from 'react-router-dom'
 import {authWrapper} from "../auth/AuthWrapper"
@@ -15,6 +15,7 @@ const RecommentConnector = ({...props}) => {
 	return <React.Fragment>
 		{props.recommentList.map(c => <Recomment recommentOnId={props.recommentOnId}
 						on={c.like} c={c} key={c.id}
+						mediaDir={props.mediaDir}
 		recommentClickHandler={props.recommentClickHandler}/>)}
 		<SeeMoreBtn hasMore={props.onOffSeeMore} getData = {props.getData}/>
 		</React.Fragment>
@@ -31,6 +32,7 @@ const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) 
 	const [c, setC] = useState(props.c)
 	const [isDeleted, setIsDeleted] = useState(false)
 	const [updateMode, setUpdateMode] = useState(false)
+	const optionRef = useRef()
 	const deleteHandler = () => (e) =>{
 		if(window.confirm("삭제하시겠습니까?")){
             const formData = new FormData();
@@ -61,6 +63,7 @@ const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) 
 	if(updateMode) return <CommentUploader c={c}
 							comment_id={c.parentId}
 							board_id={c.boardId}
+							mediaDir={props.mediaDir}
 							success={successHandler}
 							cancel={updateHandler}
 							/>
@@ -79,6 +82,7 @@ const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) 
 						<ControlCommentBtn
 							author_num={c.authorNum}
 							user={props.user}
+							optionRef={optionRef}
 							deleteHandler={deleteHandler}
 							updateHandler={updateHandler}
 						/>
@@ -88,7 +92,7 @@ const Recomment = authWrapper(({recommentClickHandler,recommentOnId, ...props}) 
 						media={c.media}
 						blob={c.blob}/>
 			</Styled.CommentMainStyled>
-			<Styled.CommentOptionStlyed>
+			<Styled.CommentOptionStlyed ref = {optionRef}>
 				<CommentLikeBtn comment_id={c.id} board_id={c.boardId} like={c.like} likes={c.likes}/>
 				<RecommentBtn recommentClick={recommentClickHandler}
 					authorName={c.authorName}

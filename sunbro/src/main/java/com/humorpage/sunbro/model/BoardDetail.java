@@ -37,7 +37,7 @@ public class BoardDetail implements Serializable{
     private String content;
 
     @Column(name = "thumbnail")
-    private String thumbnail;
+    private String thumbnail="";
 
     @Column(name = "created",insertable = false)
     private LocalDateTime created;
@@ -46,16 +46,16 @@ public class BoardDetail implements Serializable{
     private boolean more;
 
     @Column(name = "media_dir")
-    private String mediaDir;
+    private String mediaDir="";
 
     @Column(name = "author_num")
     private Long authorNum;
 
     @Column(name = "author_name")
-    private String authorName;
+    private String authorName="";
 
     @Column(name = "author_img")
-    private String authorImg;
+    private String authorImg="";
 
     @Version
     @Column(name="likes")

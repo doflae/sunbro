@@ -101,13 +101,6 @@ const Comment = ({...props}) =>{
 		setOnOffrecomment(true)
 	}
 
-	const getDistance = ()=>{
-		if(optionRef.current){
-			return parseInt(window.getComputedStyle(optionRef.current).marginLeft);
-		}
-		return 100;
-	}
-
 	const getRecomment = () => {
 		if(onOffrecomment) return
 		getData().then(
@@ -137,7 +130,7 @@ const Comment = ({...props}) =>{
 						<ControlCommentBtn
 							author_num={c.authorNum}
 							user={props.user}
-							getDistance={getDistance}
+							optionRef={optionRef}
 							deleteHandler={deleteHandler}
 							updateHandler={updateHandler}
 						/>
@@ -163,6 +156,7 @@ const Comment = ({...props}) =>{
 					board_id={c.boardId}
 					onOff={onOffrecomment}
 					getData={getData}
+					mediaDir = {c.mediaDir}
 					recommentOnId={recommentOnId}
 					recommentList={recommentList}
 					recommentClickHandler={recommentClickHandler}
@@ -172,6 +166,7 @@ const Comment = ({...props}) =>{
 					cname = {uploaderSetting.target}
 					board_id={c.boardId}
 					comment_id={c.id}
+					mediaDir={c.mediaDir}
 					failedMsg = {"삭제된 댓글입니다."}
 					failedHandler={()=>{setIsDeleted(true)}}
 					appendComment={appendComment}/>
@@ -266,7 +261,6 @@ export const CommentContext = ({content,media}) =>{
 				target.appendChild(imgLarge)
 			},target)
 			target.addEventListener("click",()=>{
-				console.log("click",onOff)
 				if(onOff){
 					//large 상태
 					target.style.width="100px"
@@ -284,13 +278,22 @@ export const CommentContext = ({content,media}) =>{
 			})
 		}
 	},[])
+
 	return <Styled.CommentContextStyled ref={ContentRef}>
 		<p dangerouslySetInnerHTML={{__html:renderContent()}}></p>
 	</Styled.CommentContextStyled>
 }
 
-export const ControlCommentBtn = ({...props}) =>{
+export const ControlCommentBtn = ({optionRef,...props}) =>{
 	const [boxOnOff, setBoxOnOff] = useState(false)
+	
+	const getDistance = ()=>{
+		if(optionRef.current){
+			return parseInt(window.getComputedStyle(optionRef.current).marginLeft);
+		}
+		return 100;
+	}
+
 	return <Styled.CCBtnStyled
 			tabIndex={0}
 			onClick={()=>{
@@ -303,7 +306,7 @@ export const ControlCommentBtn = ({...props}) =>{
 		<ControlBox
 			isAuthor={props.user && props.user.userNum===props.author_num}
 			boxOnOff={boxOnOff}
-			distance={props.getDistance()}
+			distance={getDistance()}
 			deleteHandler={props.deleteHandler}
 			updateHandler={props.updateHandler}
 			/>

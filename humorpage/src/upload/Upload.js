@@ -108,6 +108,7 @@ class CustomImage extends IMG{
       const newPath = filePath+fileName
       if(image.src.startsWith("blob")){
         const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
+        const smallFilePath = newPath+"27."+blob.type.split("/")[1]
         image.className = "ng-img-small"
         node.className = "ng-img-div"
         const dataset = node.dataset
@@ -115,14 +116,13 @@ class CustomImage extends IMG{
         this.save(blob,OriginalFilePath)
         await fetch(dataset.small).then(r=>r.blob()).then(
           blob=>{
-            const newPath = "/27"+OriginalFilePath
-            node.dataset.small = "/api/file/get?name="+newPath
-            this.save(blob,newPath)
+            node.dataset.small = "/api/file/get?name="+smallFilePath
+            this.save(blob,smallFilePath)
           }
         )
         if(isThumb){
           const thumbFilePath = newPath+"thumb.jpg";
-          ResizeThumbnailImage(blob).then(resizedImage=>{
+          await ResizeThumbnailImage(blob).then(resizedImage=>{
             this.save(resizedImage,thumbFilePath)
           })
           const temp = image.getAttribute("src")
@@ -136,7 +136,7 @@ class CustomImage extends IMG{
       }else{
         if(isThumb){
           const thumbFilePath = newPath+"thumb.jpg"
-          ResizeThumbnailImage(blob).then(resizedImage=>{
+          await ResizeThumbnailImage(blob).then(resizedImage=>{
             this.save(resizedImage,thumbFilePath)
           })
           const temp = image.getAttribute("src")
@@ -306,7 +306,6 @@ CustomVideo.tagName = "DIV";
 Quill.register('formats/myvideo', CustomVideo, false);
 
 
-//TODO : sendImage, sendVideo node에 내장 => update와 중복 코드 제거
 class Upload extends Component {
     constructor(props) {
       super(props)
@@ -345,6 +344,7 @@ class Upload extends Component {
       if(this.mediaDir==null){
         //이후 ip마다 1개씩 할당
         this.props.request("get","/board/dir").then(res=>{
+          console.log(res)
           if(res.status===200 && res.data.success===false){
             this.props.history.push("/login")
           }else{
@@ -375,7 +375,7 @@ class Upload extends Component {
         })
         return
       }
-      const filePath = "/"+getToday()+"/"+this.mediaDir+"/"
+      const filePath = this.mediaDir+"/"
       // path = /240/path.jpg
       let data = new FormData();
       //썸네일 만들지 여부
@@ -385,7 +385,7 @@ class Upload extends Component {
       //썸네일은 0.5배로 min height 240 max height 500
       //썸네일 저장소는 사이즈로 구분안되기 때문에 thumb/...로 변경
       if(isMore && mediaElem!==null){
-        mediaElem.send(filePath,data,true)
+        await mediaElem.send(filePath,data,true)
       }
       const mediaElems = this.quill.querySelectorAll("#ql")
       const queries = Object.values(mediaElems).map(async media=> await media.send(filePath))
