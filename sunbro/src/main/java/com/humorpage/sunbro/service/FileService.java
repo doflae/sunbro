@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 @Service
 public class FileService {
 
-    static final String baseDir = "C://mediaFiles";
-    private final Pattern srcPattern = Pattern.compile("\"/file/get\\?name=([^\"]*)");
+    public static String baseDir = "C://mediaFiles";
+    static Pattern srcPattern = Pattern.compile("\"/api/file/get\\?name=([^.]*.([^\"]*))");
     static Pattern videoPattern =Pattern.compile("^(/.+/)([^/]+)\\..+");
 
     @Autowired
@@ -90,8 +90,14 @@ public class FileService {
         }
     }
 
-    //게시글 수정 시 글 파싱 후 삭제된 미디어 파일들 삭제
-    //TODO 동영상 (m3u8) directory 삭제
+    /**
+     * mediaDir 탐색 -> dir, file 목록(filesInFolder)
+     * content 파싱 -> media path 목록(filesInContent)
+     * A에서 B제외, cmt 폴더 제외, 나머지 제거
+     * @param mediaDir 미디어 directory path
+     * @param contentAfter 변경된 내용
+     * @param thumbNailImg 변경된 썸네일
+     */
     public void refreshDir(String mediaDir,
                            String contentAfter,
                            String thumbNailImg) throws IOException {
@@ -105,8 +111,17 @@ public class FileService {
             filesInFolder.remove(new File(baseDir+mediaDir+"/cmt"));
 
             while(contentMatcher.find()){
-                File f = new File(baseDir+contentMatcher.group(1));
-                filesInFolder.remove(f);
+                if(contentMatcher.group(2).equals("m3u8")){
+                    String file = contentMatcher.group(1);
+                    int i = file.lastIndexOf("/");
+                    if(i!=-1){
+                        File f = new File(baseDir+file.substring(0,i));
+                        filesInFolder.remove(f);
+                    }
+                }else{
+                    File f = new File(baseDir+contentMatcher.group(1));
+                    filesInFolder.remove(f);
+                }
             }
             if(thumbNailImg.isEmpty()) return;
             Matcher thumbMatcher = srcPattern.matcher(thumbNailImg);
@@ -121,7 +136,6 @@ public class FileService {
     //게시글 삭제시 mediaDir, created 조합 후 file path 찾아 삭제
     public void deleteDir(String target) throws IOException{
         File f = new File(baseDir+target);
-        log.info(baseDir+target);
         FileUtils.deleteDirectory(f);
     }
 

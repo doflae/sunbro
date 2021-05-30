@@ -9,19 +9,22 @@ import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
 import com.humorpage.sunbro.service.*;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/board")
-@CrossOrigin(value = "http://localhost:3000", allowCredentials = "true")
 public class BoardController {
 
     @Autowired
@@ -83,8 +86,6 @@ public class BoardController {
         }
     }
 
-    //TODO: 삭제 쿼리 하나로
-    //TODO: cascade에 의해 부모 댓글 삭제 시 자식 댓글 삭제되는데 쿼리 확인
     @PostMapping(value="/delete")
     CommonResult deleteBoard(@RequestParam List<Long> boardList, Authentication authentication){
         try{
@@ -132,7 +133,7 @@ public class BoardController {
     @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")
     @GetMapping(value = "/like/on")
     CommonResult likeBoard(@RequestParam(value = "id") Long board_id,
-                           LocalDateTime created,
+                           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime created,
                            Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple)authentication.getPrincipal();
@@ -146,7 +147,7 @@ public class BoardController {
     @ApiOperation(value="좋아요 취소",notes = "board_id를 받아 좋아요 off")
     @GetMapping(value = "/like/off")
     CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id,
-                                 LocalDateTime created,
+                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime created,
                                  Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
@@ -158,25 +159,26 @@ public class BoardController {
     }
 
     @GetMapping("/recently")
-    ListResult<BoardDetail> recently(@RequestParam(value = "board_id",required = false) Long board_id, Authentication authentication){
+    ListResult<BoardDetail> recently(@RequestParam(value = "lastId",required = false) Long lastId, Authentication authentication){
         List<BoardDetail> boardDetailList;
-        if(board_id==null){
+        if(lastId==null){
             boardDetailList = boardDetailRepository.findByOrderByIdDesc(PageRequest.of(0,5));
         }else{
-            boardDetailList = boardDetailRepository.findByIdLessThanOrderByIdDesc(board_id, PageRequest.of(0,5));
+            boardDetailList = boardDetailRepository.findByIdLessThanOrderByIdDesc(lastId, PageRequest.of(0,5));
         }
         boardService.setTransientBoard(boardDetailList,authentication);
+        boardService.getTopNComment(boardDetailList,3L,authentication);
         return responseService.getListResult(boardDetailList);
     }
 
-    @GetMapping("/rank")
+    @GetMapping("/rank/{rankType}")
     ListResult<BoardDetail> ranked(
-            RankingType rankType,
-            Long last_id,
+            @PathVariable RankingType rankType,
+            @RequestParam (value = "lastId", required = false, defaultValue = "0") Long lastId,
             Authentication authentication){
         List<Long> boardIdList =
-                redisRankingService.getBoardRanking(rankType,last_id,5L);
-        List<BoardDetail> boardDetailList = boardDetailRepository.findByIdIn(boardIdList);
+                redisRankingService.getBoardRanking(rankType,lastId,5L);
+        List<BoardDetail> boardDetailList = boardDetailRepository.findByIdInOrderByLikesDesc(boardIdList);
         boardService.setTransientBoard(boardDetailList,authentication);
         boardService.getTopNComment(boardDetailList,3L,authentication);
         return responseService.getListResult(boardDetailList);

@@ -70,7 +70,7 @@ public class RedisRankingService{
     public List<Long> getBoardRanking(RankingType type, Long start, Long page_size) throws AssertionError{
         String key = type.name()+":"+RANKING_KEY;
         ZSetOperations<String, String> zSetOperations = stringRedisTemplate.opsForZSet();
-        return Objects.requireNonNull(zSetOperations.reverseRange(key, start, start + page_size))
+        return Objects.requireNonNull(zSetOperations.reverseRange(key, start, start + page_size-1))
                 .stream().map(Long::parseLong).collect(Collectors.toList());
     }
 
@@ -102,12 +102,12 @@ public class RedisRankingService{
         refreshBoard(RankingType.WEEK,created);
     }
 
-    @Scheduled(zone = "Asia/Seoul", cron = "0 0 5 1 * *")
-    public void scheduledMonthlyRefresh(){
-        LocalDateTime now = LocalDateTime.now().with(LocalTime.of(0,0));
-        LocalDateTime created = now.minusMonths(1);
-        refreshBoard(RankingType.MONTH,created);
-    }
+//    @Scheduled(zone = "Asia/Seoul", cron = "0 0 5 1 * *")
+//    public void scheduledMonthlyRefresh(){
+//        LocalDateTime now = LocalDateTime.now().with(LocalTime.of(0,0));
+//        LocalDateTime created = now.minusMonths(1);
+//        refreshBoard(RankingType.MONTH,created);
+//    }
 
 
     /**

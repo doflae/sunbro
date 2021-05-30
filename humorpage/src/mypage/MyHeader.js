@@ -13,7 +13,6 @@ function MyHeader({
 }){
     const user = props.userDetail;
     const [userImg, setUserImg] = useState(user.userImg);
-    const [userImgResized, setUserImgResized] = useState({})
     const [mediaFormat, setMediaFormat] = useState(null);
     const [isChanged, setIsChanged] = useState(false);
     const dropzoneRef = useRef()
@@ -31,45 +30,27 @@ function MyHeader({
         }
     }
     const saveFile = (path) =>{
-        Object.keys(userImgResized).forEach(key=>{
-            fetch(userImgResized[key]).then(r=>r.blob()).then((blob)=>{
-                var x = new Image();
-                x.onload = () =>{
-                    const formData = new FormData();
-                    formData.append('file',blob);
-                    formData.append('path',`/${key}`+path);
-                    formData.append('needResize',key<Math.max(x.width,x.height))
-                    formData.append('mediaType',"PROFILE")
-                    Axios.post("/file/upload-image",formData,{
-                    headers:{
-                        'Content-Type':'multipart/form-data',
-                    }
-                    })
-                }
-                x.src = URL.createObjectURL(blob);
-            })
-        })
         fetch(userImg).then(r=>r.blob()).then(blob=>{
             const formData = new FormData();
-            formData.append('file',blob);
-            formData.append('path',path);
-            formData.append('mediaType',"PROFILE")
-            Axios.post("/file/upload-image",formData,{
-              headers:{
-                'Content-Type':'multipart/form-data',
-              }
-            })
+            var x = new Image();
+            x.onload = () =>{
+                formData.append('file',blob);
+                formData.append('path',path);
+                formData.append('mediaType',"PROFILE")
+                formData.append('needResize',120<Math.max(x.width,x.height))
+                Axios.post("/file/upload-image",formData,{
+                  headers:{
+                    'Content-Type':'multipart/form-data',
+                  }
+                })
+            }
+            x.src = URL.createObjectURL(blob)
         })
     }
     const revoke = () =>{
         const imgURL = userImg
-        const resizedImgURL = userImgResized
         if(imgURL.startsWith("blob")){
-            console.log("revoke!")
             URL.revokeObjectURL(imgURL)
-            Object.keys(resizedImgURL).forEach(key=>{
-                URL.revokeObjectURL(resizedImgURL[key])
-            })
         }
     }
 
@@ -77,11 +58,8 @@ function MyHeader({
         await revoke()
         if(acceptFile[0]) {
             setMediaFormat(acceptFile[0].type.split("/")[1]);
-            ResizeImage(acceptFile[0],240).then(resizedImage=>{
+            ResizeImage(acceptFile[0],120).then(resizedImage=>{
                 setUserImg(URL.createObjectURL(resizedImage));
-            })
-            ResizeImage(acceptFile[0],72).then(resizedImage=>{
-                setUserImgResized({72:URL.createObjectURL(resizedImage)});
             })
             setIsChanged(true);
         }
@@ -92,14 +70,12 @@ function MyHeader({
         if(userImg.startsWith("blob")){
             filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
             saveFile(filePath)
-            
         }else{
             filePath = ""
         }
         const formData = new FormData();
         formData.append('path',filePath)
         props.request("post","/account/update/img",formData).then(res=>{
-            console.log(res)
             if(res.status===200 && res.data.success){
                 profileImgRef.current.style.margin = "";
                 setIsChanged(false)

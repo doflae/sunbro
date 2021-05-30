@@ -57,7 +57,6 @@ public class BoardDetail implements Serializable{
     @Column(name = "author_img")
     private String authorImg="";
 
-    @Version
     @Column(name="likes")
     private int likes;
 

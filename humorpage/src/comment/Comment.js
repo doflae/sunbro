@@ -193,7 +193,7 @@ export const CommentLikeBtn = ({comment_id,board_id,like,likes}) =>{
 				cnt:likeCnt.cnt+1
 			})
 		}
-		debounce(debounceLike,50000);
+		debounce(debounceLike)();
 	}
 
 	const debounceLike = () =>{

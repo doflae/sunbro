@@ -9,24 +9,14 @@ import {SeeMoreBtnStyled} from "./CommentStyled"
 const caches = {};
 
 function CommentBox({
-    board_id,...props
+    board_id,comments,...props
 }){
     const cache = board_id in caches?caches[board_id]:{};
-    const [commentList, setCommentList] = useState(cache.commentList||[]);
+    const [commentList, setCommentList] = useState(cache.commentList||comments||[]);
     const [lastId, setLastId] = useState(cache.lastId||null);
     const [keyList, setKeyList] = useState(cache.keyList||new Set());
-    const [onOff, setOnOff] = useState(cache.onOff||false);
     const [onOffSeeMore, setOnOffSeeMore] = useState(cache.onOffSeeMore||false);
 
-    useEffect(()=>{
-        const target = props.commentBtnRef.current
-        target.onclick = () =>{
-            if(commentList.length===0){
-                getData();
-            }
-            setOnOff(!onOff)
-        }
-    },[])
 
     useEffect(()=>{
         return ()=>{
@@ -34,7 +24,6 @@ function CommentBox({
                 commentList:commentList,
                 lastId:lastId,
                 keyList:keyList,
-                onOff:onOff,
                 onOffSeeMore:onOffSeeMore
             }
         }
@@ -82,7 +71,6 @@ function CommentBox({
         )
     }
 
-    if(onOff===false) return null;
     return <CommentBoxStyled>
         {CommentListRender()}
         <SeeMoreBtn on={onOffSeeMore} seeMore={seeMore}/>

@@ -30,7 +30,6 @@ function Board({
     const [isDeleted, setIsDeleted] = useState(cache.isDeleted || false);
     const boardRef = useRef();
     const resizedRef = useRef();
-    const commentBtnRef = useRef();
     const id = board.id
 
     //todo:update후 바로 적용
@@ -136,8 +135,7 @@ function Board({
                         <BoardBottomButtonStyled>
                             <LikeBtn id={id} created={board.created}
                             like={board.like} likes={board.likes}/>
-                            <CommentBtnStyled
-                                ref={commentBtnRef}>
+                            <CommentBtnStyled>
                                 <CommentIconStlyed
                                     theme="comment_lg"/>
                                 <NumberStyled>
@@ -153,7 +151,7 @@ function Board({
                     </div>
                     <CommentBox 
                         board_id={id}
-                        commentBtnRef = {commentBtnRef}
+                        comments={board.comments}
                         mediaDir = {board.mediaDir+"/cmt/"}
                         failedHandler={()=>{setIsDeleted(true)}}/>
                 </BoardStyled>
@@ -215,7 +213,7 @@ const LikeBtn = authWrapper(({id,created,like,likes,...props}) =>{
                 likeCnt:onOffLike.likeCnt+1
             })
         }
-        debounce(debounceLike,50000);
+        debounce(debounceLike)();
     }
     const debounceLike = () =>{
         if(onOffLike.onOff){

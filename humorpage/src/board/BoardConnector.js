@@ -6,7 +6,7 @@ import styled from "styled-components"
 import {IconStyled} from "../MainStyled"
 import {uploadWrapper} from "../upload/UploadWrapper"
 import {boardWrapper} from "./BoardWrapper"
-import { observeTrigger } from '../utils/Utils';
+import { observeTrigger,throttle } from '../utils/Utils';
 
 export const cache = new CellMeasurerCache({
     defaultWidth:100,
@@ -27,6 +27,8 @@ class BoardConnector extends Component{
         };
         this._measureCallbacks = {}
         this._remeasure = this._remeasure.bind(this)
+        this.changeMode = this.changeMode.bind(this)
+        this.baseUrl = "/board/recently?"
     }
 
 
@@ -47,14 +49,24 @@ class BoardConnector extends Component{
         window.scrollTo({top:t.offsetTop+t.offsetHeight+50,behavior:"smooth"})
     }
 
-    getBoard = () =>{
-        let resturl = `/board/recently?`
+    changeMode = (url) =>{
+        this.baseUrl = url
+        this.lastBoard = 0
+        this.setState({
+            boards:[]
+        },this.getBoard)
+        window.scrollTo({top:0,behavior:"auto"})
+    }
+
+    getBoard = throttle(() =>{
+        let resturl = this.baseUrl
         if(this.lastBoard!==0){
-            resturl+=`board_id=${this.lastBoard}`
+            resturl+=`lastId=${this.lastBoard}`
         }
         const {boards} = this.state
         this.props.request('get',resturl).then(res=>{
             const resData = res.data.list
+            console.log(res)
             if(0<resData.length && resData.length<6){
                 this.setState({
                     boards:[...boards,...resData]
@@ -62,7 +74,7 @@ class BoardConnector extends Component{
                 this.lastBoard = resData[resData.length-1]['id']
             }
         })
-    }
+    })
 
     
     nextBtnRenderer = () =>{
@@ -115,7 +127,7 @@ class BoardConnector extends Component{
         const {boards} = this.state
         return (
         <React.Fragment>
-            <BoardZoneHeader/>
+            <BoardZoneHeader changeMode = {this.changeMode}/>
             <BoardMainBoxStyled ref={this.mainBoxRef}>
                 <WindowScroller>
                     {({ height, scrollTop, isScrolling, onChildScroll }) => (
@@ -149,26 +161,29 @@ class BoardConnector extends Component{
     }
 }
 
-const BoardZoneHeader = authWrapper(uploadWrapper(({...props}) =>{
-    const goUpload = () => (e) =>{
+const BoardZoneHeader = authWrapper(uploadWrapper(({changeMode,...props}) =>{
+    const goUpload = () =>{
         if(props.user) props.onOffUploadPage(0);
         else props.setAuthPageOption(0);
     }
     return <BoardZoneHeaderStyled>
         <HeaderBtnLeftZone>
-            <HeaderBtnStyled>
-                <BoardIconStyled
-                theme="hot_lg"
-                />
-                HOT
-            </HeaderBtnStyled>
-            <HeaderBtnStyled>
+            <HeaderBtnStyled
+                onClick={()=>{changeMode("/board/recently?")}}>
                 <BoardIconStyled
                 theme="new_lg"
                 />
                 NEW
             </HeaderBtnStyled>
-            <HeaderBtnStyled>
+            <HeaderBtnStyled
+                onClick={()=>{changeMode("/board/rank/DAY?")}}>
+                <BoardIconStyled
+                theme="hot_lg"
+                />
+                HOT
+            </HeaderBtnStyled>
+            <HeaderBtnStyled
+                onClick={()=>{changeMode("/board/rank/WEEK?")}}>
                 <BoardIconStyled
                 theme="rank_lg"
                 />
@@ -179,7 +194,7 @@ const BoardZoneHeader = authWrapper(uploadWrapper(({...props}) =>{
             <HeaderBtnStyled>
             <PencilStyled 
                 theme="pencil_lg"
-                onClick={goUpload()}/>
+                onClick={goUpload}/>
             </HeaderBtnStyled>
         </HeaderBtnRightZone>
     </BoardZoneHeaderStyled>

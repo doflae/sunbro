@@ -23,7 +23,6 @@ import java.util.List;
 
 @RequestMapping("/api/comment")
 @RestController
-@CrossOrigin(value = "http://localhost:3000", allowCredentials = "true")
 public class CommentController {
 
 

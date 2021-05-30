@@ -36,11 +36,13 @@ public class LikeService {
     public void saveLikeBoard(Long userNum, Long boardId, LocalDateTime created){
         Boardlikes boardlikes = boardLikesRepository.findByBoardIdAndUserNum(boardId,userNum);
         if(boardlikes==null){
-            boardlikes = new Boardlikes(boardId,userNum);
+            boardlikes = new Boardlikes();
+            boardlikes.setBoardId(boardId);
+            boardlikes.setUserNum(userNum);
             try{
                 boardLikesRepository.save(boardlikes);
-            }catch (DataIntegrityViolationException ignored){
-
+            }catch (DataIntegrityViolationException e){
+                return;
             }
             jdbcTemplate.update("UPDATE board SET likes=likes+1 where id=?",boardId);
             redisRankingService.incrementBoardScore(boardId,1,created);
@@ -64,8 +66,8 @@ public class LikeService {
             commentlikes = new Commentlikes(commentId, userNum);
             try{
                 commentLikesRepository.save(commentlikes);
-            }catch (DataIntegrityViolationException ignored){
-
+            }catch (DataIntegrityViolationException e){
+                return;
             }
             jdbcTemplate.update("UPDATE comment SET likes=likes+1 where id=?", commentId);
             redisRankingService.incrementCommentScore(boardId,commentId,1);

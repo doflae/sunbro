@@ -28,11 +28,9 @@ import javax.validation.Valid;
 
 @RequiredArgsConstructor
 @RestController
-@CrossOrigin(value = "http://localhost:3000", allowCredentials = "true")
 @RequestMapping(value = "/api/account")
 public class AccountController {
 
-    //TODO: singleton
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired

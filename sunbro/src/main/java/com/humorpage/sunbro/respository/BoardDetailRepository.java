@@ -24,6 +24,8 @@ public interface BoardDetailRepository extends JpaRepository<BoardDetail, Long> 
 
     List<BoardDetail> findByIdIn(List<Long> board_ids);
 
+    List<BoardDetail> findByIdInOrderByLikesDesc(List<Long> board_ids);
+
     List<BoardDetail> findByTitleContaining(String title);
 
     List<BoardDetail> findByContentContaining(String content);
