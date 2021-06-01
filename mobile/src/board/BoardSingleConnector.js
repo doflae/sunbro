@@ -6,7 +6,7 @@ function BoardSingleConnector(){
     let match = useParams();
     const [board,setBoard] = useState(null);
     useEffect(()=>{
-        Axios.get(`/board/detail/${match.key}`).then(res=>{
+        Axios.get(`/board/get/${match.key}`).then(res=>{
             if(res.status===200 && res.data.success){
                 setBoard(res.data.data)
             }

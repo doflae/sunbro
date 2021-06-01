@@ -8,6 +8,8 @@ import NaverLogin from "react-naver-login";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 import styled from 'styled-components'
 import Profile from "./Profile";
+import {Signup} from './Signup';
+import {FindPassword} from "./FindPassword";
 
 export const Login = withRouter(authWrapper(class extends Component{
 
@@ -21,15 +23,17 @@ export const Login = withRouter(authWrapper(class extends Component{
 		}
 		this.defaultAttrs = {required:true};
 		this.formModel = [
-			{label: "ID", attrs:{type:"text"}},
-			{label: "Password", attrs: {type: "password"}},
+			{label: "아이디", name:"id", attrs:{type:"text"}},
+			{label: "비밀번호", name:"password", attrs: {type: "password"}},
 		];
 	}
+
+
 
 	authenticate = (credentials) => {
 		this.props.authenticate(credentials)
 		.then((res)=>{
-			this.props.history.push("/boards");
+			this.props.setAuthPageOption(-1);
 		})
 		.catch(err => {
 			this.setState({errorMessage:err.message})
@@ -50,7 +54,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',response.response.access_token)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.history.push("/boards")
+				this.props.setAuthPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "KAKAO"+profile.id
@@ -64,9 +68,9 @@ export const Login = withRouter(authWrapper(class extends Component{
 				userDetail.platform="KAKAO"
 				userDetail.token = response.response.access_token
 				this.setState({
-					platform:true,
 					userDetail:userDetail,
 				})
+				this.props.setAuthPageOptions(2);
 			}
 		})
 	}
@@ -78,16 +82,16 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',user.accessToken)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.history.push("/boards")
+				this.props.setAuthPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = id
 				userDetail.platform = "GOOGLE"
 				userDetail.token = user.accessToken
 				this.setState({
-					platform:true,
 					userDetail:userDetail,
 				})
+				this.props.setAuthPageOptions(2);
 			}
 		})
 	}
@@ -100,7 +104,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',access_token)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.history.push("/boards")
+				this.props.setAuthPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "NAVER"+user.id
@@ -112,9 +116,9 @@ export const Login = withRouter(authWrapper(class extends Component{
 					userDetail.gender = gender
 				}
 				this.setState({
-					platform:true,
 					userDetail:userDetail,
 				})
+				this.props.setAuthPageOptions(2);
 			}
 		})
 		
@@ -127,35 +131,49 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('token',user.accessToken)
 		this.props.request("post","/account/anologin",formData).then(res=>{
 			if(res.data.success){
-				this.props.history.push("/boards")
+				this.props.setAuthPageOption(-1);
 			}else{
 				const userDetail = new Set();
 				userDetail.uid = "FACEBOOK"+user.id;
 				userDetail.platform = "FACEBOOK"
 				userDetail.token = user.accessToken
 				this.setState({
-					platform:true,
 					userDetail:userDetail,
 				})
+				this.props.setAuthPageOptions(2);
 			}
 		})
 	}
 
-	render = () => {
-		if(this.state.platform) return <Profile userDetail={this.state.userDetail}/>
-		return <div className="row">
-			<div className="col m-2">
-				<LoginForm formModel={this.formModel}
-				defaultAttrs={this.defaultAttrs}
-				submitErrorCallback={this.submitError}
-				submitCallback={this.authenticate}
-				submitText="Login"
-				errorMessage={this.state.errorMessage}
-				cancelCallback={()=> this.props.history.push("/boards")}//로그인 실패시 이동 경로
-				cancelText="Cancel"
-				/>
-			</div>
-			<button onClick={()=>this.props.history.push("/signup")}>회원가입</button>
+	SignUpBtn = () => (e) =>{
+		this.props.setAuthPageOption(1);
+	}
+
+	DeletePage = () =>(e) =>{
+		this.props.setAuthPageOption(-1);
+	}
+	FindPw = () => (e) =>{
+		this.props.setAuthPageOption(3);
+	}
+
+	renderPage = () =>{
+		if(this.props.authPageOption==3) return <FindPassword/>
+		if(this.props.authPageOption==2) return <Profile userDetail={this.state.userDetail}/>
+		if(this.props.authPageOption==1) return <Signup/>
+		return <div>
+			<LoginFormZoneStlyed>
+			<LoginForm formModel={this.formModel}
+			defaultAttrs={this.defaultAttrs}
+			submitErrorCallback={this.submitError}
+			submitCallback={this.authenticate}
+			submitText="로그인"
+			errorMessage={this.state.errorMessage}
+			/>
+			<UserServiceZoneStyled>
+				<UserServiceBtnStyled onClick={this.SignUpBtn()}>회원가입</UserServiceBtnStyled>
+				<UserServiceBtnStyled onClick={this.FindPw()}>비밀번호 찾기</UserServiceBtnStyled>
+			</UserServiceZoneStyled>
+			</LoginFormZoneStlyed>
 			<KaKaoLogin
 				token={'73d8ed482d24e9f165b966171888efb5'}
 				render={({onClick})=>{return <KaKaoBtn onClick={e=>{e.preventDefault();onClick();}}>
@@ -189,7 +207,81 @@ export const Login = withRouter(authWrapper(class extends Component{
 			/>
 		</div>
 	}
+
+	render = () => {
+		if(this.props.authPageOption<0) return null;
+		return <AuthBoxStyled>
+			<CancelBtnStyled onClick={()=>{this.props.setAuthPageOption(-1)}}/>
+			{this.renderPage()}
+		</AuthBoxStyled>
+	}
 }))
+
+const UserServiceZoneStyled = styled.div`
+	display:flex;
+	justify-content: space-around;
+	margin:20px 0px 20px 0px;
+`	
+
+
+const UserServiceBtnStyled = styled.div`
+	text-align:center;
+	font-weight:800;
+	font-size:1.1em;
+	opacity:0.3;
+	cursor:pointer;
+	&:hover{
+		opacity:0.7;
+	}
+`
+
+const CancelBtnStyled = styled.button`
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	width: 24px;
+	height: 24px;
+	background-color: #fff;
+	border: 0px;
+	opacity:0.4;
+	&:hover{
+		opacity:0.7;
+	}
+    &::before, &::after{
+		position: absolute;
+		left: 11px;
+		bottom: 2px;
+		content: ' ';
+		height: 18px;
+		width: 2px;
+		background-color: rgb(3,3,3);
+    }
+    &::before{
+	    transform: rotate(45deg);
+    }
+    &::after{
+        transform: rotate(-45deg);
+    }
+`
+
+const AuthBoxStyled = styled.div`
+	z-index:1;
+	position: fixed;
+	left: calc(50% - 175px);
+	width: 350px;
+	min-height: 500px;
+	margin-top: 20px;
+	padding: 20px;
+	box-sizing: border-box;
+	border-radius: 10px;
+	background-color: #fff;
+	box-shadow: rgb(0 0 0 / 56%) 0px 3px 3px 0px, rgb(0 0 0 / 56%) 0px 0px 2px 0px;
+`
+
+const LoginFormZoneStlyed = styled.div`
+	width:300px;
+	margin:auto;
+`
 
 const GoogleBtn = styled.div`
 	padding: 0;

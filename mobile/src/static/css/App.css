@@ -3,6 +3,10 @@
 	width:100%;
 	margin-left: auto;
 	margin-right: auto;
+	background-color: #dfdede;
+}
+*{
+	box-sizing: border-box;
 }
 body{
 	margin:0px;
@@ -28,55 +32,6 @@ a{
 button:focus{
     border: none;
     outline: none;
-}
-.head{
-	width: 100%;
-	max-height: 50px;
-	border-bottom: solid black 1px;
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-}
-.head_logo{
-	line-height: 250%;
-	height: 100%;
-	font-size: 1.2rem;
-	margin-left:30px;
-	font-weight: 800;
-}
-.head_logo_text{
-	cursor: pointer;
-}
-.head_user_img{
-	cursor: pointer;
-	max-height: 40px;
-	max-width: 40px;
-	border-radius: 20px;
-	position: relative;
-	margin-right: 5px;
-	top:6px;
-}
-.head_logo_img{
-	cursor: pointer;
-	width: 40px;
-	height: 40px;
-	border-radius: 20px;
-	margin-right: 5px;
-	margin-top: 5px;
-}
-.head_sign{
-	text-align: center;
-	line-height: 200%;
-	border-radius: 5px;
-	background-color: #ec4646;
-	color:#ffffff;
-	width: 10%;
-	cursor: pointer;
-	height: 80%;
-	margin-right: 10px;
-	margin-left: 10px;
-	margin-top: auto;
-	margin-bottom: auto;
 }
 .footer{
 	position: fixed;

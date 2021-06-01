@@ -5,17 +5,29 @@ export class BoardProviderImpl extends Component{
     constructor(props){
         super(props)
         this.state={
-            boardDetail:null,
+            boardKey:null,
+            boardUrl:"/board/recently?"
         }
     }
-    setBoard = (board) =>{
+
+    setBoardUrl = (url) =>{
         this.setState({
-            boardDetail:board,
+            boardUrl:url
+        })
+    }
+
+    setBoardKey = (key) =>{
+        const setKey = () =>{
+            this.setState({boardKey:key});
+        }
+        return new Promise(function(resolve){
+            resolve(setKey());
         })
     }
     render = () =>
         <BoardContext.Provider value={{...this.state,
-        setBoard:this.setBoard}}>
+            setBoardUrl:this.setBoardUrl,
+            setBoardKey:this.setBoardKey}}>
             {this.props.children}
         </BoardContext.Provider>
 }

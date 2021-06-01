@@ -90,7 +90,7 @@ function MyHeader({
             <MyProfileImgZone>
                 <ProfileImgDelete onClick={imageDelete()}></ProfileImgDelete>
                 <ImagePartStyled ref={profileImgRef} onClick={imageHandler()}>
-                    <UserImage src={userImg} userDefaultImg={userDefaultImg}/>
+                    <UserImage src={userImg}/>
                     <PencilStyled
                         theme="pencil_sm"/>
                 </ImagePartStyled>
@@ -125,7 +125,7 @@ function MyHeader({
     </MyPageHeader>
 }
 
-const UserImage = ({src, userDefaultImg}) =>{
+const UserImage = ({src}) =>{
     if(src!=null){
         if(src.startsWith("blob")){
             return <MyProfileImg src={src}

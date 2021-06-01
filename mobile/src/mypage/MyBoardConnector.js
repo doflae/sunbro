@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MyBoard from "./MyBoard"
 import styled from "styled-components";
 import Axios from "axios";
 import { useHistory } from "react-router";
 
 function MyBoardConnector({
-    boards,refreshPage,pagenum,option
+    boards,refreshPage,pagenum,option,...props
 }){
     const [checkedBox, setCheckedBox] = useState([]);
+    const [boardList, setBoardList] = useState();
+    useEffect(()=>{
+        setBoardList(boards)
+    },[boards])
     let history = useHistory();
-
     const selectSingleHandler = (checked, id) => {
         if(checked){
             setCheckedBox([...checkedBox,id]);
@@ -20,7 +23,7 @@ function MyBoardConnector({
     const selectAllHandler = (checked) =>{
         if(checked===false){
             const allArray = [];
-            boards.forEach(element => {
+            boardList.forEach(element => {
                 allArray.push(element.id);
             });
             setCheckedBox(allArray)
@@ -47,7 +50,7 @@ function MyBoardConnector({
     const btnRender = () =>{
         if(option===0){
             return <React.Fragment>
-                    <CheckAllBtn checked={checkedBox.length===boards.length}
+                    <CheckAllBtn checked={checkedBox.length===boardList.length}
                         selectAllHandler={selectAllHandler}/>
                     <DeleteBtn deleteChecked = {deleteChecked}/>
                     </React.Fragment>
@@ -56,33 +59,37 @@ function MyBoardConnector({
         }
     }
 
-    if(boards==null||boards.length===0){
-        return <h5 className="p-2">No boards</h5>
+    if(boardList==null||boardList.length===0){
+        return null;
     }
-    return<div>
+    return <React.Fragment>
         <MyBoardTableHeader>
             {btnRender()}
         </MyBoardTableHeader>
             <MyBoardTable>
             <thead>
                 <tr>
-                    <th>
-                    </th>
-                    <th align="left">글번호</th>
+                    {option===0?<th></th>:null}
                     <th>제목</th>
-                    <th>작성일</th>
                     <th>좋아요</th>
                 </tr>
             </thead>
             <tbody>
-                {boards.map(board=>{
-                    return <MyBoard board={board} key={board.id}
+                {boardList.map(board=>{
+                    return <MyBoard board={board} key={board.id} checkBoxOn={option===0}
                     checkedBox={checkedBox} setCheckedBox={setCheckedBox}
                     selectSingleHandler={selectSingleHandler}/>
                 })}
             </tbody>
             </MyBoardTable>
+        <div className="mypage_pagnation">
+            <span className="left_triangle"></span>
+            <span className="left_subtext" onClick={props.goPrev()}>이전</span>
+            {props.num_list}
+            <span className="right_subtext" onClick={props.goNext()}>다음</span>
+            <span className="right_triangle"></span>
         </div>
+        </React.Fragment>
 }
 
 const DeleteBtn = ({deleteChecked}) =>{

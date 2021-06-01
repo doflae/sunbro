@@ -115,7 +115,7 @@ function Board({
                     <BoardTitleStyled>
                         {board.title}
                     </BoardTitleStyled>
-                    <div className="board_main">
+                    <div>
                         <MainContentComponent content={content}
                         thumbnail={board.thumbnail}
                         onOff={onOff}/>
@@ -321,6 +321,9 @@ const MainContentComponent = ({content,thumbnail,onOff,...props}) =>{
     }
 }
 
+const BoardMainStyled = styled.div`
+    background-color: rgba(0,0,0,0.02);
+`
 
 const BoardControlsStlyed = styled.div`
     position: absolute;
@@ -379,6 +382,8 @@ const DotIconStyled = styled.div`
 
 const BoardBottomButtonStyled = styled.div`
     display:flex;
+    border-top: solid 1px rgb(0,0,0,0.24);
+    border-bottom: solid 1px rgb(0,0,0,0.24);
 `
 
 const BoardThumbnailStyled = styled.div`

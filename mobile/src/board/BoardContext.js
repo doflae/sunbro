@@ -1,6 +1,8 @@
 import React from "react"
 
 export const BoardContext = React.createContext({
-    boardDetail:null,
-    setBoard:(bid)=>{}
+    boardKey:null,
+    boardUrl:null,
+    setBoardUrl:(url)=>{},
+    setBoardKey: (key)=>{},
 })

@@ -1,8 +1,8 @@
 .ql-editor {
-    height: 700px;
+    height: 600px;
 }
 .quill-blur {
-display: none;
+    display: none;
 }
 .quill{
     margin:10px 10px 10px 10px;
@@ -15,10 +15,19 @@ display: none;
     justify-content: center;
     background: black;
 }
-.ql-editor .ql-prevideo{
+.ql-img-div{
+    position: relative;
+    width:100%;
+}
+.ql-img-div img{
+    width: 100%;
+    position:absolute;
+    left:0px;
+    top:0px;
+}
+.ql-editor .video-preview{
     position: relative;
     height: 500px;
-    width: 500px;
     display: flex;
     justify-content: center;
     background: black;
@@ -48,26 +57,36 @@ display: none;
     -webkit-user-modify: read-only;
     -moz-user-modify: read-only;
 }
-.editor_submit{
-    background-color: #11698e;
-    color: #fff;
-    float: right;
-    height: 2.5rem;
-    width: 3.5rem;
-    font-size: 1rem;
-    margin: 5px 5px;
-}
-.editor_title{
-    border-top: 0px;
-    border-left: 0px;
-    border-right: 0px;
-    width: 80%;
-    font-size: 1.5rem;
-    font-weight: normal;
-    border-bottom: 1px solid rgba(94, 93, 93, 0.418);
-}
 .editor_navbar{
     padding: 10px;
     padding-top: 10px;
     padding-bottom: 10px;
+}
+.playBtn{
+    content: "";
+    width: 20px;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    border-top: 25px solid transparent;
+    border-bottom: 25px solid transparent;
+    border-left: 35px solid black;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.playBtn-2{
+    content: "";
+    width: 20px;
+    position: absolute;
+    left: calc(50% - 10px);
+    top: calc(50% - 18px);
+    border-top: 25px solid transparent;
+    border-bottom: 25px solid transparent;
+    border-left: 35px solid white;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+.playBtn-2:hover{
+    border-left:35px solid black;
 }

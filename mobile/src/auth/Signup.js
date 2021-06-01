@@ -67,18 +67,16 @@ export const Signup = withRouter(authWrapper(class extends Component{
 
 	render = () =>{
 		if(this.state.needProfile) return <Profile userDetail={this.state.userDetail}/>
-		return <div className="row">
-			<div className="col m-2">
+		return <div>
 				<SignupForm formModel={this.formModel}
 				defaultAttrs={this.defaultAttrs}
 				submitErrorCallback={this.submitError}
 				submitCallback={this.authenticate}
-				submitText="Signup"
+				submitText="회원가입"
 				errorMessage={this.state.errorMessage}
-				cancelCallback={()=> this.props.history.goBack()}
-				cancelText="Cancel"
+				cancelCallback={()=> this.props.setAuthPageOption(0)}
+				cancelText="취소"
 				/>
-			</div>
 		</div>
 	}
 }))

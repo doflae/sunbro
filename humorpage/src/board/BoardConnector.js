@@ -161,34 +161,31 @@ class BoardConnector extends Component{
     }
 }
 
+const menus = [{
+  name:"NEW",url:"/board/recently?",theme:"new_lg"
+},{
+  name:"HOT",url:"/board/rank/DAY?",theme:"hot_lg"
+},{
+  name:"TOP",url:"/board/rank/WEEK?",theme:"top_lg"
+}]
+
 const BoardZoneHeader = authWrapper(uploadWrapper(({changeMode,...props}) =>{
     const goUpload = () =>{
         if(props.user) props.onOffUploadPage(0);
         else props.setAuthPageOption(0);
     }
+    const renderBtn = () =>{
+        return menus.map((menu,key)=>{
+            <HeaderBtnStyled key = {key}
+                onClick={()=>{changeMode(menu.url)}}>
+                <BoardIconStyled theme={menu.theme}/>
+            {menu.name}
+            </HeaderBtnStyled>
+        })
+    }
     return <BoardZoneHeaderStyled>
         <HeaderBtnLeftZone>
-            <HeaderBtnStyled
-                onClick={()=>{changeMode("/board/recently?")}}>
-                <BoardIconStyled
-                theme="new_lg"
-                />
-                NEW
-            </HeaderBtnStyled>
-            <HeaderBtnStyled
-                onClick={()=>{changeMode("/board/rank/DAY?")}}>
-                <BoardIconStyled
-                theme="hot_lg"
-                />
-                HOT
-            </HeaderBtnStyled>
-            <HeaderBtnStyled
-                onClick={()=>{changeMode("/board/rank/WEEK?")}}>
-                <BoardIconStyled
-                theme="rank_lg"
-                />
-                TOP
-            </HeaderBtnStyled>
+        {renderBtn()}
         </HeaderBtnLeftZone>
         <HeaderBtnRightZone>
             <HeaderBtnStyled>

@@ -1,8 +1,8 @@
 import React, {useState,useRef} from 'react';
-import userDefaultImg from "../static/img/user_128x.png";
+import userDefaultImg from "../static/img/userDefault.png";
 import {authWrapper} from "../auth/AuthWrapper"
 import {withRouter} from 'react-router-dom'
-import Pencil from '../static/svg/pencil.svg'
+import {IconStyled} from "../MainStyled"
 import Dropzone from "react-dropzone"
 import Axios from "axios"
 import styled from "styled-components"
@@ -13,7 +13,6 @@ function MyHeader({
 }){
     const user = props.userDetail;
     const [userImg, setUserImg] = useState(user.userImg);
-    const [userImgResized, setUserImgResized] = useState({})
     const [mediaFormat, setMediaFormat] = useState(null);
     const [isChanged, setIsChanged] = useState(false);
     const dropzoneRef = useRef()
@@ -31,47 +30,27 @@ function MyHeader({
         }
     }
     const saveFile = (path) =>{
-        Object.keys(userImgResized).forEach(key=>{
-            fetch(userImgResized[key]).then(r=>r.blob()).then((blob)=>{
-                var x = new Image();
-                x.onload = () =>{
-                    const formData = new FormData();
-                    formData.append('file',blob);
-                    formData.append('path',`/${key}`+path);
-                    formData.append('needConvert',false)
-                    formData.append('needResize',key<Math.max(x.width,x.height))
-                    formData.append('mediaType',"PROFILE")
-                    Axios.post("/file/upload",formData,{
-                    headers:{
-                        'Content-Type':'multipart/form-data',
-                    }
-                    })
-                }
-                x.src = URL.createObjectURL(blob);
-            })
-        })
         fetch(userImg).then(r=>r.blob()).then(blob=>{
             const formData = new FormData();
-            formData.append('file',blob);
-            formData.append('path',path);
-            formData.append('needConvert',false)
-            formData.append('mediaType',"PROFILE")
-            Axios.post("/file/upload",formData,{
-              headers:{
-                'Content-Type':'multipart/form-data',
-              }
-            })
+            var x = new Image();
+            x.onload = () =>{
+                formData.append('file',blob);
+                formData.append('path',path);
+                formData.append('mediaType',"PROFILE")
+                formData.append('needResize',120<Math.max(x.width,x.height))
+                Axios.post("/file/upload-image",formData,{
+                  headers:{
+                    'Content-Type':'multipart/form-data',
+                  }
+                })
+            }
+            x.src = URL.createObjectURL(blob)
         })
     }
     const revoke = () =>{
         const imgURL = userImg
-        const resizedImgURL = userImgResized
         if(imgURL.startsWith("blob")){
-            console.log("revoke!")
             URL.revokeObjectURL(imgURL)
-            Object.keys(resizedImgURL).forEach(key=>{
-                URL.revokeObjectURL(resizedImgURL[key])
-            })
         }
     }
 
@@ -79,11 +58,8 @@ function MyHeader({
         await revoke()
         if(acceptFile[0]) {
             setMediaFormat(acceptFile[0].type.split("/")[1]);
-            ResizeImage(acceptFile[0],240).then(resizedImage=>{
+            ResizeImage(acceptFile[0],120).then(resizedImage=>{
                 setUserImg(URL.createObjectURL(resizedImage));
-            })
-            ResizeImage(acceptFile[0],72).then(resizedImage=>{
-                setUserImgResized({72:URL.createObjectURL(resizedImage)});
             })
             setIsChanged(true);
         }
@@ -94,14 +70,12 @@ function MyHeader({
         if(userImg.startsWith("blob")){
             filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
             saveFile(filePath)
-            
         }else{
             filePath = ""
         }
         const formData = new FormData();
         formData.append('path',filePath)
         props.request("post","/account/update/img",formData).then(res=>{
-            console.log(res)
             if(res.status===200 && res.data.success){
                 profileImgRef.current.style.margin = "";
                 setIsChanged(false)
@@ -115,19 +89,23 @@ function MyHeader({
         <MyProfile>
             <MyProfileImgZone>
                 <ProfileImgDelete onClick={imageDelete()}></ProfileImgDelete>
-                <div ref={profileImgRef} onClick={imageHandler()}>
+                <ImagePartStyled ref={profileImgRef} onClick={imageHandler()}>
                     <UserImage src={userImg} userDefaultImg={userDefaultImg}/>
-                    <PencilStyled width="20" height="20"/>
-                </div>
+                    <PencilStyled
+                        theme="pencil_sm"/>
+                </ImagePartStyled>
             </MyProfileImgZone>
             <SubmitImageBtn isChanged = {isChanged} onClick={imageSubmit}/>
         </MyProfile>
-    <span>
+    <MyProfileTextZone>
         <MyPageUserName>{user.name}</MyPageUserName>
-        <div>
-            게시물 {user.total_board_num} 개  댓글 {user.total_comment_num} 개
-        </div>
-    </span>
+        <MyProfileLogStlyed>
+            게시물 {user.total_board_num} 개
+        </MyProfileLogStlyed>
+        <MyProfileLogStlyed>
+            댓글 {user.total_comment_num} 개
+        </MyProfileLogStlyed>
+    </MyProfileTextZone>
 
     <Dropzone
         ref = {dropzoneRef}
@@ -165,24 +143,39 @@ const SubmitImageBtn = ({isChanged, onClick}) => {
     else return null;
 }
 
+
+const MyProfileTextZone = styled.span`
+    width:220px;
+`
+
 const MyProfileImg = styled.img`
-    width: 120px;
-    height: 120px;
-    border-radius: 75px;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
 `
 
 const MyProfileImgZone = styled.div`
     position: relative;
     cursor: pointer;
-    width: min-content;
+    width: 60px;
+    height: 60px;
     border: solid 1px #dddddd;
     margin: 10px;
 `
 
-const PencilStyled = styled(Pencil)`
+const ImagePartStyled = styled.div`
+    text-align: center;
+    padding: 5px;
+`
+
+const PencilStyled = styled(IconStyled)`
     position: absolute;
-    right: 0;
-    bottom: 5px;
+    right: 0px;
+    bottom: 0px;
+    opacity: 0.5;
+    ${ImagePartStyled}:hover &{
+        opacity:1.0;
+    }
 `
 
 const MyPageHeader = styled.div`
@@ -192,40 +185,47 @@ const MyPageHeader = styled.div`
 const MyProfile = styled.div`
     position:relative;
     display:flex;
+    padding: 4px;
+`
+
+const MyProfileLogStlyed = styled.div`
+    font-size:0.9em;
 `
 
 const MyPageUserName = styled.div`
-    font-size:1.3em;
-    margin:20px;
-    font-weight:700;
+    font-size: 1.2em;
+    margin: 10px 0px 10px 0px;
+    font-weight: 700;
 `
 
 const SubmitImageBtnStyled = styled.button`
-    width:80px;
-    height:30px;
-    font-size:0.8em;
-    position:absolute;
+    width: 50px;
+    height: 20px;
+    font-size: 0.5em;
+    padding: 0px;
+    position: absolute;
 `
 
 const ProfileImgDelete = styled.button`
-    position:absolute;
-    top:-10px;
-    right:-10px;
-    width: 24px;
-    height: 24px;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 16px;
+    height: 16px;
     border-radius: 18px;
     border: 0px;
-    opacity: 0.6;
+    opacity: 0.4;
     z-index: 1;
+    background-color: #fff;
     &:hover{
         opacity:1;
     }
     &::before, &::after{
-        position:absolute;
-        left: 11px;
+        position: absolute;
+        left: 7px;
         bottom: 0px;
         content: ' ';
-        height: 24px;
+        height: 16px;
         width: 2px;
         background-color: #333;
     }

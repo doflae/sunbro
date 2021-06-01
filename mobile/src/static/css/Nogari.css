@@ -1,0 +1,45 @@
+.ng-div-center{
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ng-video{
+    position:relative;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.ng-thumb{
+    position: absolute;
+    left:0px;
+    top:0px;
+}
+.ng-img-div{
+    position: relative;
+    width:100%;
+    overflow: hidden;
+}
+
+.ng-img-div img{
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    transition: opacity 1s linear;
+}
+
+.youtube-logo{
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    height: 50px;
+}
+.ng-img-div img.loaded{
+    opacity: 1;
+}
+.ng-img-small{
+    filter: blur(50px);
+    transform: scale(1);
+}

@@ -27,15 +27,20 @@ CREATE TABLE `board` (
   `author_num` int(11) DEFAULT NULL,
   `title` varchar(100) NOT NULL DEFAULT '0',
   `content` text NOT NULL DEFAULT '0',
-  `created` datetime DEFAULT current_timestamp(),
+  `created` datetime NOT NULL DEFAULT current_timestamp(),
   `updated` datetime DEFAULT NULL ON UPDATE current_timestamp(),
-  `thumbnail_img` tinytext DEFAULT NULL,
+  `thumbnail` varchar(500) NOT NULL DEFAULT '',
   `more` tinyint(1) NOT NULL,
-  `media_dir` varchar(50) DEFAULT NULL,
+  `media_dir` varchar(30) NOT NULL DEFAULT '',
+  `enabled` tinyint(4) NOT NULL DEFAULT 1,
+  `author_name` varchar(30) NOT NULL DEFAULT '',
+  `author_img` varchar(200) NOT NULL DEFAULT '',
+  `likes` int(11) NOT NULL DEFAULT 0,
+  `comments_cnt` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `FK_board_user` (`author_num`) USING BTREE,
   CONSTRAINT `FK_board_user` FOREIGN KEY (`author_num`) REFERENCES `user` (`user_num`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=167 DEFAULT CHARSET=utf8 COMMENT='자료';
+) ENGINE=InnoDB AUTO_INCREMENT=276 DEFAULT CHARSET=utf8 COMMENT='자료';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,7 +49,6 @@ CREATE TABLE `board` (
 
 LOCK TABLES `board` WRITE;
 /*!40000 ALTER TABLE `board` DISABLE KEYS */;
-INSERT INTO `board` VALUES (166,NULL,'dfbdfb','<p><img src=\"/file/get?name=/2021/03/23/S4DYMaC7zc/3aglcADtfb.gif\" style=\"max-height:100%;max-width:100%;\" class=\"image_preview\" id=\"ql\"></p><p><br></p><p>bdfbdfb</p><p><br></p><p><img src=\"/file/get?name=/2021/03/23/S4DYMaC7zc/mbxu4oiFGb.jpeg\" style=\"max-height:100%;max-width:100%;\" class=\"image_preview\" id=\"ql\"></p>','2021-03-23 13:00:49','2021-03-23 13:50:56','/file/get?name=/2021/03/23/S4DYMaC7zc/3aglcADtfbthumb.jpg',1,'S4DYMaC7zc');
 /*!40000 ALTER TABLE `board` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -60,11 +64,11 @@ CREATE TABLE `boardlikes` (
   `user_num` int(11) NOT NULL,
   `board_id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `user_num_board_id` (`user_num`,`board_id`),
   KEY `FK_likes_board` (`board_id`),
-  KEY `FK_boardlikes_user` (`user_num`),
   CONSTRAINT `FK_boardlikes_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_boardlikes_user` FOREIGN KEY (`user_num`) REFERENCES `user` (`user_num`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -88,16 +92,23 @@ CREATE TABLE `comment` (
   `board_id` bigint(20) NOT NULL,
   `author_num` int(11) DEFAULT NULL,
   `content` text NOT NULL,
-  `media` varchar(200) DEFAULT '',
   `created` datetime NOT NULL DEFAULT current_timestamp(),
   `updated` datetime DEFAULT NULL ON UPDATE current_timestamp(),
-  `parent_id` bigint(20) NOT NULL,
+  `parent_id` bigint(20) DEFAULT NULL,
+  `author_name` varchar(30) NOT NULL DEFAULT '',
+  `author_img` varchar(200) NOT NULL DEFAULT '',
+  `media` varchar(500) NOT NULL DEFAULT '',
+  `likes` int(11) NOT NULL DEFAULT 0,
+  `children_cnt` int(11) NOT NULL DEFAULT 0,
+  `media_dir` varchar(50) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `FK_comment_board` (`board_id`),
   KEY `FK_comment_user` (`author_num`),
+  KEY `FK_comment_comment` (`parent_id`),
   CONSTRAINT `FK_comment_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_comment_comment` FOREIGN KEY (`parent_id`) REFERENCES `comment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_comment_user` FOREIGN KEY (`author_num`) REFERENCES `user` (`user_num`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=129 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=260 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -121,11 +132,11 @@ CREATE TABLE `commentlikes` (
   `comment_id` bigint(20) NOT NULL,
   `user_num` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK_commentlikes_comment` (`comment_id`),
+  UNIQUE KEY `comment_id_user_num` (`comment_id`,`user_num`),
   KEY `FK_commentlikes_user` (`user_num`),
   CONSTRAINT `FK_commentlikes_comment` FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_commentlikes_user` FOREIGN KEY (`user_num`) REFERENCES `user` (`user_num`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -146,9 +157,9 @@ DROP TABLE IF EXISTS `user`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user` (
   `user_num` int(11) NOT NULL AUTO_INCREMENT,
-  `uid` varchar(30) DEFAULT NULL,
-  `password` varchar(100) DEFAULT NULL,
-  `name` varchar(30) DEFAULT NULL,
+  `uid` varchar(30) NOT NULL DEFAULT '',
+  `password` varchar(100) NOT NULL DEFAULT '',
+  `name` varchar(30) NOT NULL DEFAULT '',
   `enabled` tinyint(4) NOT NULL DEFAULT 0,
   `role` char(50) NOT NULL DEFAULT 'USER',
   `gender` tinyint(1) NOT NULL,
@@ -158,7 +169,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`user_num`) USING BTREE,
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `uid` (`uid`)
-) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -167,6 +178,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
+INSERT INTO `user` VALUES (77,'KAKAO1649742587','$2a$10$J1sPiSXupsDpYbXm5LM9U.PFiubyvohDp2yZKPwZzct0IhNlGBTVe','seono',0,'USER',0,20,'/profileImg/SCJII3n6MSFODWdOCnYJ0.jpeg','2021-03-30'),(78,'tjsh0111@daum.net','$2a$10$ut6AtQrhR8HgmIa1mZfJkOwq1DzOsPmEe5DZf6Xu4mMxEpfTIaxLe','seonnn',0,'USER',0,0,'','2021-03-30'),(91,'tjsh0111@gmail.com','$2a$10$nWkXILQE2HgX/E6y3M35Ye0hP5FbStC.djJFK84ykzxImaewn36FO','savdfvdfbfd',0,'USER',0,20,'/profileImg/cMQ4gdaqk3T1GketQythV.jpeg','2021-03-30'),(109,'testUser','test','testUser',1,'USER',0,0,'',NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -179,4 +191,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-03-30 15:35:45
+-- Dump completed on 2021-06-01 20:04:34

@@ -5,7 +5,6 @@ export class BoardProviderImpl extends Component{
     constructor(props){
         super(props)
         this.state={
-            boardDetail:null,
             boardKey:null
         }
     }
@@ -18,14 +17,8 @@ export class BoardProviderImpl extends Component{
             resolve(setKey());
         })
     }
-    setBoard = (board) =>{
-        this.setState({
-            boardDetail:board,
-        })
-    }
     render = () =>
         <BoardContext.Provider value={{...this.state,
-            setBoard:this.setBoard,
             setBoardKey:this.setBoardKey}}>
             {this.props.children}
         </BoardContext.Provider>

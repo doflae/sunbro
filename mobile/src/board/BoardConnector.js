@@ -1,99 +1,262 @@
-import React, {Component} from "react";
-import {authWrapper} from "../auth/AuthWrapper"
+import React, { Component } from 'react';
+import {WindowScroller, CellMeasurer, CellMeasurerCache, AutoSizer, List} from 'react-virtualized';
 import Board from "./Board";
+import {authWrapper} from "../auth/AuthWrapper"
+import styled from "styled-components"
+import {IconStyled} from "../MainStyled"
+import {boardWrapper} from "./BoardWrapper"
+import { observeTrigger,throttle } from '../utils/Utils';
+
+export const cache = new CellMeasurerCache({
+    defaultWidth:100,
+    fixedWidth:true
+})
+
 class BoardConnector extends Component{
     constructor(props){
-        super(props)
-
+        super(props);
+        this.listRef = React.createRef();
+        this.observer = React.createRef();
+        this.mainBoxRef = React.createRef();
+        this.lastBoard = 0;
+        this.lastElementid = 0;
+        this.lastIndex = 0;
         this.state = {
-            boardList : [],
-            last_board:0,
+            boards:[]
         };
-        this.boardElements = [];
-        this.registerRef = this.registerRef.bind(this)
+        this._measureCallbacks = {}
+        this._remeasure = this._remeasure.bind(this)
+        this.boardUrl = this.props.boardUrl
     }
 
-    registerRef = (elem) =>{
-        if(elem!==null){
-            this.boardElements.push(elem)
+    componentDidUpdate(prev){
+        if(prev.boardUrl !== this.props.boardUrl){
+            this.lastBoard = 0
+            this.setState({
+                boards:[]
+            },this.getBoard)
+            window.scrollTo({top:0,behavior:"auto"})
         }
     }
 
-    componentDidMount(){
-        this.getData();
-        var foot = document.querySelector(".footer")
-        var godownbtn = document.createElement("p")
-        godownbtn.className = "goNext"
-        godownbtn.innerText = "다음글"
-        godownbtn.addEventListener('click',this.gotoNext())
-        foot.appendChild(godownbtn)
-        this.setState({
-            lastElementid:0,
-            erazeTarget:godownbtn,
-        })
-        window.addEventListener('scroll', this.infiniteScroll);
-    }
-    
-    componentWillUnmount(){
-        window.removeEventListener('scroll', this.infiniteScroll);
-        document.querySelector(".footer").removeChild(this.state.erazeTarget)
-    }
-
-    gotoNext = () =>(e)=> {
-        e.preventDefault();
+    gotoNext = () => {
         const {documentElement, body} = document;
-        const {lastElementid} = this.state;
         const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
         const scrollBottom = scrollTop+documentElement.clientHeight
-        const boards = this.boardElements
-        for(let i = lastElementid+1; i<boards.length;i++){
-            const b = boards[i]
-            const offsetTop = b.offsetTop
-            if(offsetTop+b.offsetHeight<scrollBottom) continue
-            this.setState({
-                lastElementid:i,
-            })
-            window.scrollTo({top:offsetTop, behavior:'smooth'})
-            break;
-            
+        const onBoard = this.mainBoxRef.current.querySelectorAll(".ng-board-main")
+        let l = 0, r = onBoard.length
+        while (l<r){
+            let mid = (l+r)>>1
+            let b = onBoard[mid]
+            let offsetTop = b.offsetTop
+            if(offsetTop+b.offsetHeight<scrollBottom) l = mid+1
+            else r = mid
         }
+        const t = onBoard[l]
+        window.scrollTo({top:t.offsetTop+t.offsetHeight+50,behavior:"smooth"})
     }
 
-    getData = () => {
-        const {last_board,boardList} = this.state;
-        var resturl = '/board/recently?'
-        if(last_board!==0){
-            resturl+=`board_id=${last_board}`
+    getBoard = throttle(() =>{
+        let resturl = this.boardUrl
+        if(this.lastBoard!==0){
+            resturl+=`lastId=${this.lastBoard}`
         }
+        const {boards} = this.state
         this.props.request('get',resturl).then(res=>{
             const resData = res.data.list
-            if(0<resData.length && resData.length<11){
+            console.log(res)
+            if(0<resData.length && resData.length<6){
                 this.setState({
-                    boardList:[...boardList, ...resData],
-                    last_board:resData[resData.length-1]['id']
+                    boards:[...boards,...resData]
                 })
-            }else{
-                window.removeEventListener('scroll', this.infiniteScroll);
+                this.lastBoard = resData[resData.length-1]['id']
             }
         })
+    })
+
+    
+    nextBtnRenderer = () =>{
+        const {boards} = this.state
+        if(boards.length===0) return null;
+        return <NextBoardBtnStyled onClick={this.gotoNext}>
+            NEXT
+            <DownIconStyled/>
+        </NextBoardBtnStyled>
     }
 
-    infiniteScroll = () => {
-        const { documentElement, body } = document;
-
-        const scrollHeight = Math.max(documentElement.scrollHeight, body.scrollHeight);
-        const scrollTop = Math.max(documentElement.scrollTop, body.scrollTop);
-        const clientHeight = documentElement.clientHeight;
-
-        if (scrollTop + clientHeight >= scrollHeight) {
-            this.getData();
+    _remeasure = (idx) =>{
+        if(idx in this._measureCallbacks){
+            this._measureCallbacks[idx]();
+            this.listRef.current.recomputeRowHeights(idx)
+        }else{
+            for(let i = idx;i<cache._rowCount;i++){
+                cache.clear(i,0)
+            }
         }
     }
+
+    rowRenderer = ({ index, key, parent, style }) => {
+        const {boards} = this.state
+        const callbackMeasure = measure =>{
+            this._measureCallbacks[index] = measure
+        }
+        return (
+            <CellMeasurer cache={cache} parent={parent} key={key} columnIndex={0} rowIndex={index}>
+                {({measure})=>{
+                    callbackMeasure(measure);
+                    return <Board
+                    board={boards[index]}
+                    idx = {index}
+                    measure={this._remeasure}
+                    style={style}/>
+                }}
+            </CellMeasurer>
+        );
+    };
+
+    componentDidMount(){
+        this.getBoard()
+        if(this.observer.current){
+            observeTrigger(this.getBoard,this.observer.current);
+        }
+    }
+
     render(){
-        const boardList = this.state.boardList;
-        if(boardList.length===0) return null;
-        return boardList.map(board => <Board setRef={this.registerRef} board={board} key={board.id}/>)
+        const {boards} = this.state
+        return (
+        <React.Fragment>
+            <BoardMainBoxStyled ref={this.mainBoxRef}>
+                <WindowScroller>
+                    {({ height, scrollTop, isScrolling, onChildScroll }) => (
+                        <AutoSizer disableHeight>
+                            {({ width }) => (
+                                <List
+                                    ref={this.listRef}
+                                    autoHeight
+                                    height={height*3}
+                                    width={width}
+                                    isScrolling={isScrolling}
+                                    overscanRowCount={5}
+                                    onScroll={onChildScroll}
+                                    scrollTop={scrollTop}
+                                    rowCount={boards.length}
+                                    rowHeight={cache.rowHeight}
+                                    rowRenderer={this.rowRenderer}
+                                    deferredMeasurementCache={cache}
+                                />
+                            )}
+                        </AutoSizer>
+                    )}
+                </WindowScroller>
+            </BoardMainBoxStyled>
+            {this.nextBtnRenderer()}
+            <ObserverBoxStyled
+            ref={this.observer}
+            />
+        </React.Fragment>
+        );
     }
 }
 
-export default authWrapper(BoardConnector);
+const ObserverBoxStyled = styled.div`
+    height:300px;
+    width:100%;
+`
+
+const BoardMainBoxStyled = styled.div`
+    min-width: 496px;
+    max-width: 700px;
+    margin-left:auto;
+`
+
+const BoardIconStyled = styled(IconStyled)`
+    margin-right:5px;
+`
+
+const PencilStyled = styled(IconStyled)`
+  align-self: center;
+  cursor:pointer;
+  filter: invert(37%) sepia(90%) saturate(577%) hue-rotate(
+  185deg
+  ) brightness(98%) contrast(85%);
+`
+
+const HeaderBtnStyled = styled.div`
+    width: 100%;
+    font-weight: 700;
+    line-height: 32px;
+    font-size: 1.2em;
+    height: 100%;
+    display: flex;
+    cursor:pointer;
+    margin: 0px 5px;
+`
+const HeaderBtnLeftZone = styled.div`
+    width:fit-content;
+    float:left;
+    height:100%;
+    display:flex;
+`
+const HeaderBtnRightZone = styled.div`
+    width:fit-content;
+    float:right;
+    height:100%;
+    display:flex;
+`
+
+
+const BoardZoneHeaderStyled = styled.div`
+    min-width: 496px;
+    max-width: 700px;
+    padding: 8px;
+    height: 50px;
+    border-radius: 10px;
+    margin-left: auto;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid rgba(94,93,93,0.418);
+    margin-bottom: 4px;
+    box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
+`
+
+const NextBoardBtnStyled = styled.div`
+    position: sticky;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding-left: 10px;
+    bottom: 25px;
+    margin-left: calc(100% - 105px);
+    width: 100px;
+    height: 30px;
+    border-radius: 10px;
+    background-color: rgb(41, 128, 185);
+`
+
+const DownIconStyled = styled.div`
+    position: absolute;
+    right: 14px;
+    top: 7px;
+    width: 10px;
+    height: 10px;
+    &::before{
+        position: absolute;
+        content: ' ';
+        height: 15px;
+        right: 0px;
+        width: 5px;
+        background-color: #fff;
+        transform: rotate(45deg);
+    }
+    &::after{
+        position: absolute;
+        content: ' ';
+        height: 15px;
+        width: 5px;
+        right: 7px;
+        background-color: #fff;
+        transform: rotate(-45deg);
+    }
+`
+
+export default boardWrapper(authWrapper(BoardConnector));

@@ -16,7 +16,7 @@ export const sanitize = (dirty) => sanitizeHtml(dirty,{
       disallowedTagsMode: 'discard',
       allowedAttributes: {
         a: [ 'href', 'name', 'target', 'class' ],
-        div: ['class','frameborder','allowfullscreen'],
+        div: ['class','frameborder','allowfullscreen','style','data-*'],
         img: ['src','class','style'],
         video:['src','controls','type','style','class','tabindex','controlsList'],
         iframe:['*'],
@@ -28,8 +28,15 @@ export const sanitize = (dirty) => sanitizeHtml(dirty,{
       allowProtocolRelative: true,
       enforceHtmlBoundary: false
 })
+
 export const isEmpty = (st) => {
     return (st == null ||st.length === 0 || !st.trim());
+}
+
+export const splitCname = (content) =>{
+    const r = content.match(/<span[^>]*>@([^<]*)<\/span>/)
+    if(r) return {cname:r[1],content:content.slice(r[0].length)}
+    return {cname:null,content:content}
 }
 
 export const sanitizeHarder = (dirty) => sanitizeHtml(dirty,{
@@ -63,9 +70,10 @@ export const sanitizeUrl = (url) =>{
     if (youtubeMatch && youtubeMatch[2].length === 11) {
         return `https://www.youtube.com/embed/${youtubeMatch[2]}?showinfo=0`
     }
-    const vimeoMatch = url.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/)
-    if (vimeoMatch) { // eslint-disable-line no-cond-assign
-        return (vimeoMatch[1] || 'https') + '://player.vimeo.com/video/' + vimeoMatch[2] + '/';
+    const twitchMatch = url.match(/^(?:(https?):\/\/)?(?:www\.)?twitch\.tv\/videos\/(\d+)/)||
+                url.match(/^(?:(https?):\/\/)?(?:www\.)?player\.twitch\.tv\/\?video\=(\d+).*/)
+    if (twitchMatch) {
+        return `https://player.twitch.tv/?video=${twitchMatch[2]}&parent=127.0.0.1&autoplay=false`
     }
     return null;
 }
@@ -74,9 +82,6 @@ export const getDate = (datetime) =>{
     return datetime.replaceAll("-",".").split("T")[0]
 }
 
-export const changeDateTimeToPath = (datetime) =>{
-    return "/"+datetime.split("T")[0].replaceAll("-","/")+"/"
-}
 
 export const getTime = (datetime) =>{
     if(datetime==null) return null
@@ -93,10 +98,11 @@ export const getTime = (datetime) =>{
 }
 
 export const convertUnitOfNum = (num) =>{
+    if(num==null) return null
     if(num<1000) return num
-    else if(num<10000) return `${(num/1000).toFixed(1)} 천`
-    else if(num<1000000) return `${(num/10000).toFixed(1)} 만`
-    else return `${(num/1000000).toFixed(2)} M`
+    else if(num<10000) return `${(num/1000).toFixed(1)} K`
+    else if(num<1000000) return `${(num/10000).toFixed(1)} M`
+    else return `${(num/1000000).toFixed(2)} B`
 }
 
 export const AgeSelector = () =>{
@@ -147,54 +153,20 @@ export const dataUrltoBlob = (dataURL) =>{
 }
 
 
+//input file or dataUrl
 //return Promise=>resizedImage(blob data)
-export const ResizeImageDefault = (data) => {
-    //max-width 474px
+//사진이 더 작을 경우에만 줄임
+export const ResizeImage = (data, maxSize=400) =>{
     const fileReader = new FileReader();
     var canvas = document.createElement("canvas");
     var image = new Image();
     var resize = () => {
         var width = image.width;
         var height = image.height;
-        if(width>474){
-            height *= 474 / width;
-            width = 474;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(image,0,0,width,height);
-        var dataUrl = canvas.toDataURL(data.type);
-        return dataUrltoBlob(dataUrl);
-    }
-    return new Promise(function(ok, no){
-        if(!data.type.match(/image.*/)){
-            no(new Error("Not an Image"))
-            return;
-        }
-        fileReader.onload = (readerEvent) =>{
-            if(data.type.match(/image.gif/)){
-                image.onload = () => ok(dataUrltoBlob(readerEvent.target.result))
-            }else{
-                image.onload = () => ok(resize());
-            }
-            image.src = readerEvent.target.result;
-        };
-        fileReader.readAsDataURL(data);
-    })
-}
-
-//return Promise=>resizedImage(blob data)
-export const ResizeImage = (data, maxSize) =>{
-    const fileReader = new FileReader();
-    var canvas = document.createElement("canvas");
-    var image = new Image();
-    var resize = () => {
-        var width = image.width;
-        var height = image.height;
-        if(width>height){
+        if(width>height && width>maxSize){
             height *= maxSize / width;
             width = maxSize;
-        }else{
+        }else if(height>width && height>maxSize){
             width *= maxSize / height;
             height = maxSize;
         }
@@ -205,19 +177,30 @@ export const ResizeImage = (data, maxSize) =>{
         return dataUrltoBlob(dataUrl);
     }
     return new Promise(function(ok, no){
-        if(!data.type.match(/image.*/)){
+        if(data.type && !data.type.match(/image.*/)){
             no(new Error("Not an Image"))
             return;
         }
-        fileReader.onload = (readerEvent) =>{
-            if(data.type.match(/image.gif/)){
-                image.onload = () => ok(dataUrltoBlob(readerEvent.target.result))
-            }else{
-                image.onload = () => ok(resize());
+        if(typeof(data)==="string"){
+            var mimeString = data.split(',')[0].split(':')[1].split(';')[0]
+            if(mimeString.match(/image.gif/)){
+                return ok(dataUrltoBlob(data))
             }
-            image.src = readerEvent.target.result;
-        };
-        fileReader.readAsDataURL(data);
+            image.onload = () => ok(resize())
+            image.src=data
+        }
+        else{
+            fileReader.onload = (readerEvent) =>{
+                if(data.type.match(/image.gif/)){
+                    //gif 파일은 리사이즈 못하고 blob으로 변경
+                    image.onload = () => ok(dataUrltoBlob(readerEvent.target.result))
+                }else{
+                    image.onload = () => ok(resize());
+                }
+                image.src = readerEvent.target.result;
+            };
+            fileReader.readAsDataURL(data);
+        }
     })
 }
 
@@ -256,17 +239,16 @@ export const ResizeThumbnailImage = (data)=>{
 
 export const copyToClipboard = (text) =>{
     if (window.clipboardData && window.clipboardData.setData) {
-        // IE specific code path to prevent textarea being shown while dialog is visible.
         return window.clipboardData.setData("Text", text); 
 
     } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
         var textarea = document.createElement("textarea");
         textarea.textContent = text;
-        textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
+        textarea.style.position = "fixed";  
         document.body.appendChild(textarea);
         textarea.select();
         try {
-            return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+            return document.execCommand("copy");
         } catch (ex) {
             console.warn("Copy to clipboard failed.", ex);
             return false;
@@ -274,4 +256,39 @@ export const copyToClipboard = (text) =>{
             document.body.removeChild(textarea);
         }
     }
+}
+
+export const throttle = (fn, delay=100) =>{
+    var timer = null;
+    return ()=>{
+        var context = this;
+        var args = arguments;
+        if(!timer){
+            timer = setTimeout(()=>{
+                fn.apply(context,args);
+                timer = null;
+            },delay);
+        }
+    }
+}
+
+export const debounce = (fn,delay=1000) =>{
+    var timer = null;
+    return ()=>{
+        var context = this;
+        var args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(()=>{
+            fn.apply(context,args);
+        },delay);
+    }
+}
+
+export const observeTrigger = (fn,el) =>{
+    const Observer = new IntersectionObserver(
+        ([{isIntersecting}])=>{
+            if(isIntersecting) fn()
+        }
+    )
+    Observer.observe(el)
 }
