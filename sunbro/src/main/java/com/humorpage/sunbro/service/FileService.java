@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -104,12 +103,13 @@ public class FileService {
         File dir = new File(baseDir+mediaDir);
         if(dir.exists()){
             Matcher contentMatcher = srcPattern.matcher(contentAfter);
-            List<File> filesInFolder = Files.walk(dir.toPath())
+            List<File> filesInFolder = Files.walk(dir.toPath(),1)
                     .map(Path::toFile)
                     .collect(Collectors.toList());
 
             filesInFolder.remove(new File(baseDir+mediaDir+"/cmt"));
-
+            filesInFolder.remove(new File(baseDir+mediaDir));
+            filesInFolder.stream().map(File::toString).forEach(log::info);
             while(contentMatcher.find()){
                 if(contentMatcher.group(2).equals("m3u8")){
                     String file = contentMatcher.group(1);

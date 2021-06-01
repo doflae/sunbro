@@ -33,7 +33,7 @@ function Board({
     const id = board.id
 
     //todo:update후 바로 적용
-    const UpdateBoard = ()=> async (e)=>{
+    const UpdateBoard = () =>{
         props.setBoardKey(id).then(()=>{
             props.onOffUploadPage(1)
         })
@@ -50,7 +50,7 @@ function Board({
         }
     },[])
 
-    const DeleteBoard = ()=>(e)=>{
+    const DeleteBoard = () =>{
         if(window.confirm("삭제하시겠습니까?")){
             const formData = new FormData();
             formData.append("boardList",[id])
@@ -152,7 +152,7 @@ function Board({
                     <CommentBox 
                         board_id={id}
                         comments={board.comments}
-                        mediaDir = {board.mediaDir+"/cmt/"}
+                        mediaDir = {board.mediaDir+"/cmt"}
                         failedHandler={()=>{setIsDeleted(true)}}/>
                 </BoardStyled>
             </BoardPaddingStyled>
@@ -267,8 +267,8 @@ const BoardControlBtn = ({setDUpBtnOnOff, dUpBtnOnOff}) =>{
 const BoardControls = ({btnOnOff, isAuthor, UpdateBoard, DeleteBoard}) =>{
     if(isAuthor && btnOnOff){
         return <BoardControlsStlyed>
-            <UpdateDeleteBtnStyled onClick={UpdateBoard()}>수정</UpdateDeleteBtnStyled>
-            <UpdateDeleteBtnStyled onClick={DeleteBoard()}>삭제</UpdateDeleteBtnStyled>
+            <UpdateDeleteBtnStyled onClick={UpdateBoard}>수정</UpdateDeleteBtnStyled>
+            <UpdateDeleteBtnStyled onClick={DeleteBoard}>삭제</UpdateDeleteBtnStyled>
         </BoardControlsStlyed>
     }
     return null;

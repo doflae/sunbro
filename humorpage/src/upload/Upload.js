@@ -5,7 +5,7 @@ import {withRouter} from "react-router-dom"
 import {authWrapper} from "../auth/AuthWrapper"
 import {uploadWrapper} from "./UploadWrapper";
 import Axios from "axios"
-import {getToday, 
+import {
   getRandomGenerator,
   isEmpty, 
   ResizeThumbnailImage, 
@@ -26,8 +26,6 @@ icons['image'] = ReactDomServer.renderToString(<IconStyled theme="image_sm"/>);
 
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
 
-const Video = Quill.import('formats/video');
-const IMG = Quill.import('formats/image');
 const BlockEmbed = Quill.import('blots/block/embed');
 const youtubePattern = /https:\/\/www\.youtube\.com\/embed\/([^?.]*)\?.*/g
 
@@ -48,7 +46,7 @@ class MediaBlot extends BlockEmbed{
         div.send = async (filePath,data=null,isThumb=false) =>{
           div.removeAttribute('id')
           if(isThumb){
-            const src = mediaElem.getAttribute("src");
+            const src = value;
             const Id = youtubePattern.exec(src)
             const img = new Image()
             const thumb = document.createElement("div")
@@ -77,7 +75,7 @@ class MediaBlot extends BlockEmbed{
     }
 
     static value(node){
-      return node.getAttribute('src');
+      return node.getAttribute("src")
     }
 }
 
@@ -85,17 +83,20 @@ MediaBlot.blotName = "myiframe";
 MediaBlot.tagName = "iframe";
 Quill.register("formats/myiframe",MediaBlot,false);
 
-class CustomImage extends IMG{
+class CustomImage extends BlockEmbed{
   static create(value){
-    const node = document.createElement('div')
+    const node = document.createElement("div");
     const image = new Image();
-    image.src = this.getUrl(value)
-    this.getSmUrl(node, value)
     image.onload = () => {
       const ratio = Math.ceil10(image.naturalWidth/image.naturalHeight,-4)
-      node.setAttribute("style",`max-width:${image.naturalWidth}px;aspect-ratio:${ratio};`)
+      const width = image.naturalWidth
+      node.setAttribute("style",`max-width:${width}px;aspect-ratio:${ratio};`)
       node.className="ql-img-div"
+      image.onload = null;
     }
+    image.src = this.getUrl(value)
+    this.getSmUrl(node, value)
+    node.dataset.lg=image.getAttribute("src")
     node.appendChild(image)
     node.setAttribute("id","ql")
     node.classList.add("image-preview")
@@ -106,11 +107,11 @@ class CustomImage extends IMG{
       let blob = await fetch(image.src).then(r=>r.blob())
       const fileName = getRandomGenerator(10)
       const newPath = filePath+fileName
+      node.className = "ng-img-div"
+      image.className = "ng-img-small"
       if(image.src.startsWith("blob")){
         const OriginalFilePath = newPath+"."+blob.type.split("/")[1]
         const smallFilePath = newPath+"27."+blob.type.split("/")[1]
-        image.className = "ng-img-small"
-        node.className = "ng-img-div"
         const dataset = node.dataset
         image.src = "/api/file/get?name="+OriginalFilePath
         this.save(blob,OriginalFilePath)
@@ -172,7 +173,7 @@ class CustomImage extends IMG{
           })
           return
         }
-        node.dataset.small = url.replace("=","=/27")
+        node.dataset.small = url.replace(".","27.")
         return
       }
       else if(url.small){
@@ -197,14 +198,22 @@ class CustomImage extends IMG{
     }
     else return null;
   }
+  static value(node){
+    if(node.className==="ng-img-small") return node.parentElement.dataset.lg;
+    return null;
+  }
 }
+
 CustomImage.blotName = 'myimage';
+CustomImage.tagName = 'img';
 
 Quill.register("formats/myimage",CustomImage,false);
 
-class CustomVideo extends Video{
+class CustomVideo extends BlockEmbed{
   static create(value){
     const node = super.create();
+    node.setAttribute('frameborder',"0")
+    node.setAttribute('allowfullscreen',"true")
     const video = document.createElement('video')
     node.setAttribute("id","ql")
     const temp = document.createElement('div')
@@ -284,10 +293,6 @@ class CustomVideo extends Video{
     })
   }
 
-  static value(node){
-    return node.firstElementChild.getAttribute('src');
-  }
-
   static sanitize(url){
     if(url!=null) {
       if(typeof(url)==="string"){
@@ -296,6 +301,11 @@ class CustomVideo extends Video{
       else return URL.createObjectURL(url);
     }
     else return null;
+  }
+
+  static value(node){
+    console.log(node)
+    return null;
   }
 };
 
@@ -425,7 +435,7 @@ class Upload extends Component {
               const blob = dataUrltoBlob(dataURL);
               const data = {blob:blob,name:_file.name}
               quill.insertEmbed(range.index,"myvideo",data,'user');
-              quill.setSelection(range.index + 2);
+              quill.setSelection(range.index + 1);
               quill.focus();
             }
             return reader.readAsDataURL(_file);
@@ -436,7 +446,7 @@ class Upload extends Component {
               ResizeImage(blob,27).then(small=>{
                 const data = {origin:blob,small:small}
                 quill.insertEmbed(range.index,"myimage",data,'user');
-                quill.setSelection(range.index+2);
+                quill.setSelection(range.index + 1);
                 quill.focus();
               })
             }
@@ -468,8 +478,7 @@ class Upload extends Component {
         handlers: { image : this.imageHandler,
           mycustom : this.videoHandler
         }
-      },
-      clipboard: { matchVisual: false }
+      }
     };
   
     formats = [

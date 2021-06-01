@@ -167,7 +167,7 @@ public class BoardController {
             boardDetailList = boardDetailRepository.findByIdLessThanOrderByIdDesc(lastId, PageRequest.of(0,5));
         }
         boardService.setTransientBoard(boardDetailList,authentication);
-        boardService.getTopNComment(boardDetailList,3L,authentication);
+        boardService.getTopNComment(boardDetailList,3L);
         return responseService.getListResult(boardDetailList);
     }
 
@@ -180,7 +180,7 @@ public class BoardController {
                 redisRankingService.getBoardRanking(rankType,lastId,5L);
         List<BoardDetail> boardDetailList = boardDetailRepository.findByIdInOrderByLikesDesc(boardIdList);
         boardService.setTransientBoard(boardDetailList,authentication);
-        boardService.getTopNComment(boardDetailList,3L,authentication);
+        boardService.getTopNComment(boardDetailList,3L);
         return responseService.getListResult(boardDetailList);
     }
 

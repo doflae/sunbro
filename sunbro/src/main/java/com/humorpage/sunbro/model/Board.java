@@ -35,7 +35,7 @@ public class Board {
     @Column(name = "thumbnail")
     private String thumbnail="";
 
-    @Column(name = "created",insertable = false)
+    @Column(name = "created",insertable = false, updatable = false)
     private LocalDateTime created;
 
     @Column(name = "more")

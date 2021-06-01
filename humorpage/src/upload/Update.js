@@ -1,4 +1,5 @@
-import ReactQuill from "react-quill"
+import ReactQuill, { Quill } from "react-quill"
+import ReactDOM from "react-dom"
 import React,{Component,createRef} from "react"
 import Dropzone from "react-dropzone"
 import {withRouter} from "react-router-dom"
@@ -7,11 +8,61 @@ import {boardWrapper} from "../board/BoardWrapper"
 import {uploadWrapper} from "./UploadWrapper"
 import Axios from "axios"
 import {
+  dataUrltoBlob,
   isEmpty,
+  ResizeImage,
   sanitizeUrl} from "../utils/Utils"
 import { ValidationError } from "../forms/ValidationError"
 import * as Styled from "./Styled";
+import ReactHlsPlayer from "react-hls-player";
+
 const __ISMSIE__ = navigator.userAgent.match(/Trident/i) ? true : false;
+
+const BlockEmbed = Quill.import('blots/block/embed');
+
+class UpdateVideo extends BlockEmbed{
+  static create(value){
+    const node = super.create();
+    const img = new Image();
+    img.src = value.src;
+    img.className="ng-thumb"
+    node.className="ng-video"
+    node.setAttribute("id","ql")
+    node.dataset.url = value.url
+    node.setAttribute("style",value.style)
+    const playBtn = document.createElement("div")
+    playBtn.className="playBtn-2"
+    playBtn.onclick = () =>{
+      playBtn.style.display="none";
+      node.removeChild(img)
+      ReactDOM.render(<ReactHlsPlayer
+        src={node.dataset.url}
+        autoPlay={true}
+        controls={true}
+        width="auto"
+        height="auto"/>,node)
+    }
+    node.removeAttribute("src")
+    node.appendChild(img)
+    node.appendChild(playBtn)
+    node.send = async (filePath,data,isThumb=false) =>{
+      if(isThumb) data.append("thumbnail",node.outerHTML)
+    }
+    return node;
+  }
+  static value(node){
+    if(node.className==="ng-video"){
+      return {src:node.firstElementChild.getAttribute("src"),
+      style:node.getAttribute("style"),
+      url:node.dataset.url}
+    }
+    return null;
+  }
+}
+
+UpdateVideo.blotName = "upvideo";
+UpdateVideo.tagName = "div";
+Quill.register("formats/upvideo",UpdateVideo,false);
 
 
 class Update extends Component {
@@ -37,20 +88,13 @@ class Update extends Component {
       this.quill = quill.root     
       const tooltip = quill.theme.tooltip;
       const bgTarget = this.props.bgRef.current
-      if(bgTarget) bgTarget.addEventListener('click',this.hiddenPage());
-      quill.clipboard.addMatcher("DIV",(node,delta)=>{
-        const c = node.className
-        if(c.endsWith("video")){
-          delta.insert({'myvideo':node.firstElementChild.getAttribute('src')})
-        }
-        return delta;
-      })
+      if(bgTarget) bgTarget.addEventListener('click',this.hiddenPage);
       tooltip.save = () =>{
         const url = sanitizeUrl(tooltip.textbox.value)
         if(url!=null) {
           const range = tooltip.quill.selection.savedRange
           quill.insertEmbed(range.index,'myiframe',url,'user');
-          quill.setSelection(range.index + 2)
+          quill.setSelection(range.index + 1)
           quill.focus();
         }
         tooltip.hide();
@@ -66,13 +110,12 @@ class Update extends Component {
 
     getBoardDetail = () =>{
       const quill = this.quillRef.getEditor();
-      this.props.request("get",`/board/simple/${this.props.boardKey}`)
+      this.props.request("get",`/board/get/${this.props.boardKey}`)
       .then(res=>{
           if(res.status===200 && res.data.success){
-            console.log(res.data.data)
               this.titleRef.current.value = res.data.data.title
               this.boardDetail = res.data.data
-              quill.clipboard.dangerouslyPasteHTML(this.boardDetail.content)
+              quill.clipboard.dangerouslyPasteHTML(this.boardDetail.content,'user')
           }else{
               alert("해당 글의 작성자가 아닙니다.")
               this.props.history.goBack();
@@ -111,7 +154,7 @@ class Update extends Component {
       //썸네일은 0.5배로 min height 240 max height 500
       //썸네일 저장소는 사이즈로 구분안되기 때문에 thumb/...로 변경
       if(isMore && mediaElem!==null){
-        mediaElem.send(filePath,data,true)
+        await mediaElem.send(filePath,data,true)
       }
       const mediaElems = this.quill.querySelectorAll("#ql")
       const queries = Object.values(mediaElems).map(async media=> await media.send(filePath))
@@ -124,7 +167,6 @@ class Update extends Component {
         data.append("authorImg",user.userImg?user.userImg:"")
         data.append('title',title)
         data.append('content',content)
-        data.append('mediaDir',this.mediaDir)
         data.append('more',isMore)
         data.append('id',this.boardDetail.id)
         data.append('mediaDir',this.boardDetail.mediaDir)
@@ -169,7 +211,7 @@ class Update extends Component {
               const blob = dataUrltoBlob(dataURL);
               const data = {blob:blob,name:_file.name}
               quill.insertEmbed(range.index,"myvideo",data,'user');
-              quill.setSelection(range.index + 2);
+              quill.setSelection(range.index + 1);
               quill.focus();
             }
             return reader.readAsDataURL(_file);
@@ -180,7 +222,7 @@ class Update extends Component {
               ResizeImage(blob,27).then(small=>{
                 const data = {origin:blob,small:small}
                 quill.insertEmbed(range.index,"myimage",data,'user');
-                quill.setSelection(range.index+2);
+                quill.setSelection(range.index + 1);
                 quill.focus();
               })
             }
@@ -212,16 +254,14 @@ class Update extends Component {
         handlers: { image : this.imageHandler,
           mycustom : this.videoHandler
         }
-      },
-      clipboard: {
-        matchVisual: false,
-       }
+      }
     };
   
     formats = [
       "myimage",
       "myiframe",
-      "myvideo"
+      "myvideo",
+      "upvideo"
     ];
 
   onChangeContents = (contents) => {

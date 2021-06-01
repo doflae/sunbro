@@ -65,14 +65,15 @@ public class BoardService {
 
     public void getTopNComment(
             List<BoardDetail> boardDetailList,
-            Long page_size,
-            Authentication authentication)
+            Long page_size)
     {
             boardDetailList.forEach(boardDetail -> {
-                boardDetail.setComments(
-                        commentRepository.findByIdIn(
-                                redisRankingService.getCommentRanking(
-                                    boardDetail.getId(),0L,page_size)));
+                List<Long> ids =
+                        redisRankingService.getCommentRanking(
+                                boardDetail.getId(),0L,page_size);
+                if(!ids.isEmpty()){
+                    boardDetail.setComments(commentRepository.findByIdIn(ids));
+                }
             });
     }
 
