@@ -1,6 +1,5 @@
 package com.humorpage.sunbro.utils;
 
-import lombok.extern.slf4j.Slf4j;
 import net.bramp.ffmpeg.FFmpeg;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.builder.FFmpegBuilder;
@@ -10,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 
-@Slf4j
 @Component
 public class FFMpegVideoConvert {
 

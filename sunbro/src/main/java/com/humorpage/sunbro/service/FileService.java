@@ -74,7 +74,7 @@ public class FileService {
                 Path tempFile = temporaryFileStore.store(data);
                 int maxSize;
                 if (mediaType == MediaType.PROFILE) {
-                    maxSize = 72;
+                    maxSize = 120;
                 } else {
                     maxSize = 100;
                 }
@@ -109,7 +109,6 @@ public class FileService {
 
             filesInFolder.remove(new File(baseDir+mediaDir+"/cmt"));
             filesInFolder.remove(new File(baseDir+mediaDir));
-            filesInFolder.stream().map(File::toString).forEach(log::info);
             while(contentMatcher.find()){
                 if(contentMatcher.group(2).equals("m3u8")){
                     String file = contentMatcher.group(1);
@@ -133,40 +132,11 @@ public class FileService {
         }
     }
 
-    //게시글 삭제시 mediaDir, created 조합 후 file path 찾아 삭제
     public void deleteDir(String target) throws IOException{
         File f = new File(baseDir+target);
         FileUtils.deleteDirectory(f);
     }
 
-
-    //댓글, 프로필, 썸네일은 변경 혹은 삭제 시 리사이징 된 파일도 삭제
-    /*TODO 미디어 파일 경로 수정 및 mediaType 제거
-        프로필 사진은 항상 120px로 고정 원본 제거
-     */
-    public void deleteFiles(String path, MediaType mediaType){
-        List<String> deleteList = new ArrayList<>(Collections.singletonList(path));
-        switch (mediaType){
-            case COMMENT -> {
-                deleteList.add("/120"+path);
-            }
-            case PROFILE -> {
-                deleteList.add("/120"+path);
-                deleteList.add("/72"+path);
-            }
-            case THUMBNAIL -> {
-                deleteList.add("/240"+path);
-            }
-        }
-        deleteList.forEach(target->{
-            File f = new File(baseDir+target);
-            try{
-                temporaryFileStore.delete(f.toPath());
-            }catch (Exception ignored){
-
-            }
-        });
-    }
 
     public ResponseEntity<byte[]> getFile(String name){
         try{

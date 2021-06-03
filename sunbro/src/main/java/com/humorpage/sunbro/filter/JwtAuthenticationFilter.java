@@ -8,7 +8,6 @@ import com.humorpage.sunbro.service.JwtTokenService;
 import com.humorpage.sunbro.service.RedisTokenService;
 import com.humorpage.sunbro.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -24,16 +23,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-// import 생략
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserService userService;
-
     private final JwtTokenService jwtTokenService;
-
     private final CookieService cookieService;
-
     private final RedisTokenService redisTokenService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -42,12 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDE_URL = Arrays.asList("/api/file/get");
 
     //Provider 주입
-    public JwtAuthenticationFilter(JwtTokenService jwtTokenService, CookieService cookieService, RedisTokenService redisTokenService, UserService userService) {
+    public JwtAuthenticationFilter(UserService userService, JwtTokenService jwtTokenService, CookieService cookieService, RedisTokenService redisTokenService){
+        this.userService = userService;
+        this.jwtTokenService = jwtTokenService;
         this.cookieService = cookieService;
         this.redisTokenService = redisTokenService;
-        this.jwtTokenService = jwtTokenService;
-        this.userService = userService;
-    }
+    };
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request){

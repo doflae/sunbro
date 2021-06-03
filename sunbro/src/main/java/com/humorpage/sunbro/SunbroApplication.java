@@ -19,10 +19,10 @@ public class SunbroApplication {
 		SpringApplication.run(SunbroApplication.class, args);
 	}
 
-	@Bean
-	public FilterRegistrationBean registration(JwtAuthenticationFilter filter){
-		FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
-		registrationBean.setEnabled(false);
-		return registrationBean;
-	}
+//	@Bean
+//	public FilterRegistrationBean registration(JwtAuthenticationFilter filter){
+//		FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
+//		registrationBean.setEnabled(false);
+//		return registrationBean;
+//	}
 }

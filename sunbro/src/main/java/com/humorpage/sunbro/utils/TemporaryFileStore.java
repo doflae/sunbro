@@ -13,9 +13,6 @@ import java.nio.file.StandardCopyOption;
 import static java.nio.file.Files.*;
 import static java.util.Objects.nonNull;
 
-/**
- * Simple temporary files implementation of {@link ResourceStore}
- */
 @Component
 public class TemporaryFileStore implements ResourceStore {
 

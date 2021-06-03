@@ -17,12 +17,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+//TODO: OrderBy DB에서 하지말고 WAS에서 하도록 변경 (자원 효율성)
 @Transactional(readOnly = true)
 public interface BoardDetailRepository extends JpaRepository<BoardDetail, Long> {
 
     Optional<BoardDetail> findById(Long board_id);
-
-    List<BoardDetail> findByIdIn(List<Long> board_ids);
 
     List<BoardDetail> findByIdInOrderByLikesDesc(List<Long> board_ids);
 
@@ -31,8 +30,6 @@ public interface BoardDetailRepository extends JpaRepository<BoardDetail, Long> 
     List<BoardDetail> findByContentContaining(String content);
 
     List<BoardDetail> findByTitleContainingOrContentContaining(String title, String content);
-
-    List<BoardDetail> findByCreatedGreaterThan(LocalDateTime localDateTime);
 
     List<BoardDetail> findByIdLessThanOrderByIdDesc(Long board_id, Pageable pageable);
 

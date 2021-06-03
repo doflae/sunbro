@@ -27,6 +27,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name="user")
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
@@ -55,11 +56,6 @@ public class User implements UserDetails {
     @Column(name="age")
     private int age;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @Column(name="joined")
-    @CreationTimestamp
-    @JsonIgnore
-    private LocalDateTime created;
 
     @Formula("(select count(*) from board b where b.author_num=user_num)")
     private int total_board_num;
