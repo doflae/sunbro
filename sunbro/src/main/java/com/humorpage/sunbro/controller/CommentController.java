@@ -13,6 +13,7 @@ import com.humorpage.sunbro.service.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -51,39 +52,37 @@ public class CommentController {
                                           @RequestParam(value = "parent_id", required = false) Long parent_id,
                                           @RequestParam(value = "comment_id", required = false, defaultValue = "0") Long comment_id,
                                           Authentication authentication){
+        Page<Comment> commentPage=null;
         List<Comment> commentList=null;
-        int more = 0;
         int page_size = 10;
         //depth가 0인 댓글
         if(board_id!=null) {
             if (comment_id == 0) {
                 page_size = 3;
             }
-            commentList = commentRepository.findByBoardIdAndIdGreaterThanAndParentIdIsNullOrderByIdAsc(board_id, comment_id, PageRequest.of(0, page_size+1));
+            commentPage = commentRepository.findByBoardIdAndIdGreaterThanAndParentIdIsNullOrderByIdAsc(board_id, comment_id, PageRequest.of(0, page_size));
         }
         //대댓글 -> board id 대신 parent comment id가 주어짐
         else if(parent_id!=null){
             if (comment_id == null){
-                commentList = commentRepository.findByParentIdIsOrderByIdAsc(parent_id, PageRequest.of(0,page_size+1));
+                commentPage = commentRepository.findByParentIdIsOrderByIdAsc(parent_id, PageRequest.of(0,page_size));
             }else{
-                commentList = commentRepository.findByParentIdIsAndIdGreaterThanOrderByIdAsc(parent_id, comment_id, PageRequest.of(0,page_size+1));
+                commentPage = commentRepository.findByParentIdIsAndIdGreaterThanOrderByIdAsc(parent_id, comment_id, PageRequest.of(0,page_size));
             }
         }
         try{
-            assert commentList != null;
-            if(commentList.size()==page_size+1){
-                more = 1;
-                commentList.remove(page_size);
-            }
+            assert commentPage != null;
+            commentList = commentPage.getContent();
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            HashSet<Long> commentlikesList= new HashSet<>(commentLikesRepository.findByUserCustom(userSimple.getUserNum()));
+            HashSet<Long> commentLikesList= new HashSet<>(commentLikesRepository.findByUserCustom(userSimple.getUserNum()));
             commentList.forEach(comment -> {
-                comment.setLike(commentlikesList.contains(comment.getId()));
+                comment.setLike(commentLikesList.contains(comment.getId()));
             });
-        }catch (NullPointerException|AssertionError ignored){
+            return responseService.getDetailListResult(true,commentPage.hasNext() ? 1 : 0,"",commentList);
+        }catch (NullPointerException | AssertionError ignored){
 
         }
-        return responseService.getDetailListResult(true,more,"",commentList);
+        return responseService.getDetailListResult(true, 0,"",commentList);
     }
 
     //삭제된 글, 댓글에 대한 삽입 시 글이 삭제되었는지, 댓글이 삭제되었는지는 구별하지 않는다.

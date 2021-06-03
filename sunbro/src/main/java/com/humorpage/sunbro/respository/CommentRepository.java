@@ -1,6 +1,7 @@
 package com.humorpage.sunbro.respository;
 
 import com.humorpage.sunbro.model.Comment;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,9 +18,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findByIdIn(List<Long> ids);
 
-    List<Comment> findByParentIdIsOrderByIdAsc(Long pid, Pageable pageable);
+    Page<Comment> findByParentIdIsOrderByIdAsc(Long pid, Pageable pageable);
+    Page<Comment> findByParentIdIsAndIdGreaterThanOrderByIdAsc(Long pid, Long comment_id, Pageable pageable);
 
-    List<Comment> findByParentIdIsAndIdGreaterThanOrderByIdAsc(Long pid, Long comment_id, Pageable pageable);
-
-    List<Comment> findByBoardIdAndIdGreaterThanAndParentIdIsNullOrderByIdAsc(Long board_id, Long comment_id, Pageable pageable);
+    Page<Comment> findByBoardIdAndIdGreaterThanAndParentIdIsNullOrderByIdAsc(Long board_id, Long comment_id, Pageable pageable);
 }
