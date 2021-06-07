@@ -197,20 +197,17 @@ export const CommentLikeBtn = ({comment_id,board_id,like,likes}) =>{
 	}
 
 	const debounceLike = () =>{
-		if(likeCnt.like){
-			Axios.get(`/comment/like/off?comment-id=${comment_id}&board-id${board_id}`).then(res=>{
-				if(res.status===200 && !res.data.success){
-					history.push("/login")
-				}
-			})
-		}else{
-			Axios.get(`/comment/like/on?comment-id=${comment_id}&board-id${board_id}`).then(res=>{
-				if(res.status===200 && !res.data.success){
-					history.push("/login")
-				}
-			})
-		}
+		const formData = new FormData();
+		formData.append("id",comment_id)
+		formData.append("boardId",board_id)
+		formData.append("onOff",!likeCnt.like)
+		Axios.post("/comment/like",formData).then(res=>{
+			if(res.status===200 && !res.data.success){
+				history.push("/login")
+			}
+		})
 	}
+	
 	if(likeCnt.like){
 		return <Styled.LikeStyled>
 		<Styled.LikeBtnStyled

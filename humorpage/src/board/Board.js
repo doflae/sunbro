@@ -216,20 +216,17 @@ const LikeBtn = authWrapper(({id,created,like,likes,...props}) =>{
         debounce(debounceLike)();
     }
     const debounceLike = () =>{
-        if(onOffLike.onOff){
-            Axios.get(`/board/like/off?id=${id}&created=${created}`).then(res=>{
-                if (!res.data.success){
-                    props.setAuthPageOption(0);
-                }
-            })
-        }else{
-            Axios.get(`/board/like/on?id=${id}&created=${created}`).then(res=>{
-                if (!res.data.success){
-                    props.setAuthPageOption(0);
-                }
-            })
-        }
+        const formData = new FormData();
+        formData.append("id",id)
+        formData.append("onOff",!onOffLike.onOff)
+        formData.append("created",created)
+        Axios.post("/board/like",formData).then(res=>{
+            if (!res.data.success){
+                props.setAuthPageOption(0);
+            }
+        })
     }
+
     if(onOffLike.onOff===true){
         return <LikeStyled
             onClick={likeHandler}>

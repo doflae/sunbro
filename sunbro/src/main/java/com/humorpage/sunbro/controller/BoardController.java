@@ -130,28 +130,17 @@ public class BoardController {
         }
     }
 
-    @ApiOperation(value = "좋아요", notes="board_id를 받아 좋아요 on")
-    @GetMapping(value = "/like/on")
-    CommonResult likeBoard(@RequestParam(value = "id") Long board_id,
+    @PostMapping(value = "/like")
+    CommonResult likeBoard(Long id, Boolean onOff,
                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime created,
                            Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple)authentication.getPrincipal();
-            likeService.saveLikeBoard(userSimple.getUserNum(),board_id,created);
-            return responseService.getSuccessResult();
-        }catch (NullPointerException e){
-            return responseService.getDetailResult(false, -1, "Token Expired");
-        }
-    }
-
-    @ApiOperation(value="좋아요 취소",notes = "board_id를 받아 좋아요 off")
-    @GetMapping(value = "/like/off")
-    CommonResult likeCancelBoard(@RequestParam(value = "id") Long board_id,
-                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime created,
-                                 Authentication authentication){
-        try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            likeService.deleteLikeBoard(userSimple.getUserNum(),board_id,created);
+            if(onOff){
+                likeService.saveLikeBoard(userSimple.getUserNum(),id,created);
+            }else{
+                likeService.deleteLikeBoard(userSimple.getUserNum(),id,created);
+            }
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");

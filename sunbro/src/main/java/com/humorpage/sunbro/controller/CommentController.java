@@ -102,31 +102,19 @@ public class CommentController {
         }
     }
 
-    @ApiOperation(value = "댓글 좋아요", notes = "comment_id를 받아 좋아요 on")
-    @GetMapping(value = "/like/on")
-    public CommonResult likeComment(@RequestParam("comment-id") Long commentId,
-                                    @RequestParam("board-id") Long boardId,
+    @PostMapping(value = "/like")
+    public CommonResult likeComment(Long id, Long boardId, Boolean onOff,
                                     Authentication authentication){
         try{
             UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            likeService.saveLikeComment(userSimple.getUserNum(),commentId,boardId);
+            if(onOff){
+                likeService.saveLikeComment(userSimple.getUserNum(),id,boardId);
+            }else{
+                likeService.deleteLikeComment(userSimple.getUserNum(),id,boardId);
+            }
             return responseService.getSuccessResult();
         }catch (NullPointerException e){
             return responseService.getDetailResult(false, -1, "Token Expired");
-        }
-    }
-
-    @ApiOperation(value = "댓글 좋아요 취소", notes = "comment_id를 받아 좋아요 off")
-    @GetMapping(value = "/like/off")
-    public CommonResult likeCancelComment(@RequestParam("comment-id") Long commentId,
-                                          @RequestParam("board-id") Long boardId,
-                                          Authentication authentication){
-        try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            likeService.deleteLikeComment(userSimple.getUserNum(),commentId,boardId);
-            return responseService.getSuccessResult();
-        }catch(NullPointerException e){
-            return responseService.getDetailResult(false, -1, "Token expired");
         }
     }
 

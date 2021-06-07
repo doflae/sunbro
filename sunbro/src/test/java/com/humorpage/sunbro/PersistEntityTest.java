@@ -13,6 +13,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Slf4j
 @DataJpaTest
 @RunWith(SpringRunner.class)
@@ -27,6 +30,18 @@ public class PersistEntityTest {
 
     @Test
     public void JPATest(){
+        cacheTest();
+    }
+
+    public void cacheTest(){
+        List<Long> ids = new ArrayList<>();
+        for (int i = 0; i<5;i++){
+            ids.add(putData());
+        }
+        idInQueryCached(ids);
+    }
+
+    public void lazyWriteTest(){
         Comment comment = new Comment();
         comment.setBoardId(276L);
         comment.setContent("test");
@@ -38,6 +53,19 @@ public class PersistEntityTest {
         commentRepository.save(comment);
         log.info("식별자 id가 주어지지 않고 IDENTITY 전략을 사용하기에 insert 쿼리 전송됨");
         hasLazyWrite(comment.getId());
+    }
+
+    public Long putData(){
+        Comment comment = new Comment();
+        comment.setBoardId(276L);
+        comment.setContent("test");
+        comment.setAuthorNum(91L);
+        comment.setAuthorImg("test");
+        comment.setAuthorName("test");
+        comment.setMedia("");
+        comment.setMediaDir("");
+        commentRepository.save(comment);
+        return comment.getId();
     }
 
     public void isReallyCached(){
@@ -53,5 +81,11 @@ public class PersistEntityTest {
         comment.setMediaDir("updated");
         commentRepository.save(comment);
         log.info("save이후 식별자가 주어졌기에 update쿼리는 쓰기 지연될 것이다");
+    }
+
+    public void idInQueryCached(List<Long> ids){
+        for(int i = 0 ;i<5;i++){
+            List<Comment> commentList = commentRepository.findByIdIn(ids);
+        }
     }
 }

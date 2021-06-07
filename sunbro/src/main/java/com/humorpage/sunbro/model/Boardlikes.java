@@ -9,11 +9,6 @@ import javax.persistence.*;
 @Table(name="boardlikes")
 public class Boardlikes {
 
-    @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(name = "board_id")
     private Long boardId;
 

@@ -39,14 +39,16 @@ public class LikeService {
      * -> like save와 BII 중간에 글 삭제 명령을 수행할 수 없음
      * like 저장 전에 삭제했다면? DataIntegrityViolationException 발생 return
      * 트랜잭션처리했다는 가정하에
-     * JPA의 쓰기지연? -> ID 생성전략이 IDENTITY면 insert시 바로 쿼리 전송
+     * JPA의 쓰기지연? -> ID 생성전략이 IDENTITY면 create시 바로 쿼리 전송
      * like에서 userNum, boardId로 식별하면? (id를 삭제)
      * board.setLikes(board.getLikes+1)로 BII를 변경 후 BII를 먼저 수행하도록 하면(쓰기지연)
      * getLike이후 해당 row에 대해 lock을 걸어야 하기 때문에 더 많은 비용 발생할 것으로 보인다.
      * 낙관적 lock을 걸면? -> 낙관적 락은 해당 row에 대해 경합이 발생할 확률이 적을 것(거의 0)이라고 보고 락을 거는 것이라
      * 비관적 lock을 걸어야 한다.
-     * 그냥 어떤 이유로 like save와 BII 사이에 오류가 발생하면 ? 그정도까지의 신뢰성은 포기한다.
+     * 그냥 어떤 이유로 like save와 BII 사이에 오류가 발생하면 ?
+     * 어차피 트랜잭션이 기본적으로 걸려있기 때문에 고립 레벨을 낮추어서 생성하자
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void saveLikeBoard(Long userNum, Long boardId, LocalDateTime created){
         Boardlikes boardlikes = boardLikesRepository.findByBoardIdAndUserNum(boardId,userNum);
         if(boardlikes==null){
@@ -66,6 +68,7 @@ public class LikeService {
     /**
      * 위와 마찬가지
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void deleteLikeBoard(Long userNum, Long boardId, LocalDateTime created){
         Boardlikes boardlikes = boardLikesRepository.findByBoardIdAndUserNum(boardId,userNum);
         if(boardlikes!=null){
