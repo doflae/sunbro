@@ -40,7 +40,7 @@ CREATE TABLE `board` (
   PRIMARY KEY (`id`),
   KEY `FK_board_user` (`author_num`) USING BTREE,
   CONSTRAINT `FK_board_user` FOREIGN KEY (`author_num`) REFERENCES `user` (`user_num`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=276 DEFAULT CHARSET=utf8 COMMENT='자료';
+) ENGINE=InnoDB AUTO_INCREMENT=277 DEFAULT CHARSET=utf8 COMMENT='자료';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -49,6 +49,7 @@ CREATE TABLE `board` (
 
 LOCK TABLES `board` WRITE;
 /*!40000 ALTER TABLE `board` DISABLE KEYS */;
+INSERT INTO `board` VALUES (276,91,'asvasv','<div data-small=\"/api/file/get?name=/2021/06/01/SOkLxE2DG9/VKYMujlRwb27.jpeg\" data-lg=\"/api/file/get?name=/2021/06/01/SOkLxE2DG9/VKYMujlRwb.jpeg\" class=\"ng-img-div\" style=\"max-width:1920px;aspect-ratio:1.7778;\"><img src=\"/api/file/get?name=/2021/06/01/SOkLxE2DG9/VKYMujlRwb27.jpeg\" class=\"ng-img-small\"></div><p>asdas</p><div class=\"ng-video\" frameborder=\"0\" allowfullscreen=\"true\" data-url=\"/api/file/get?name=/2021/06/01/SOkLxE2DG9/gwAWRieqS2/gwAWRieqS2.m3u8\" style=\"max-width:320px;aspect-ratio:1.3334\"><img class=\"ng-thumb\" src=\"/api/file/get?name=/2021/06/01/SOkLxE2DG9/gwAWRieqS2/thumb.jpg\"><div class=\"playBtn-2\"></div></div><div class=\"boardIframeZone\"><iframe class=\"boardIframe\" frameborder=\"0\" allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture\" allowtransparency=\"true\" allowfullscreen=\"true\" scrolling=\"0\" src=\"https://www.youtube.com/embed/2b7_iq8rAVY?showinfo=0\"></iframe></div><p><br></p>','2021-06-01 20:12:32','2021-06-03 20:56:55','<div data-small=\"/api/file/get?name=/2021/06/01/SOkLxE2DG9/VKYMujlRwb27.jpeg\" data-lg=\"/api/file/get?name=/2021/06/01/SOkLxE2DG9/VKYMujlRwbthumb.jpg\" class=\"ng-img-div\" style=\"max-width:1920px;aspect-ratio:1.7778;\"><img src=\"/api/file/get?name=/2021/06/01/SOkLxE2DG9/VKYMujlRwb27.jpeg\" class=\"ng-img-small\"></div>',1,'/2021/06/01/SOkLxE2DG9',1,'savdfvdfbfd','/profileImg/cMQ4gdaqk3T1GketQythV.jpeg',0,0);
 /*!40000 ALTER TABLE `board` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -60,15 +61,14 @@ DROP TABLE IF EXISTS `boardlikes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boardlikes` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `user_num` int(11) NOT NULL,
   `board_id` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_num_board_id` (`user_num`,`board_id`),
-  KEY `FK_likes_board` (`board_id`),
+  `user_num` int(11) NOT NULL,
+  PRIMARY KEY (`user_num`,`board_id`) USING BTREE,
+  KEY `user_num` (`user_num`),
+  KEY `FK_boardlikes_board` (`board_id`),
   CONSTRAINT `FK_boardlikes_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_boardlikes_user` FOREIGN KEY (`user_num`) REFERENCES `user` (`user_num`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -108,7 +108,7 @@ CREATE TABLE `comment` (
   CONSTRAINT `FK_comment_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_comment_comment` FOREIGN KEY (`parent_id`) REFERENCES `comment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_comment_user` FOREIGN KEY (`author_num`) REFERENCES `user` (`user_num`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=260 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=272 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -128,15 +128,13 @@ DROP TABLE IF EXISTS `commentlikes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `commentlikes` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `comment_id` bigint(20) NOT NULL,
   `user_num` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `comment_id_user_num` (`comment_id`,`user_num`),
+  PRIMARY KEY (`comment_id`,`user_num`) USING BTREE,
   KEY `FK_commentlikes_user` (`user_num`),
   CONSTRAINT `FK_commentlikes_comment` FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_commentlikes_user` FOREIGN KEY (`user_num`) REFERENCES `user` (`user_num`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -191,4 +189,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-06-01 20:04:34
+-- Dump completed on 2021-06-07 17:06:47
