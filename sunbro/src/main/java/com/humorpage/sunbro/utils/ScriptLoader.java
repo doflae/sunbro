@@ -11,7 +11,7 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-public class ScriptLoader {
+class ScriptLoader {
     public static String getScript(String filePath){
         ResourceLoader resourceLoader = new DefaultResourceLoader();
         Resource resource = resourceLoader.getResource(filePath);

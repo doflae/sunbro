@@ -16,7 +16,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = false)
 @Entity
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

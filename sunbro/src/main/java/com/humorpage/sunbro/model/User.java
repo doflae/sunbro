@@ -22,9 +22,6 @@ import java.util.List;
 
 @Entity
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name="user")
 public class User implements UserDetails {
 
@@ -43,6 +40,7 @@ public class User implements UserDetails {
 
     @Column(nullable = false, length = 30)
     private String name;
+
     private boolean enabled;
 
     private String role;
