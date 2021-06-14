@@ -24,7 +24,7 @@ export const FindPassword = authWrapper(({...props}) =>{
             placeholder="이메일을 입력해주세요."/>
         <FindPwBtnStyled onClick={findPassword()}>비밀번호 찾기</FindPwBtnStyled>
         <ValidationSuccess success = {validationEmail}/>
-        <LoginBtnStyled onClick={goToLogin()}> 로그인 </LoginBtnStyled>
+        <LoginBtnStyled onClick={goToLogin()}> 뒤로 가기</LoginBtnStyled>
     </div>
 })
 

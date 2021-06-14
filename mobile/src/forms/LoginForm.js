@@ -85,7 +85,6 @@ const LoginBtnStyled = styled.div`
 	border-radius: 5px;
 	margin-bottom: 5px;
 	padding: 5px;
-	font-size: 1.1em;
 	font-weight: 800;
 	cursor: pointer;
 	background-color: #ec4646;
@@ -99,7 +98,7 @@ export const FormInputControlStyled = styled.input`
 	margin-top: 5px;
 	border: solid 1px rgb(0,0,0,32%);
 	border-radius:3px;
-	padding:10px;
+	padding:5px;
 	&:focus{
 		outline:none;
 		box-shadow: 0px 0px 5px 2px rgb(21, 151, 187);

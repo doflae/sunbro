@@ -37,12 +37,12 @@ class MyPage extends Component{
                 <PageOptionBtnStyled 
                 boxOn={this.state.option===1}
                 onClick={()=>{this.setState({option:1})}}>
-                    좋아요 누른 글</PageOptionBtnStyled>
+                    Like</PageOptionBtnStyled>
                 <CenterBar/>
                 <PageOptionBtnStyled 
                 boxOn={this.state.option===0}
                 onClick={()=>{this.setState({option:0})}}>
-                    내가 쓴 글</PageOptionBtnStyled>
+                    My</PageOptionBtnStyled>
             </MyPageOptionZone>
                 <MyPageMain pagesize={this.state.pagesize} 
                 total_board_num={this.state.userDetail.total_board_num}
@@ -62,7 +62,7 @@ const PageOptionBtnStyled = styled.div`
     width:50%;
     text-align: center;
     padding: 5px;
-    font-size: 1.0em;
+    font-size: 1.5em;
     border-top:${props=>props.boxOn?"2px solid":""};
     border-bottom:${props=>props.boxOn?"":"2px solid"};
     opacity: 0.3;

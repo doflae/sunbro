@@ -164,60 +164,8 @@ const ObserverBoxStyled = styled.div`
 `
 
 const BoardMainBoxStyled = styled.div`
-    min-width: 496px;
-    max-width: 700px;
-    margin-left:auto;
+    width:100%;
 `
-
-const BoardIconStyled = styled(IconStyled)`
-    margin-right:5px;
-`
-
-const PencilStyled = styled(IconStyled)`
-  align-self: center;
-  cursor:pointer;
-  filter: invert(37%) sepia(90%) saturate(577%) hue-rotate(
-  185deg
-  ) brightness(98%) contrast(85%);
-`
-
-const HeaderBtnStyled = styled.div`
-    width: 100%;
-    font-weight: 700;
-    line-height: 32px;
-    font-size: 1.2em;
-    height: 100%;
-    display: flex;
-    cursor:pointer;
-    margin: 0px 5px;
-`
-const HeaderBtnLeftZone = styled.div`
-    width:fit-content;
-    float:left;
-    height:100%;
-    display:flex;
-`
-const HeaderBtnRightZone = styled.div`
-    width:fit-content;
-    float:right;
-    height:100%;
-    display:flex;
-`
-
-
-const BoardZoneHeaderStyled = styled.div`
-    min-width: 496px;
-    max-width: 700px;
-    padding: 8px;
-    height: 50px;
-    border-radius: 10px;
-    margin-left: auto;
-    background-color: #f9f9f9;
-    border-bottom: 1px solid rgba(94,93,93,0.418);
-    margin-bottom: 4px;
-    box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
-`
-
 const NextBoardBtnStyled = styled.div`
     position: sticky;
     color: #fff;

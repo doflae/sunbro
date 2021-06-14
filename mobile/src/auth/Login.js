@@ -145,14 +145,14 @@ export const Login = withRouter(authWrapper(class extends Component{
 		})
 	}
 
-	SignUpBtn = () => (e) =>{
+	SignUpBtn = () =>{
 		this.props.setAuthPageOption(1);
 	}
 
-	DeletePage = () =>(e) =>{
+	DeletePage = () => {
 		this.props.setAuthPageOption(-1);
 	}
-	FindPw = () => (e) =>{
+	FindPw = () =>{
 		this.props.setAuthPageOption(3);
 	}
 
@@ -170,21 +170,29 @@ export const Login = withRouter(authWrapper(class extends Component{
 			errorMessage={this.state.errorMessage}
 			/>
 			<UserServiceZoneStyled>
-				<UserServiceBtnStyled onClick={this.SignUpBtn()}>회원가입</UserServiceBtnStyled>
-				<UserServiceBtnStyled onClick={this.FindPw()}>비밀번호 찾기</UserServiceBtnStyled>
+				<UserServiceBtnStyled onClick={this.SignUpBtn}>회원가입</UserServiceBtnStyled>
+				<UserServiceBtnStyled onClick={this.FindPw}>비밀번호 찾기</UserServiceBtnStyled>
 			</UserServiceZoneStyled>
 			</LoginFormZoneStlyed>
 			<KaKaoLogin
 				token={'73d8ed482d24e9f165b966171888efb5'}
-				render={({onClick})=>{return <KaKaoBtn onClick={e=>{e.preventDefault();onClick();}}>
+				render={({onClick})=>
+				<SocialLoginBtn 
+				colors={SocialBtnColors.kakao}
+				onClick={onClick}>
 					카카오 계정으로 로그인
-				</KaKaoBtn>}}
+				</SocialLoginBtn>}
 				onSuccess={this.responseKaKao}
 				getProfile={true}
 			/>
 			<GoogleLogin
 				clientId="937114933155-5kp79ab3dmac3chu169golok7sk8l8us.apps.googleusercontent.com"
-				render={props=><GoogleBtn onClick={props.onClick}>구글 계정으로 로그인</GoogleBtn>}
+				render={props=>
+				<SocialLoginBtn 
+				colors={SocialBtnColors.google}
+				onClick={props.onClick}>
+					구글 계정으로 로그인
+				</SocialLoginBtn>}
 				onSuccess={this.responseGoogle}
 				onFailure={this.responseGoogle}
 				cookiePolicy={'single_host_origin'}
@@ -192,7 +200,12 @@ export const Login = withRouter(authWrapper(class extends Component{
 			<NaverLogin
 				clientId="zqxoO0A0cJnsQXAf6CVm"
 				callbackUrl="http://3.138.119.161/login"
-				render={(props)=><NaverBtn onClick={props.onClick}>네이버 계정으로 로그인</NaverBtn>}
+				render={(props)=>
+				<SocialLoginBtn 
+				colors={SocialBtnColors.naver}
+				onClick={props.onClick}>
+					네이버 계정으로 로그인
+				</SocialLoginBtn>}
 				onSuccess={this.responseNaver}
 				onFailure={(result)=>console.error(result)}
 			/>
@@ -201,7 +214,11 @@ export const Login = withRouter(authWrapper(class extends Component{
 				autoLoad={false}
 				fields="name,email,picture"
 				render={props=>(
-					<FacebookBtn onClick={props.onClick}>페이스북 계정으로 로그인</FacebookBtn>
+					<SocialLoginBtn
+					colors={SocialBtnColors.facebook}
+					onClick={props.onClick}>
+						페이스북 계정으로 로그인
+					</SocialLoginBtn>
 				)}
 				callback={this.responseFacebook}
 			/>
@@ -210,24 +227,58 @@ export const Login = withRouter(authWrapper(class extends Component{
 
 	render = () => {
 		if(this.props.authPageOption<0) return null;
-		return <AuthBoxStyled>
-			<CancelBtnStyled onClick={()=>{this.props.setAuthPageOption(-1)}}/>
-			{this.renderPage()}
-		</AuthBoxStyled>
+		return <React.Fragment>
+			<BackGroundBoxStyled
+				onClick={this.DeletePage}
+			/>
+			<AuthBoxStyled
+				viewWidth={document.body.clientWidth}>
+				{this.renderPage()}
+			</AuthBoxStyled>
+		</React.Fragment>
 	}
 }))
+
+
+
+const SocialBtnColors = {
+	facebook:{
+		bgColor:"#4c69ba",
+		color:"#ffffff"
+	},
+	naver:{
+		bgColor:"#1EC800",
+		color:"#ffffff"
+	},
+	kakao:{
+		bgColor:"#ffeb00",
+		color:"#783c00"
+	},
+	google:{
+		bgColor:"#ffffff",
+		color:"rgba(0,0,0,0.54)"
+	}
+}
+
+const BackGroundBoxStyled = styled.div`
+	z-index:3;
+	position:absolute;
+	width:100%;
+	height:100%;
+	background-color:rgb(0,0,0,0.36);
+`
 
 const UserServiceZoneStyled = styled.div`
 	display:flex;
 	justify-content: space-around;
-	margin:20px 0px 20px 0px;
+	margin:15px 0px;
 `	
 
 
 const UserServiceBtnStyled = styled.div`
 	text-align:center;
 	font-weight:800;
-	font-size:1.1em;
+	font-size:0.8em;
 	opacity:0.3;
 	cursor:pointer;
 	&:hover{
@@ -235,43 +286,14 @@ const UserServiceBtnStyled = styled.div`
 	}
 `
 
-const CancelBtnStyled = styled.button`
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	width: 24px;
-	height: 24px;
-	background-color: #fff;
-	border: 0px;
-	opacity:0.4;
-	&:hover{
-		opacity:0.7;
-	}
-    &::before, &::after{
-		position: absolute;
-		left: 11px;
-		bottom: 2px;
-		content: ' ';
-		height: 18px;
-		width: 2px;
-		background-color: rgb(3,3,3);
-    }
-    &::before{
-	    transform: rotate(45deg);
-    }
-    &::after{
-        transform: rotate(-45deg);
-    }
-`
-
 const AuthBoxStyled = styled.div`
-	z-index:1;
+	z-index:4;
 	position: fixed;
-	left: calc(50% - 175px);
-	width: 350px;
-	min-height: 500px;
-	margin-top: 20px;
-	padding: 20px;
+	width: 80%;
+	left:${props=>props.viewWidth * 0.1}px;
+	min-height: 50%;
+	margin-top: 40px;
+	padding: 10px 10px;
 	box-sizing: border-box;
 	border-radius: 10px;
 	background-color: #fff;
@@ -279,21 +301,17 @@ const AuthBoxStyled = styled.div`
 `
 
 const LoginFormZoneStlyed = styled.div`
-	width:300px;
 	margin:auto;
 `
 
-const GoogleBtn = styled.div`
-	padding: 0;
-	margin:5px;
-	width:300px;
-	height:45px;
-	line-height:44px;
-	background-color: #ffffff;
-	color: rgba(0, 0, 0, 0.54);
+const SocialLoginBtn = styled.div`
+	padding:5px;
+	margin:5px auto;
+	height:30px;
+	background-color: ${props=>props.colors.bgColor};
+	color: ${props=>props.colors.color};
 	border: 1px solid transparent;
-	border-radius: 3px;
-	font-size: 14px;
+	border-radius: 5px;
 	font-weight: bold;
 	text-align: center;
 	cursor: pointer;
@@ -303,63 +321,3 @@ const GoogleBtn = styled.div`
 		opacity:0.9;
 	}
 `
-
-
-const FacebookBtn = styled.div`
-	padding: 0;
-	margin:5px;
-	width:300px;
-	height:45px;
-	line-height:44px;
-	background-color: #4c69ba;
-	color: #ffffff;
-	border: 1px solid transparent;
-	border-radius: 3px;
-	font-size: 14px;
-	font-weight: bold;
-	text-align: center;
-	cursor: pointer;
-	box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
-	&:hover {
-		box-shadow: 0 0px 15px 0 rgba(0, 0, 0, 0.2);
-	}
-`
-
-const NaverBtn  = styled.div`
-	padding: 0;
-	margin:5px;
-	width:300px;
-	height:45px;
-	line-height:44px;
-	background-color: #1EC800;
-	color: #ffffff;
-	border: 1px solid transparent;
-	border-radius: 3px;
-	font-size: 14px;
-	font-weight: bold;
-	text-align: center;
-	box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
-	cursor: pointer;
-	&:hover {
-		box-shadow: 0 0px 15px 0 rgba(0, 0, 0, 0.2);
-	}
-`
-const KaKaoBtn = styled.div`
-	padding: 0;
-	margin:5px;
-	width: 300px;
-	height: 45px;
-	line-height: 44px;
-	color: #783c00;
-	background-color: #ffeb00;
-	border: 1px solid transparent;
-	border-radius: 3px;
-	font-size: 14px;
-	font-weight: bold;
-	text-align: center;
-	box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
-	cursor: pointer;
-	&:hover {
-		box-shadow: 0 0px 15px 0 rgba(0, 0, 0, 0.2);
-	}
-`;

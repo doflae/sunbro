@@ -4,19 +4,19 @@ import { authWrapper } from '../auth/AuthWrapper';
 import { boardWrapper} from "../board/BoardWrapper";
 import userDefaultImg from "../static/img/userDefault.png";
 import styled from "styled-components";
-import {IconStyled} from "../MainStyled";
 
 function Header({...props}){
   let history = useHistory();
   const [user,setUser] = useState(props.user);
   const headClick = () => {
     history.push("/")
+    history.go("/")
   }
   const goMyMenu = () =>{
-    if(props.user){
-      console.log("hi")
+    const ref = props.myMenuBtnRef.current
+    if(ref){
+      ref.style.width="60%"
     }
-    else props.setAuthPageOption(0);
   }
   useEffect(()=>{
     setUser(props.user);
@@ -24,7 +24,9 @@ function Header({...props}){
 
   return <HeadStyled>
   <OrderBtnZone/>
-  <HeadLogoStyled onClick={headClick}>
+  <HeadLogoStyled 
+  left={document.body.clientWidth * 0.3}
+  onClick={headClick}>
     NOGARY
   </HeadLogoStyled>
   <MyMenuBtn user = {user} goMyMenu={goMyMenu}/>
@@ -89,72 +91,72 @@ const MyMenuBtn = ({user, goMyMenu}) =>{
 
 const UserImgStyled = styled.img`
   cursor:pointer;
-  width: 80px;
-  height: 80px;
+  width: 32px;
+  height: 32px;
   margin: 8px;
 `
 
 const DropDownOrderBtnStyled = styled.div`
   cursor:pointer;
   position:relative;
-  margin-top:10px;
-  margin-left:10px;
+  margin: 8px;
   height: fit-content;
   background-color: #fff;
   border-radius: 15px;
 `
 
 const OrderTopBtnStyled = styled.div`
-border: solid 2px rgb(0,0,0,0.24);
-border-radius: 15px;
-height: 65px;
-width: 200px;
-position: relative;
-padding: 2px 4px 2px 23px;
-font-size: 2.5rem;
-font-weight: 600;
+  border: solid 2px rgb(0,0,0,0.24);
+  border-radius: 10px;
+  height: 34px;
+  width: 65px;
+  position: relative;
+  padding: 2px 4px;
+  font-size: 16px;
+  font-weight: 600;
   &::after{
     content: "";
     width: 0;
     height: 0;
     border-style: solid;
-    border-width: 30px 20px 0 20px;
+    border-width: 10px 7px 0 7px;
     border-color: black transparent transparent transparent;
     position: absolute;
-    right: 24px;
-    top: 18px;
+    right: 4px;
+    top: 10px;
   }
 `
 
 const OrderBtnStyled = styled.div`
-border: solid 2px rgb(0,0,0,0.24);
-border-radius: 15px;
-height: 65px;
-width: 200px;
-position: relative;
-padding: 4px;
-text-align:center;
-font-size: 2.5rem;
-font-weight: 600;
+  border: solid 2px rgb(0,0,0,0.24);
+  margin-top: 5px;
+  border-radius: 10px;
+  height: 34px;
+  width: 65px;
+  position: relative;
+  padding: 2px 4px;
+  text-align:center;
+  font-size: 16px;
+  font-weight: 600;
 `
 
 const HeadLogoStyled = styled.div`
-  font-size: 4.5rem;
+  font-size: 32px;
   position: absolute;
-  left: calc(50% - 130px);
+  width:40%;
+  text-align:center;
+  left: ${props=>props.left}px;
   font-weight: 800;
   cursor: pointer;
-  width: 320px;
 `
 
 const HeadStyled = styled.header`
   z-index:2;
   width: 100%;
-  height: 90px;
+  height: 50px;
   background-color : #fff;
   border-bottom: solid 1px rgb(0 0 0 / 36%);
   display: flex;
-  min-width:500px;
   flex-direction: row;
   justify-content: space-between;
   position:fixed;

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
 .App{
 	min-height: 100vh;
 	width:100%;
@@ -7,6 +8,9 @@
 }
 *{
 	box-sizing: border-box;
+    font-family: 'Noto Sans KR', sans-serif;
+    letter-spacing: 0.5px;
+    font-size: 12px;
 }
 body{
 	margin:0px;

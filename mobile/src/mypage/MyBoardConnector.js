@@ -82,13 +82,17 @@ function MyBoardConnector({
                 })}
             </tbody>
             </MyBoardTable>
-        <div className="mypage_pagnation">
-            <span className="left_triangle"></span>
-            <span className="left_subtext" onClick={props.goPrev()}>이전</span>
+        <MyPagePagenationStlyed>
+            <TriAngleStyled 
+            borderColor={"transparent black transparent transparent"}
+            margin={"10px 5px 0px 0px"}/>
+            <SubTextStyled onClick={props.goPrev}>이전</SubTextStyled>
             {props.num_list}
-            <span className="right_subtext" onClick={props.goNext()}>다음</span>
-            <span className="right_triangle"></span>
-        </div>
+            <SubTextStyled onClick={props.goNext}>다음</SubTextStyled>
+            <TriAngleStyled 
+            borderColor={"transparent transparent transparent black"}
+            margin={"10px 0px 0px 5px"}/>
+        </MyPagePagenationStlyed>
         </React.Fragment>
 }
 
@@ -99,6 +103,28 @@ const DeleteBtn = ({deleteChecked}) =>{
 const CheckAllBtn = ({checked, selectAllHandler}) =>{
     return <TableHeaderBtnStyled onClick={(e)=> selectAllHandler(checked)}>전체 선택</TableHeaderBtnStyled>
 }
+
+const SubTextStyled = styled.span`
+    cursor: pointer;
+    line-height: 33px;
+`
+
+const TriAngleStyled = styled.span`
+    width: 0px;
+    height: 0px;
+    margin: ${props=>props.margin};
+    border-style:solid;
+    border-color:${props=>props.borderColor};
+    border-width:8px;
+    opacity: 0.7;
+`
+
+const MyPagePagenationStlyed = styled.div`
+    display: flex;
+    margin-top: 10px;
+    justify-content: center;
+`
+
 const TableHeaderBtnStyled = styled.button`
     background-color:#fff;
     border:1px solid rgb(0 0 0 / 24%);

@@ -99,12 +99,6 @@ function MyHeader({
         </MyProfile>
     <MyProfileTextZone>
         <MyPageUserName>{user.name}</MyPageUserName>
-        <MyProfileLogStlyed>
-            게시물 {user.total_board_num} 개
-        </MyProfileLogStlyed>
-        <MyProfileLogStlyed>
-            댓글 {user.total_comment_num} 개
-        </MyProfileLogStlyed>
     </MyProfileTextZone>
 
     <Dropzone
@@ -145,7 +139,8 @@ const SubmitImageBtn = ({isChanged, onClick}) => {
 
 
 const MyProfileTextZone = styled.span`
-    width:220px;
+    padding: 10px;
+    text-overflow: ellipsis;
 `
 
 const MyProfileImg = styled.img`
@@ -160,7 +155,6 @@ const MyProfileImgZone = styled.div`
     width: 60px;
     height: 60px;
     border: solid 1px #dddddd;
-    margin: 10px;
 `
 
 const ImagePartStyled = styled.div`
@@ -187,11 +181,6 @@ const MyProfile = styled.div`
     display:flex;
     padding: 4px;
 `
-
-const MyProfileLogStlyed = styled.div`
-    font-size:0.9em;
-`
-
 const MyPageUserName = styled.div`
     font-size: 1.2em;
     margin: 10px 0px 10px 0px;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useRef} from 'react';
 import './static/css/Normalize.css'
 import './static/css/App.css';
 import './static/css/Board.css'
@@ -12,16 +12,17 @@ import BoardConnector from "./board/BoardConnector"
 import UploadConnector from "./upload/UploadConnector"
 import Header from "./header/Header"
 import {Login} from "./auth/Login"
+import {SideBar} from "./sidebar/SideBar"
 import UserPage from "./userpage/UserPage"
 import BoardSingleConnector from './board/BoardSingleConnector';
 import styled from 'styled-components';
-import {SideBar} from "./sidebar/SideBar";
 
 const App = () =>{
+  const myMenuBtnRef = useRef();
   return (
         <React.Fragment>
           <AppStyled>
-              <Header/>
+            <Header myMenuBtnRef={myMenuBtnRef}/>
             <Switch>
               <MainBoxStyled>
                 <BoardBoxStyled>
@@ -30,9 +31,9 @@ const App = () =>{
                 <Route path="/board/:key" component={BoardSingleConnector}/>
                 </BoardBoxStyled>
                 <Login/>
-                <SideBar/>
               </MainBoxStyled>
             </Switch>
+            <SideBar myMenuBtnRef={myMenuBtnRef}/>
           </AppStyled>
           <UploadConnector/>
           </React.Fragment>
@@ -58,25 +59,19 @@ Math.ceil10 = (value,exp) =>{
 
 
 const AppStyled = styled.div`
-  min-width: 700px;
-  min-height: 100vh;
+  height:100%;
   width:100%;
-  margin-left: auto;
-  margin-right: auto;
   background-color: #dfdede;
 `
 
 const BoardBoxStyled = styled.div`
-  margin-left:auto;
-  width:70%;
+  width:100%;
 `
 
 const MainBoxStyled = styled.div`
   margin-bottom: 50px;
   background-color: #dfdede;
-  padding-top: 60px;
-  margin-left: auto;
-  margin-right: auto;
+  padding-top: 48px;
   display:flex;
 `
 
