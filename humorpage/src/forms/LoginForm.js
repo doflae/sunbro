@@ -26,7 +26,9 @@ export class LoginForm extends Component{
 		}, () => {
 			if(Object.keys(this.state.validationErrors).length === 0){
 				const data = Object.assign(...Object.entries(this.formElements)
-				.map(e=>({[e[0]]:e[1].value})) )
+				.map(e=>{
+					if(e[0]==="keepLogin") return ({[e[0]]:e[1].checked})
+					return ({[e[0]]:e[1].value})}) )
 				this.props.submitCallback(data);
 			}
 		});
@@ -55,15 +57,16 @@ export class LoginForm extends Component{
 	}
 
 	renderElement = (modelItem) => {
-		const name = modelItem.name || modelItem.label.toLowerCase();
-		return <FormGroupStyled key={modelItem.label}>
-			<FormInputControlStyled className="form-control" 
-			placeholder = {`${modelItem.label}를 입력해주세요.`}
+		const name = modelItem.name;
+		return <FormGroupStyled key={modelItem.name}>
+			<FormInputControlStyled
 			name={name} ref={this.registerRef}
-			{...this.props.defaultAttrs}{...modelItem.attrs} />
+			{...modelItem.attrs} />
+			{modelItem.label}
 			<ValidationError errors={this.state.validationErrors[name]}/>
 		</FormGroupStyled>
 	}
+
 	render(){
 		return <React.Fragment>
 			{this.props.formModel.map(m=> this.renderElement(m))}

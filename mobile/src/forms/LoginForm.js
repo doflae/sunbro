@@ -1,4 +1,4 @@
-import React, {Component} from "react"
+import React, {Component, createRef} from "react"
 import {ValidationError} from "./ValidationError"
 import {GetMessages} from "./ValidationMessages"
 import styled from "styled-components"
@@ -11,6 +11,7 @@ export class LoginForm extends Component{
 			validationErrors:{}
 		}
 		this.formElements = {};
+		this.checkKeepLoginRef = createRef();
 	}
 
 	handleSubmit = () => {
@@ -18,6 +19,7 @@ export class LoginForm extends Component{
 			const newState = { ...state, validationErrors:{}}
 			Object.values(this.formElements).forEach(elem =>{
 				if (!elem.checkValidity()){
+					console.log(elem.name)
 					newState.validationErrors[elem.name] = GetMessages(elem);
 					this.props.submitErrorCallback();
 				}
@@ -26,7 +28,9 @@ export class LoginForm extends Component{
 		}, () => {
 			if(Object.keys(this.state.validationErrors).length === 0){
 				const data = Object.assign(...Object.entries(this.formElements)
-				.map(e=>({[e[0]]:e[1].value})) )
+				.map(e=>{
+					if(e[0]==="keepLogin") return ({[e[0]]:e[1].checked})
+					return ({[e[0]]:e[1].value})}) )
 				this.props.submitCallback(data);
 			}
 		});
@@ -40,6 +44,7 @@ export class LoginForm extends Component{
 			}
 		})
 	}
+
 	componentWillUnmount(){
 		window.removeEventListener("keydown",e=>{
 			if(e.key==="Enter"){
@@ -54,16 +59,19 @@ export class LoginForm extends Component{
 		}
 	}
 
+	//TODO : 아이디 이메일 형식 경고
 	renderElement = (modelItem) => {
-		const name = modelItem.name || modelItem.label.toLowerCase();
-		return <FormGroupStyled key={modelItem.label}>
-			<FormInputControlStyled className="form-control" 
-			placeholder = {`${modelItem.label}를 입력해주세요.`}
+		const name = modelItem.name;
+		return <FormGroupStyled key={modelItem.name}>
+			<FormInputControlStyled
 			name={name} ref={this.registerRef}
-			{...this.props.defaultAttrs}{...modelItem.attrs} />
+			{...modelItem.attrs} />
+			{modelItem.label}
 			<ValidationError errors={this.state.validationErrors[name]}/>
 		</FormGroupStyled>
 	}
+
+
 	render(){
 		return <React.Fragment>
 			{this.props.formModel.map(m=> this.renderElement(m))}

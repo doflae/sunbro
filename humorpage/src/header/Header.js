@@ -8,9 +8,6 @@ import {IconStyled} from "../MainStyled";
 function Header({...props}){
   let history = useHistory();
   const [user,setUser] = useState(props.user);
-  const Logout = () => (e) =>{
-    props.signout()
-  }
   const imageClick = () => (e) =>{
     history.push("/")
   }
@@ -29,7 +26,7 @@ function Header({...props}){
     <SearchInputStyled type="text" className="search-input"></SearchInputStyled>
     <SearchStyled theme="search_lg"/>
   </SearchZoneStyled>
-  <LogBtn user = {user} Logout = {Logout} goLogin = {goLogin}/>
+  <LogBtn user = {user} Logout = {props.logout} goLogin = {goLogin}/>
   </HeadStyled>
 }
 

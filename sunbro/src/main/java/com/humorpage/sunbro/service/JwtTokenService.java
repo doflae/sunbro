@@ -7,7 +7,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -21,12 +20,13 @@ public class JwtTokenService {
     @Value("${spring.jwt.secret}")
     private String SECRET_KEY;
 
-    public final static long AccessTokenValidMilisecond = 1000L * 1800; // 30분 토큰 유효
-    public final static long EmailAuthValidMilisecond = 1000L * 7200; // 2시간 토큰 유효
-    public final static long RefreshTokenValidMilisecond = 1000L * 172800; // 2일 유효
+    public final static long AccessTokenValidMiliSecond = 1000L * 1800; // 30분 토큰 유효
+    public final static long EmailAuthValidMiliSecond = 1000L * 7200; // 2시간 토큰 유효
+    public final static long RefreshTokenValidMiliSecond = 1000L * 172800; // 2일 유효
 
     public final static long TempNameForDuplicateSecond = 60*5; // 10분 유효
     public final static long EmailAuthValidSecond = 7200; // 2시간 토큰 유효
+    public final static long WithOutValidSecond = 21600;
     public final static long AccessTokenValidSecond = 1800;
     public final static long RefreshTokenValidSecond = 172800; // 2일 유효
     public final static long OneDayValidSecond = 86400;
@@ -57,11 +57,11 @@ public class JwtTokenService {
     }
 
     public String generateToken(UserSimple userSimple) {
-        return doGenerateToken(userSimple.getUserNum(), AccessTokenValidMilisecond);
+        return doGenerateToken(userSimple.getUserNum(), AccessTokenValidMiliSecond);
     }
 
     public String generateRefreshToken(UserSimple userSimple) {
-        return doGenerateToken(userSimple.getUserNum(), RefreshTokenValidMilisecond);
+        return doGenerateToken(userSimple.getUserNum(), RefreshTokenValidMiliSecond);
     }
 
     public String doGenerateToken(Long usernum, long expireTime) {

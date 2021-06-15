@@ -21,10 +21,16 @@ export const Login = withRouter(authWrapper(class extends Component{
 			platform:false,
 			userDetail:null
 		}
-		this.defaultAttrs = {required:true};
 		this.formModel = [
-			{label: "아이디", name:"id", attrs:{type:"text"}},
-			{label: "비밀번호", name:"password", attrs: {type: "password"}},
+			{name:"uid",
+			required:"true",
+			attrs:{type:"text", placeholder:"아이디를 입력해주세요"}},
+			{name:"password", 
+			required:"true",
+			attrs: {type: "password", placeholder:"패스워드를 입력해주세요"}},
+			{label: "로그인 상태 유지",
+			name:"keepLogin",
+			attrs:{type:"checkbox", defaultChecked:"true",style:{width:"fit-content"}}}
 		];
 	}
 
@@ -46,13 +52,14 @@ export const Login = withRouter(authWrapper(class extends Component{
 		})
 	}
 
+	//TODO : 에러에 따른 예외 처리 -> 현재 회원가입으로 통일됨
 	responseKaKao = (response) =>{
 		const formData = new FormData();
 		const profile = response.profile
 		formData.append('uid',profile.id)
 		formData.append('platForm',"KAKAO")
 		formData.append('token',response.response.access_token)
-		this.props.request("post","/account/anologin",formData).then(res=>{
+		this.props.request("post","/account/pf-login",formData).then(res=>{
 			if(res.data.success){
 				this.props.setAuthPageOption(-1);
 			}else{
@@ -80,7 +87,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('uid',id)
 		formData.append('platForm',"GOOGLE")
 		formData.append('token',user.accessToken)
-		this.props.request("post","/account/anologin",formData).then(res=>{
+		this.props.request("post","/account/pf-login",formData).then(res=>{
 			if(res.data.success){
 				this.props.setAuthPageOption(-1);
 			}else{
@@ -102,7 +109,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('uid',user.id)
 		formData.append('platForm',"NAVER")
 		formData.append('token',access_token)
-		this.props.request("post","/account/anologin",formData).then(res=>{
+		this.props.request("post","/account/pf-login",formData).then(res=>{
 			if(res.data.success){
 				this.props.setAuthPageOption(-1);
 			}else{
@@ -129,7 +136,7 @@ export const Login = withRouter(authWrapper(class extends Component{
 		formData.append('uid',user.id);
 		formData.append('platForm',"FACEBOOK")
 		formData.append('token',user.accessToken)
-		this.props.request("post","/account/anologin",formData).then(res=>{
+		this.props.request("post","/account/pf-login",formData).then(res=>{
 			if(res.data.success){
 				this.props.setAuthPageOption(-1);
 			}else{
@@ -163,7 +170,6 @@ export const Login = withRouter(authWrapper(class extends Component{
 		return <div>
 			<LoginFormZoneStlyed>
 			<LoginForm formModel={this.formModel}
-			defaultAttrs={this.defaultAttrs}
 			submitErrorCallback={this.submitError}
 			submitCallback={this.authenticate}
 			submitText="로그인"

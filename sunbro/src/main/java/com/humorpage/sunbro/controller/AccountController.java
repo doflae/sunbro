@@ -3,20 +3,17 @@ package com.humorpage.sunbro.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.humorpage.sunbro.advice.exception.UserNotFoundException;
-import com.humorpage.sunbro.model.OtherUser;
+import com.humorpage.sunbro.model.PlatformUser;
 import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
 import com.humorpage.sunbro.respository.UserRepository;
 import com.humorpage.sunbro.respository.UserSimpleRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.*;
-import com.humorpage.sunbro.utils.RandomGenerator;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.expression.ExpressionException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -31,25 +28,11 @@ import javax.validation.Valid;
 @RequestMapping(value = "/api/account")
 public class AccountController {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserSimpleRepository userSimpleRepository;
-
-    @Autowired
-    private JwtTokenService jwtTokenService;
+    private CheckDuplicateService checkDuplicateService;
 
     @Autowired
     private ResponseService responseService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private CookieService cookieService;
 
     @Autowired
     private RedisTokenService redisTokenService;
@@ -58,13 +41,7 @@ public class AccountController {
     private ChangeProfileService changeProfileService;
 
     @Autowired
-    private EmailAuthService emailAuthService;
-
-    @Autowired
-    private CheckDuplicateService checkDuplicateService;
-
-    @Autowired
-    private ConnectSocialService connectSocialService;
+    private AccountService accountService;
 
     @ApiOperation(value ="id중복 체크 후 이메일 전송")
     @GetMapping(value="/checkdup/id")
@@ -125,104 +102,27 @@ public class AccountController {
         }
     }
 
-
-
     @ApiOperation(value = "타 플랫폼 로그인")
-    @PostMapping(value = "/anologin")
-    CommonResult anologin(@ModelAttribute OtherUser otherUser,
+    @PostMapping(value = "/pf-login")
+    CommonResult pfLogin(@ModelAttribute PlatformUser platformUser,
                           HttpServletResponse res){
-
-        UserSimple userSimple=null;
-        try{
-            if(connectSocialService.AuthBySocial(otherUser)){
-                String userId = otherUser.getPlatForm().name()+otherUser.getUid();
-                userSimple = userSimpleRepository.findByUid(userId)
-                        .orElseThrow(()->
-                                new UserNotFoundException("ID",userId));
-            }else{
-                responseService.getDetailResult(false,-1,otherUser.getPlatForm().name()+" Token error");
-            }
-            /**
-             * access_token 확인
-             * id 확인
-             * 조회 성공시 해당 계정으로 로그인
-            */
-        }catch (UserNotFoundException e){
-            /**
-             * 조회 실패 => 플랫폼 회원가입 페이지로 이동
-             */
-            return responseService.getDetailResult(false,-1,e.getMessage());
-        }
-        if(userSimple!=null) {
-            final String token = jwtTokenService.generateToken(userSimple);
-            final String refreshJwt = jwtTokenService.generateRefreshToken(userSimple);
-            Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token, JwtTokenService.AccessTokenValidSecond);
-            Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshJwt, JwtTokenService.RefreshTokenValidSecond);
-            redisTokenService.setDataExpire(refreshJwt, String.valueOf(userSimple.getUserNum()), JwtTokenService.RefreshTokenValidSecond);
-            if (res.getHeader("user") == null) {
-                try{
-                    res.addHeader("user", objectMapper.writeValueAsString(userSimple));
-                }catch (JsonProcessingException ignored){
-
-                }
-            }
-            res.addCookie(accessToken);
-            res.addCookie(refreshToken);
-            return responseService.getSuccessResult();
-        }
-        return responseService.getFailResult();
+        return accountService.pfLogin(platformUser, res);
     }
 
     @ApiOperation(value = "로그인", notes = "UserSimple 엔티티로 로그인 이후 access/refresh token 생성")
     @PostMapping(value = "/login")
     CommonResult login(@ApiParam(value = "회원ID ", required = true) @RequestParam String uid,
-                               @ApiParam(value = "비밀번호", required = true) @RequestParam String password,
-                               HttpServletResponse res) {
-        UserSimple userSimple;
-        try{
-            userSimple = userSimpleRepository
-                    .findByUid(uid).orElseThrow(()->new UserNotFoundException("ID",uid));
-            if (passwordEncoder.matches(password, userSimple.getPassword())){
-                final String token = jwtTokenService.generateToken(userSimple);
-                final String refreshjwt = jwtTokenService.generateRefreshToken(userSimple);
-                Cookie accessToken = cookieService.createCookie(JwtTokenService.ACCESS_TOKEN_NAME, token,JwtTokenService.AccessTokenValidSecond);
-                Cookie refreshToken = cookieService.createCookie(JwtTokenService.REFRESH_TOKEN_NAME, refreshjwt,JwtTokenService.RefreshTokenValidSecond);
-                redisTokenService.setDataExpire(refreshjwt,String.valueOf(userSimple.getUserNum()), JwtTokenService.RefreshTokenValidSecond);
-                if (res.getHeader("user")==null){
-                    res.addHeader("user",objectMapper.writeValueAsString(userSimple));
-                }
-                res.addCookie(accessToken);
-                res.addCookie(refreshToken);
-                return responseService.getSuccessResult();
-            }else{
-
-                return responseService.getFailResult();
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-            return responseService.getFailResult();
-        }
+                       @ApiParam(value = "비밀번호", required = true) @RequestParam String password,
+                       @ApiParam(value = "로그인 유지", defaultValue = "false") @RequestParam Boolean keepLogin,
+                       HttpServletResponse res) {
+        return accountService.login(uid,password,keepLogin,res);
     }
 
     @ApiOperation(value = "로그아웃", notes = "refresh token access token 세션 삭제 및 cookie 만료기간 0")
     @GetMapping(value = "/logout")
     public CommonResult logout(HttpServletRequest req,
                                HttpServletResponse res){
-        Cookie jwtAccessToken = cookieService.getCookie(req, JwtTokenService.ACCESS_TOKEN_NAME);
-        if(jwtAccessToken!=null){
-            Cookie delcookie = new Cookie(jwtAccessToken.getName(),null);
-            delcookie.setMaxAge(0);
-            delcookie.setPath("/");
-            res.addCookie(delcookie);
-        }
-        Cookie jwtRefreshToken = cookieService.getCookie(req, JwtTokenService.REFRESH_TOKEN_NAME);
-        if(jwtRefreshToken!=null){
-            Cookie delcookie = new Cookie(jwtRefreshToken.getName(),null);
-            delcookie.setPath("/");
-            delcookie.setMaxAge(0);
-            res.addCookie(delcookie);
-        }
-        return responseService.getSuccessResult();
+        return accountService.logout(req,res);
     }
 
 
@@ -231,53 +131,23 @@ public class AccountController {
      * @param user 유저 폼, Valid 검사는 프론트에서 진행
      * @param isPlatForm 타 플랫폼 통해 가입한 경우 비밀번호는 무작위 부여
      * @return 성공 여부,
-     * 실패하는 경우가 있나? column 조건에 안맞는 경우?
+     * 실패하는 경우가 있나? -> db가 응답하지 않는 경우
+     * TODO : db가 응답하지 않는 경우 처리
      */
     @PostMapping(value = "/signup")
     CommonResult signup(@ModelAttribute User user,
                         @RequestParam(required = false, defaultValue = "false") boolean isPlatForm) {
-        user.setRole("USER");
-        if(!isPlatForm) user.setPassword(passwordEncoder.encode(user.getPassword()));
-        else user.setPassword(passwordEncoder.encode(RandomGenerator.randomNameGenerate(26)));
-        userRepository.save(user);
-        return responseService.getSuccessResult();
+        return accountService.signup(user, isPlatForm);
     }
 
 
     @ApiOperation(value = "회원 탈퇴", notes = "authentication의 정보, 입력받은 id, pw 대조하여 확인 후 유저 삭제")
-    @PostMapping(value = "/withdrawal")
-    CommonResult withdrawal(@ApiParam(value = "id",required = true)@RequestParam String uid,
+    @PostMapping(value = "/delete-account")
+    CommonResult deleteAccount(@ApiParam(value = "id",required = true)@RequestParam String uid,
                             @ApiParam(value = "pw", required = true)@RequestParam String password,
                             Authentication authentication,
                             HttpServletResponse res,
                             HttpServletRequest req) {
-        try{
-            UserSimple userSimple = (UserSimple) authentication.getPrincipal();
-            if (!userSimple.getUid().equals(uid)){
-                return responseService.getFailResult();
-            }
-            if (!passwordEncoder.matches(password,userSimple.getPassword())){
-                return responseService.getFailResult();
-            }
-            userSimpleRepository.delete(userSimple);
-        }catch (Exception e){
-            return responseService.getFailResult();
-        }
-        try{
-            Cookie jwtAccessToken = cookieService.getCookie(req, JwtTokenService.ACCESS_TOKEN_NAME);
-            jwtAccessToken.setMaxAge(0);
-            res.addCookie(jwtAccessToken);
-        }catch (ExpiredJwtException ignored){
-
-        }
-        try{
-            Cookie jwtRefreshToken = cookieService.getCookie(req, JwtTokenService.REFRESH_TOKEN_NAME);
-            redisTokenService.deleteData(jwtRefreshToken.getValue());
-            jwtRefreshToken.setMaxAge(0);
-            res.addCookie(jwtRefreshToken);
-        }catch (ExpressionException ignored){
-
-        }
-        return responseService.getSuccessResult();
+        return accountService.deleteAccount(uid,password,authentication,res,req);
     }
 }

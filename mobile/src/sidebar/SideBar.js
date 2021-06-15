@@ -13,7 +13,7 @@ export const SideBar = ({...props}) =>{
             Close
         </CloseBtnStyled>
         <UserBox/>
-        <AdminBox/>
+        <BottomBox/>
     </SideBarStyled>
 }
 
@@ -31,13 +31,19 @@ const UserBox = authWrapper(({...props})=>{
             Login
         </LoginBtnStyled>
     }
-    return <UserBoxStyled>
+    return <React.Fragment>
+        <UserBoxStyled>
         <MyPage/>
         </UserBoxStyled>
+        </React.Fragment>
 })
 
-const AdminBox = () =>{
+const BottomBox = authWrapper(({...props}) =>{
     return <AdminBoxStyled>
+        {props.user ? <LogoutBtnStyled
+        onClick={props.logout}>
+            로그아웃
+        </LogoutBtnStyled>:null}
         광고 문의 <br/> doflae@naver.com
         <br/>
         <br/>
@@ -45,7 +51,22 @@ const AdminBox = () =>{
         <br/>
         All Rights Reserved 
         </AdminBoxStyled>
-}
+})
+
+const LogoutBtnStyled = styled.div`
+    font-size: 12px;
+    cursor: pointer;
+    padding: 3px;
+    color: #ffffff;
+    background-color: red;
+    font-weight: 600;
+    width: 70%;
+    margin: 0px auto 5px auto;
+    text-align: center;
+    border-radius: 10px;
+    border-bottom: 1px solid rgba(94,93,93,0.418);
+    box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
+`
 
 const LoginBtnStyled = styled.div`
     font-size:16px;
@@ -80,15 +101,17 @@ const SideBarStyled = styled.div`
 const UserBoxStyled = styled.div`
     width: 100%;
     background-color: #fff;
-    border-bottom: 1px solid rgba(94,93,93,0.418);
-    box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
 `
 const AdminBoxStyled = styled.div`
+    height: -webkit-fit-content;
+    height: -moz-fit-content;
     height: fit-content;
+    font-size: 10px;
     padding: 10px;
     position: absolute;
-    bottom: 20px;
+    bottom: 0px;
+    color: rgb(0,0,0,0.8);
     box-sizing: border-box;
     width: 100%;
-    font-weight:700;
+    font-weight: 500;
 `

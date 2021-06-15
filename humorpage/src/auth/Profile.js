@@ -142,7 +142,7 @@ function Profile({userDetail,...props}){
                                 formData.append("uid",userDetail.uid);
                                 formData.append("platform",userDetail.platform)
                                 formData.append("token",userDetail.token)
-                                props.request("post","/account/anologin",formData).then(res=>{
+                                props.request("post","/account/pf-login",formData).then(res=>{
                                     if(res.data.success){
                                         saveFile(filePath)
                                         props.setAuthPageOption(-1);
@@ -174,7 +174,7 @@ function Profile({userDetail,...props}){
                                 formData.append("uid",userDetail.uid);
                                 formData.append("platform",userDetail.platform)
                                 formData.append("token",userDetail.token)
-                                props.request("post","/account/anologin",formData).then(res=>{
+                                props.request("post","/account/pf-login",formData).then(res=>{
                                     if(res.data.success){
                                         props.setAuthPageOption(-1);
                                     }

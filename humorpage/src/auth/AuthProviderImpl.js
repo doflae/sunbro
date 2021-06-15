@@ -37,9 +37,10 @@ export class AuthProviderImpl extends Component{
     }
 
     authenticate = (credentials) =>{
-        let credential_form = new FormData();
-        credential_form.append('uid',credentials['id'])
-        credential_form.append('password',credentials['password'])
+        const credential_form = new FormData();
+        Object.entries(credentials).forEach(e=>{
+            credential_form.append(e[0],e[1])
+        })
         return Axios.post("/account/login",credential_form).then(response =>{
             if ("user" in response.headers){
                 this.setState({
@@ -52,20 +53,23 @@ export class AuthProviderImpl extends Component{
         })
     }
 
-    signout = () =>{
-        return Axios.get('/account/logout').then(res=>{
-            if(res.data.success){
-                this.setState({
-                    user:null,
-                })
-            }
-            return res
-        })
+    logout = () =>{
+        let checkLogout = confirm("로그아웃 하시겠습니까?")
+        if(checkLogout){
+            return Axios.get('/account/logout').then(res=>{
+                if(res.data.success){
+                    this.setState({
+                        user:null,
+                    })
+                }
+                return res
+            })
+        }
     }
 
     render = () =>
         <AuthContext.Provider value={{...this.state,
-        authenticate:this.authenticate, signout:this.signout, request:this.request,
+        authenticate:this.authenticate, logout:this.logout, request:this.request,
         setAuthPageOption:this.setAuthPageOption}}>
             {this.props.children}
         </AuthContext.Provider>
