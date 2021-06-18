@@ -1,16 +1,12 @@
-.ql-editor {
-    height: 600px;
-}
 .quill-blur {
     display: none;
 }
 .quill{
+    height: 100%;
     margin:10px 10px 10px 10px;
 }
 .ql-editor .ql-video{
     position: relative;
-    height: 500px;
-    width: 500px;
     display: flex;
     justify-content: center;
     background: black;
@@ -27,7 +23,6 @@
 }
 .ql-editor .video-preview{
     position: relative;
-    height: 500px;
     display: flex;
     justify-content: center;
     background: black;
@@ -56,6 +51,9 @@
     -ms-user-select: none; /* IE10+ */
     -webkit-user-modify: read-only;
     -moz-user-modify: read-only;
+}
+.ql-container{
+    height:90%;
 }
 .editor_navbar{
     padding: 10px;

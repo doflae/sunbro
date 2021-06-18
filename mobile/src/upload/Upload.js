@@ -338,9 +338,6 @@ class Upload extends Component {
       const quill = this.quillRef.getEditor();
       this.quill = quill.root     
       const tooltip = quill.theme.tooltip;
-      const bgTarget = this.props.bgRef.current
-      //Background click event
-      if(bgTarget) bgTarget.addEventListener('click',this.hiddenPage());
       tooltip.save = () =>{
         const url = sanitizeUrl(tooltip.textbox.value)
         if(url!=null) {

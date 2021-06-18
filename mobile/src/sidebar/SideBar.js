@@ -1,19 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styled from "styled-components";
 import {authWrapper} from "../auth/AuthWrapper";
+import {uploadWrapper} from "../upload/UploadWrapper"
 import MyPage from "../mypage/MyPage"
 
 export const SideBar = ({...props}) =>{
+    const close = () =>{
+        if(props.myMenuBtnRef.current){
+            props.myMenuBtnRef.current.style.width="0";
+        }
+    }
+
     return <SideBarStyled
     ref={props.myMenuBtnRef}>
         <CloseBtnStyled
-            onClick={(e)=>{e.preventDefault(); 
-            e.target.parentElement.style.width="0"}}
+            onClick={close}
         >
             Close
         </CloseBtnStyled>
-        <UserBox/>
-        <BottomBox/>
+        <UserBox close={close}/>
+        <BottomBox close={close}/>
     </SideBarStyled>
 }
 
@@ -24,8 +30,8 @@ const UserBox = authWrapper(({...props})=>{
     },[props.user])
     if (user==null){
         return <LoginBtnStyled
-            onClick={(e)=>{e.preventDefault();
-                e.target.parentElement.style.width="0";
+            onClick={()=>{
+                props.close();
                 props.setAuthPageOption(0);}}
         >
             Login
@@ -38,20 +44,50 @@ const UserBox = authWrapper(({...props})=>{
         </React.Fragment>
 })
 
-const BottomBox = authWrapper(({...props}) =>{
-    return <AdminBoxStyled>
-        {props.user ? <LogoutBtnStyled
+const BottomBox = uploadWrapper(authWrapper(({...props}) =>{
+    return <BottomBoxStyled>
+        {props.user ? <BottomMenuBoxStyled>
+            <LogoutBtnStyled
         onClick={props.logout}>
             로그아웃
-        </LogoutBtnStyled>:null}
+        </LogoutBtnStyled>
+        <UploadBtnStyled
+            onClick={()=>{
+                props.close();
+                props.onOffUploadPage(0);}}
+        >
+            글쓰기
+        </UploadBtnStyled>
+        </BottomMenuBoxStyled>:null}
         광고 문의 <br/> doflae@naver.com
         <br/>
         <br/>
         Copyright 2021. Nogary
         <br/>
         All Rights Reserved 
-        </AdminBoxStyled>
-})
+        </BottomBoxStyled>
+}))
+
+const BottomMenuBoxStyled = styled.div`
+    display:flex;
+    width:100%;
+    height:fit-content;
+`
+
+const UploadBtnStyled = styled.div`
+    font-size: 12px;
+    cursor: pointer;
+    padding: 3px;
+    color: #ffffff;
+    background-color: red;
+    font-weight: 600;
+    width: 45%;
+    margin: 0px auto 5px auto;
+    text-align: center;
+    border-radius: 10px;
+    border-bottom: 1px solid rgba(94,93,93,0.418);
+    box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
+`
 
 const LogoutBtnStyled = styled.div`
     font-size: 12px;
@@ -60,7 +96,7 @@ const LogoutBtnStyled = styled.div`
     color: #ffffff;
     background-color: red;
     font-weight: 600;
-    width: 70%;
+    width: 45%;
     margin: 0px auto 5px auto;
     text-align: center;
     border-radius: 10px;
@@ -102,7 +138,7 @@ const UserBoxStyled = styled.div`
     width: 100%;
     background-color: #fff;
 `
-const AdminBoxStyled = styled.div`
+const BottomBoxStyled = styled.div`
     height: -webkit-fit-content;
     height: -moz-fit-content;
     height: fit-content;

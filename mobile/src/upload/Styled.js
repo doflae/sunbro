@@ -2,16 +2,18 @@ import styled from "styled-components"
 import Icons from "../static/img/Icons.png"
 
 export const MainContentStyled = styled.div`
-
+  height:80%;
 `
-export const SubmitStyled = styled.button`
+export const SubmitStyled = styled.div`
   background-color: #11698e;
   color: #fff;
-  float: right;
-  height: 2.5rem;
-  width: 3.5rem;
-  font-size: 1rem;
-  margin: 5px 5px;
+  height: 32px;
+  text-align: center;
+  width: 200px;
+  font-size: 20px;
+  border-radius: 15px;
+  margin: 0px auto;
+  box-shadow: rgb(0 0 0 / 24%) 0px 2px 2px 0px, rgb(0 0 0 / 24%) 0px 0px 1px 0px;
 `
 
 export const TitleInputStyled = styled.input`
@@ -41,14 +43,6 @@ export const QlVideoIconStyled = styled.div`
   background-position: -96px -32px;
 `
 
-export const BlurBackGroundStyled = styled.div`
-  position: fixed;
-  z-index: 1;
-  background-color: rgb(0,0,0,65%);
-  top: 0px;
-  width: 100%;
-  height: 100%;
-`
 
 export const TitleZoneStyled = styled.div`
   padding: 10px;
@@ -88,12 +82,12 @@ export const DeleteBtnStyled = styled.button`
 `
 
 export const UploadBoxStyled = styled.div`
-  position: fixed;
+  position: absolute;
   background-color: #fff;
-  top:60px;
-  width: 500px;
-  left: calc(50% - 250px);
+  top: 50px;
+  width: 100%;
   z-index: 1;
+  height: calc(100% - 50px);
   box-shadow: 0px 0px 3px 2px rgb(0 0 0 / 24%);
   border-radius: 5px;
 `

@@ -171,19 +171,19 @@ const NextBoardBtnStyled = styled.div`
     color: #fff;
     font-weight: 600;
     cursor: pointer;
-    font-size: 1.2em;
+    font-size: 18px;
     padding-left: 10px;
     bottom: 25px;
-    margin-left: calc(100% - 105px);
-    width: 100px;
+    margin: 0px 5px 0px auto;
+    width: 90px;
     height: 30px;
     border-radius: 10px;
-    background-color: rgb(41, 128, 185);
+    background-color: rgb(41,128,185);
 `
 
 const DownIconStyled = styled.div`
     position: absolute;
-    right: 14px;
+    right: 12px;
     top: 7px;
     width: 10px;
     height: 10px;

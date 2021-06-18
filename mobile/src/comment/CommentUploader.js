@@ -260,6 +260,7 @@ const CommentTextAreaStyled = styled.div`
     padding: 5px 10px;
     height: fit-content;
     border-style: none;
+    font-size:14px;
     resize: none;
     &:empty::before {
         content:attr(aria-label);
@@ -291,14 +292,15 @@ const CommentBottomStyled = styled.div`
 `
 
 const CommentBtnStyled = styled.div`
-    cursor:pointer;
-    z-index: 1;
+    cursor: pointer;
     color: antiquewhite;
     background: #f05454;
     border: solid #d8d8d8 1px;
     padding: 5px;
-    height:32px;
-    border-radius:10px;
+    font-weight: 600;
+    height: 32px;
+    border-radius: 10px;
+    letter-spacing: 1px;
 `
 
 
