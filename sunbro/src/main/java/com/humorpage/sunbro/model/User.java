@@ -58,9 +58,6 @@ public class User implements UserDetails {
     @Formula("(select count(*) from board b where b.author_num=user_num)")
     private int total_board_num;
 
-    @Formula("(select count(*) from comment c where c.author_num=user_num)")
-    private int total_comment_num;
-
     @Formula("(select count(*) from boardlikes bl where bl.user_num=user_num)")
     private int total_like_num;
 

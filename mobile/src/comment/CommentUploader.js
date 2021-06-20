@@ -61,6 +61,7 @@ function CommentUploader({...props}){
             props.request('post',"/comment/upload",data).then(res=>{
                 if(res.status===200) return res.data
             }).then(res=>{
+                console.log(res)
                 if(res.success){
                     const comment = res.data
                     //아직 업로드 안된 미디어 파일 대신 blob url 사용
@@ -127,7 +128,7 @@ function CommentUploader({...props}){
         const parentPath = props.mediaDir
         const newName = getRandomGenerator(10)
         const fileDir = c && c.mediaDir || parentPath+"/"+newName;
-        await fetch(sm).then(r=>r.blob()).then(blob=>{
+        await fetch(sm).then(r=>r.blob()).then(async(blob)=>{
             const formData = new FormData();
             const type = blob.type.split("/")[1]
             const filePath = fileDir+"/"+newName+"sm."+type;
@@ -136,7 +137,7 @@ function CommentUploader({...props}){
             formData.append("parentPath",parentPath)
             formData.append('needResize',type==="gif")
             formData.append("mediaType","COMMENT")
-            Axios.post("/file/upload/image",formData,{
+            await Axios.post("/file/upload/image",formData,{
                 headers:{
                     'Content-Type':'multipart/form-data',
                 }
@@ -144,7 +145,7 @@ function CommentUploader({...props}){
             Img.dataset.sm = "/api/file/get?name="+filePath
             data.append("mediaDir",fileDir)
         })
-        await fetch(lg).then(r=>r.blob()).then(blob=>{
+        await fetch(lg).then(r=>r.blob()).then(async (blob)=>{
             const formData = new FormData();
             const type = blob.type.split("/")[1]
             const filePath = fileDir+"/"+newName+"lg."+type;
@@ -153,7 +154,7 @@ function CommentUploader({...props}){
             formData.append("parentPath",parentPath)
             formData.append('needResize',false)
             formData.append("mediaType","COMMENT")
-            Axios.post("/file/upload/image",formData,{
+            await Axios.post("/file/upload/image",formData,{
                 headers:{
                     'Content-Type':'multipart/form-data',
                 }

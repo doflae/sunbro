@@ -24,8 +24,7 @@ function Header({...props}){
 
   return <HeadStyled>
   <OrderBtnZone/>
-  <HeadLogoStyled 
-  left={document.body.clientWidth * 0.3}
+  <HeadLogoStyled
   onClick={headClick}>
     NOGARY
   </HeadLogoStyled>
@@ -143,9 +142,9 @@ const OrderBtnStyled = styled.div`
 const HeadLogoStyled = styled.div`
   font-size: 32px;
   position: absolute;
-  width:40%;
+  width:160px;
   text-align:center;
-  left: ${props=>props.left}px;
+  left: calc(50% - 80px);
   font-weight: 800;
   cursor: pointer;
 `

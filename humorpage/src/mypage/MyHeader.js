@@ -17,12 +17,11 @@ function MyHeader({
     const [isChanged, setIsChanged] = useState(false);
     const dropzoneRef = useRef()
     const profileImgRef = useRef()
-    const imageHandler = () => (e) =>{
-        e.preventDefault();
+    const imageHandler = () =>{
         if(dropzoneRef) dropzoneRef.current.open();
     }
 
-    const imageDelete = ()=>(e) =>{
+    const imageDelete = () =>{
         revoke()
         setUserImg("");
         if(user.userImg!==""){
@@ -64,8 +63,7 @@ function MyHeader({
             setIsChanged(true);
         }
     }
-    const imageSubmit = () => (e) => {
-        e.preventDefault();
+    const imageSubmit = () => {
         let filePath;
         if(userImg.startsWith("blob")){
             filePath = "/profileImg/"+getRandomGenerator(21)+'.'+mediaFormat;
@@ -88,8 +86,8 @@ function MyHeader({
     return <MyPageHeader>
         <MyProfile>
             <MyProfileImgZone>
-                <ProfileImgDelete onClick={imageDelete()}></ProfileImgDelete>
-                <ImagePartStyled ref={profileImgRef} onClick={imageHandler()}>
+                <ProfileImgDelete onClick={imageDelete}></ProfileImgDelete>
+                <ImagePartStyled ref={profileImgRef} onClick={imageHandler}>
                     <UserImage src={userImg}/>
                     <PencilStyled
                         theme="pencil_sm"/>
@@ -139,7 +137,7 @@ const UserImage = ({src}) =>{
 }
 
 const SubmitImageBtn = ({isChanged, onClick}) => {
-    if(isChanged) return <SubmitImageBtnStyled onClick={onClick()}>변경 완료</SubmitImageBtnStyled>
+    if(isChanged) return <SubmitImageBtnStyled onClick={onClick}>변경 완료</SubmitImageBtnStyled>
     else return null;
 }
 

@@ -79,49 +79,28 @@ export const CCBtnIconStyled = styled.div`
 	}
 `
 
-export const CCBoxOnLeftStyled = styled.div`
+export const CCBoxStyled = styled.div`
 	position: absolute;
-	top: 6px;
-	right: 18px;
-	background-color: #f9f9f9;
-	width: 40px;
-	height: 40px;
+	top: 0px;
+	right: ${props=>props.boxRight};
+	background-color: #ccc;
 	border-radius: 5px;
+	z-index:1;
+	min-width:44px;
     box-shadow: 0px 1px 1px 0px rgb(0 0 0 / 24%);
 	&::before{
 		content: "";
-		border-bottom: 5px solid transparent;
-		border-top: 0px solid transparent;
-		border-right: 5px solid transparent;
-		border-left: 5px solid #f9f9f9;
+		border-color: ${props=>props.borderColor};
+		border-width:0px 7px 10px 7px;
+		border-style: solid;
 		position: absolute;
-		top: 6px;
-		right: -10px;
-	}
-`
-
-export const CCBoxOnRightStyled = styled.div`
-	position: absolute;
-	top: 6px;
-	right: -38px;
-	background-color: #f9f9f9;
-	width: 40px;
-	border-radius: 5px;
-	box-shadow: 0px 1px 1px 0px rgb(0 0 0 / 24%);
-	height: 40px;
-	&::before{
-		content: "";
-		border-bottom: 5px solid transparent;
-		border-top: 0px solid transparent;
-		border-right: 5px solid #f9f9f9;
-		border-left: 5px solid transparent;
-		position: absolute;
-		top: 6px;
-		right: 40px;
+		top: 12px;
+		right:${props=>props.arrowRight};
 	}
 `
 
 export const CCStyled = styled.div`
+	padding: 5px;
 	font-size: 1.1em;
 	text-align: center;
 	border-bottom: ${props=>props.isBottom?"":"1px solid rgb(0,0,0,0.24);"}
@@ -186,10 +165,8 @@ export const LikeBtnStyled = styled(IconStyled)`
 `
 
 export const CommentStyled = styled.div`
-	margin-left: 30px;
-	margin-right: 30px;
-	padding-top: 10px;
-	padding-bottom: 10px;
+	margin:0px 10px;
+	padding-top:10px;
 	display: flex;
 `
 

@@ -176,7 +176,7 @@ const BoardZoneHeader = authWrapper(uploadWrapper(({changeMode,...props}) =>{
     }
     const renderBtn = () =>{
         return menus.map((menu,key)=>{
-            <HeaderBtnStyled key = {key}
+            return <HeaderBtnStyled key = {key}
                 onClick={()=>{changeMode(menu.url)}}>
                 <BoardIconStyled theme={menu.theme}/>
             {menu.name}

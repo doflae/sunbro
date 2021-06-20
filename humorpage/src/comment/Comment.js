@@ -54,7 +54,7 @@ const Comment = ({...props}) =>{
 		})
 	}
 
-	const deleteHandler = () => (e) =>{
+	const deleteHandler = () =>{
 		if(window.confirm("삭제하시겠습니까?")){
             const formData = new FormData();
             formData.append("comment_id",c.id)
@@ -70,7 +70,7 @@ const Comment = ({...props}) =>{
         }
 	}
 
-	const updateHandler = () => (e) =>{
+	const updateHandler = () =>{
 		setUpdateMode(!updateMode)
 	}
 
@@ -310,26 +310,36 @@ export const ControlCommentBtn = ({optionRef,...props}) =>{
 	</Styled.CCBtnStyled>
 }
 
+const ControlBoxOptions = {
+	left:{
+		borderColor:"transparent transparent transparent #ccc",
+		boxRight:"18px",
+		arrowRight:"-14px"
+	},
+	right:{
+		borderColor:"transparent #ccc transparent transparent",
+		boxRight:"-51px",
+		arrowRight:"50px"
+	}
+}
 const ControlBox = ({...props}) =>{
 	if(props.isAuthor && props.boxOnOff){
-		if(props.distance<50) return <Styled.CCBoxOnLeftStyled>
-			<Styled.CCStyled
-				onClick={props.deleteHandler()}>
-					삭제
-			</Styled.CCStyled>
-			<Styled.CCStyled
-				onClick={props.updateHandler()}
-				isBottom={true}>수정</Styled.CCStyled>
-			</Styled.CCBoxOnLeftStyled>
-		return <Styled.CCBoxOnRightStyled>
-		<Styled.CCStyled
-				onClick={props.deleteHandler()}>
-					삭제
-			</Styled.CCStyled>
-			<Styled.CCStyled
-				onClick={props.updateHandler()}
-				isBottom={true}>수정</Styled.CCStyled>
-		</Styled.CCBoxOnRightStyled>
+		const options = props.distance<50?
+			ControlBoxOptions.left:
+			ControlBoxOptions.right
+		return <Styled.CCBoxStyled
+			{...options}
+		>
+				<Styled.CCStyled
+					onClick={props.deleteHandler}>
+						삭제
+				</Styled.CCStyled>
+				<Styled.CCStyled
+					onClick={props.updateHandler}
+					isBottom={true}>
+					수정
+				</Styled.CCStyled>
+			</Styled.CCBoxStyled>
 	}
 	return null
 }

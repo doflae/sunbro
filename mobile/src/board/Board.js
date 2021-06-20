@@ -383,7 +383,7 @@ const DotIconStyled = styled.div`
 const BoardBottomButtonStyled = styled.div`
     display:flex;
     border-top: solid 1px rgb(0,0,0,0.24);
-    border-bottom: solid 1px rgb(0,0,0,0.24);
+    border-bottom: solid 1px rgb(0,0,0,0.1);
 `
 
 const BoardThumbnailStyled = styled.div`

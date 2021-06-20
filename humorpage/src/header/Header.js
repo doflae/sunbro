@@ -8,10 +8,10 @@ import {IconStyled} from "../MainStyled";
 function Header({...props}){
   let history = useHistory();
   const [user,setUser] = useState(props.user);
-  const imageClick = () => (e) =>{
+  const imageClick = () => {
     history.push("/")
   }
-  const goLogin = () => (e) =>{
+  const goLogin = () =>{
     props.setAuthPageOption(0);
   }
   useEffect(()=>{
@@ -19,7 +19,7 @@ function Header({...props}){
   },[props.user,user])
 
   return <HeadStyled>
-  <HeadLogoStyled onClick={imageClick()}>
+  <HeadLogoStyled onClick={imageClick}>
     <HeadLogoImgStyled src={logo} alt=""/>
   </HeadLogoStyled>
   <SearchZoneStyled>
@@ -32,9 +32,9 @@ function Header({...props}){
 
 const LogBtn = ({user, Logout, goLogin}) =>{
   if(user!=null){
-    return <SignBtnStyled onClick={Logout()}>로그아웃</SignBtnStyled>
+    return <SignBtnStyled onClick={Logout}>로그아웃</SignBtnStyled>
   }else{
-    return <SignBtnStyled onClick={goLogin()}>로그인</SignBtnStyled>
+    return <SignBtnStyled onClick={goLogin}>로그인</SignBtnStyled>
   }
 }
 

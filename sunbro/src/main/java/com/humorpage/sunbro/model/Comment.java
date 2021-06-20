@@ -30,7 +30,7 @@ public class Comment implements Serializable {
 
     private int likes;
 
-    private String media;
+    private String media="";
 
     @Column(name = "parent_id")
     private Long parentId;
