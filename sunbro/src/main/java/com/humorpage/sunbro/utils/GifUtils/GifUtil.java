@@ -22,44 +22,35 @@ import javax.swing.ImageIcon;
 
 public class GifUtil {
 
-    static int MAX_IMAGE_DIMENSION = 240;
+    static int MAX_IMAGE_DIMENSION = 120;
 
-    public static void gifInputToOutput(File source, File destination,int maxSize)
+    public static void gifInputToOutput(File source, File destination)
             throws FileNotFoundException, IOException {
         GifDecoder decoder = new GifDecoder();
         decoder.read(new FileInputStream(source));
-        // creo l'encoder
         AnimatedGifEncoder encoder = new AnimatedGifEncoder();
 
-        // iposto il valore di loop
         encoder.setRepeat(0);
 
-        // imposto la qualità
         encoder.setQuality(25);
 
-        // creo l'output stream da fornire all'ecoder
         FileOutputStream fileOutputStream = new FileOutputStream(destination);
         encoder.start(fileOutputStream);
 
-        // leggo i frame col decoder e li rimetto scalati nell'encoder
         for (int i = 0; i < decoder.getFrameCount(); i++) {
             BufferedImage bufferedImage = decoder.getFrame(i);
 
-            // scalo l'immagine al valore massimo MAX_IMAGE_DIMENSION sia in
-            // altezza che in larghezza , questa parte di codice va modificata
-            // in base alle vostre esigenze
             int width = bufferedImage.getWidth();
             int height = bufferedImage.getHeight();
             float scaleFactor = 1;
-            if (width > maxSize || height > maxSize) {
+            if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
                 if (width > height) {
-                    scaleFactor = (float) maxSize / width;
+                    scaleFactor = (float) MAX_IMAGE_DIMENSION / width;
                 } else {
-                    scaleFactor = (float) maxSize / height;
+                    scaleFactor = (float) MAX_IMAGE_DIMENSION / height;
                 }
             }
 
-            // questi sono i valori finali di altezza e larghezza
             width = (int) (width * scaleFactor);
             height = (int) (height * scaleFactor);
             if (scaleFactor != 1) {
@@ -68,7 +59,6 @@ public class GifUtil {
                 bufferedImage = toBufferedImage(image);
             }
             encoder.addFrame(bufferedImage);
-            // cambio il delay ai frame che lo hanno a zero
             if (decoder.getDelay(i) == 0) {
                 encoder.setDelay(100);
             } else {
@@ -76,7 +66,6 @@ public class GifUtil {
             }
             encoder.setTransparent(Color.blue);
         }
-        // termino e chiudo
         encoder.finish();
         fileOutputStream.close();
     }

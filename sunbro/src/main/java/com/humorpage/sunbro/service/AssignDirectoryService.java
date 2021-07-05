@@ -11,7 +11,7 @@ import java.util.Date;
 @Service
 public class AssignDirectoryService {
 
-    private final SimpleDateFormat dirFormat = new SimpleDateFormat("/yyyy/MM/dd/");
+    private final SimpleDateFormat dirFormat = new SimpleDateFormat("yyyy/MM/dd/");
 
     @Autowired
     private RedisTokenService redisTokenService;

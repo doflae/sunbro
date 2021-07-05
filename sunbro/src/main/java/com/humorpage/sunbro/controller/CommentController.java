@@ -85,8 +85,7 @@ public class CommentController {
         return responseService.getDetailListResult(true, 0,"",commentList);
     }
 
-    //삭제된 글, 댓글에 대한 삽입 시 글이 삭제되었는지, 댓글이 삭제되었는지는 구별하지 않는다.
-    @ApiOperation(value = "댓글 달기", notes = "html코드를 받아 댓글 작성")
+    //TODO 댓글 삭제 오류시 글에서 미디어 파일 파싱 후 삭제
     @PostMapping(value = "/upload")
     public SingleResult<Comment> uploadComment(@Valid Comment comment,
                                             Authentication authentication) {
@@ -98,6 +97,7 @@ public class CommentController {
             return responseService.getSingleResult(comment);
         }catch (Exception e){
             e.printStackTrace();
+            commentService.deleteMedia(comment);
             return responseService.getDetailSingleResult(false,1,e.getMessage(),null);
         }
     }

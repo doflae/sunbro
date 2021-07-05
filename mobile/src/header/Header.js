@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { withRouter,useHistory} from "react-router-dom";
+import { withRouter,useHistory, useParams} from "react-router-dom";
 import { authWrapper } from '../auth/AuthWrapper';
 import { boardWrapper} from "../board/BoardWrapper";
 import userDefaultImg from "../static/img/userDefault.png";
@@ -21,9 +21,9 @@ function Header({...props}){
   useEffect(()=>{
     setUser(props.user);
   },[props.user,user])
-
+  const r = window.location.href.split("/")
   return <HeadStyled>
-  <OrderBtnZone/>
+  <OrderBtnZone isUserPage={r[r.length-2]==="userpage"}/>
   <HeadLogoStyled
   onClick={headClick}>
     NOGARY
@@ -43,7 +43,6 @@ const menus = [{
 const OrderBtnZone = boardWrapper(({...props}) =>{
   const [nowMenu,setNowMenu] = useState("NEW")
   const [onOff, setOnOff] = useState(false)
-
   const renderDropMenu = () =>{
     if(onOff){
       return menus.map((menu,key)=>{
@@ -59,7 +58,7 @@ const OrderBtnZone = boardWrapper(({...props}) =>{
       })
     }
   }
-
+  if(props.isUserPage) return <DropDownOrderBtnStyled/>
   return <DropDownOrderBtnStyled
 
       onBlur={()=>{

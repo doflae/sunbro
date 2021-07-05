@@ -1,21 +1,27 @@
 package com.humorpage.sunbro.utils;
 
+import com.humorpage.sunbro.service.FileService;
 import net.bramp.ffmpeg.FFmpeg;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.builder.FFmpegBuilder;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import net.bramp.ffmpeg.probe.FFmpegStream;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Component
+@PropertySource("classpath:aws.properties")
 public class FFMpegVideoConvert {
 
     private final FFmpeg ffmpeg;
     private final FFprobe ffprobe;
-    private final String baseDir = "C://mediaFiles";
+
+    @Value("${cloud.aws.s3.baseUrl}")
+    private String baseUrl;
 
     @Autowired
     public FFMpegVideoConvert(FFmpeg ffmpeg, FFprobe ffprobe){
@@ -32,13 +38,13 @@ public class FFMpegVideoConvert {
     public void convertVideo(String input, String dir, String filename) throws VideoConvertException{
         FFmpegBuilder builder = new FFmpegBuilder()
                 .setInput(input)
-                .addOutput(baseDir+dir+filename+".m3u8")
+                .addOutput(FileService.baseDir+dir+filename+".m3u8")
                 .addExtraArgs("-b:v","1M")
                 .addExtraArgs("-g","60")
                 .addExtraArgs("-hls_init_time","5")
                 .addExtraArgs("-hls_time","2")
                 .addExtraArgs("-hls_list_size","0")
-                .addExtraArgs("-hls_base_url","get?name="+dir).done();
+                .addExtraArgs("-hls_base_url",baseUrl+dir).done();
         try{
             ffmpeg.run(builder);
         }catch (Exception e){

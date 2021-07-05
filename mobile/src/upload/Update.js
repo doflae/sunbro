@@ -183,12 +183,11 @@ class Update extends Component {
       }
     }
 
-    saveImage = (file,path,mediaType="BOARD") => {
+    saveImage = (file,path) => {
       this.mediaFileSend = true
       const formData = new FormData();
       formData.append('file',file);
       formData.append('path',path);
-      formData.append("mediaType",mediaType)
       Axios.post("/file/upload-image",formData,{
         headers:{
           'Content-Type':'multipart/form-data',

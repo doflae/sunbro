@@ -3,7 +3,6 @@ import {WindowScroller, CellMeasurer, CellMeasurerCache, AutoSizer, List} from '
 import Board from "./Board";
 import {authWrapper} from "../auth/AuthWrapper"
 import styled from "styled-components"
-import {IconStyled} from "../MainStyled"
 import {boardWrapper} from "./BoardWrapper"
 import { observeTrigger,throttle } from '../utils/Utils';
 
@@ -26,7 +25,9 @@ class BoardConnector extends Component{
         };
         this._measureCallbacks = {}
         this._remeasure = this._remeasure.bind(this)
-        this.boardUrl = this.props.boardUrl
+        this.boardUrl = this.props.match.params.key?
+        `/board/user?userNum=${this.props.match.params.key}`:
+        this.props.boardUrl
     }
 
     componentDidUpdate(prev){

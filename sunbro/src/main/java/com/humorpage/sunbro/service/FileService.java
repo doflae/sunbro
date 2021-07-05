@@ -5,7 +5,6 @@ import com.humorpage.sunbro.utils.FFMpegVideoConvert;
 import com.humorpage.sunbro.utils.GifUtils.GifUtil;
 import com.humorpage.sunbro.utils.TemporaryFileStore;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,8 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,6 +41,8 @@ public class FileService {
     @Autowired
     private BoardRepository boardRepository;
 
+    @Autowired
+    private S3Service s3Service;
 
     @Async("fileUploadExecutor")
     public void videoUpload(Path tempFile, String path)
@@ -53,35 +52,31 @@ public class FileService {
             String thumbnailPath = tempMatcher.group(1) + "thumb.jpg";
             ffMpegVideoConvert.createThumbnail(tempFile.toString(), baseDir + thumbnailPath);
             ffMpegVideoConvert.convertVideo(tempFile.toString(),tempMatcher.group(1),tempMatcher.group(2));
+            s3Service.uploadDir(new File(baseDir+tempMatcher.group(1)),
+                    tempMatcher.group(1));
         }
         temporaryFileStore.delete(tempFile);
     }
 
-
+    /**
+     * @param file  업로드 파일
+     * @param path  업로드 경로
+     * @param needResize    gif파일의 경우 js에서 리사이징이 안되기에 서버에서 리사이징
+     */
     @Async("fileUploadExecutor")
-    public void imageUpload(MultipartFile file, String path,String parentPath, MediaType mediaType, boolean needResize){
+    public void imageUpload(MultipartFile file,
+                            String path,
+                            boolean needResize){
         try{
-            byte[] data = file.getBytes();
-            if(mediaType==MediaType.COMMENT){
-                File parent = new File(baseDir+parentPath);
-                if(!parent.exists()){
-                    return;
-                }
-            }
-            File dir = new File(baseDir +path);
-            dir.getParentFile().mkdirs();
             if(needResize){
+                byte[] data = file.getBytes();
                 Path tempFile = temporaryFileStore.store(data);
-                int maxSize;
-                if (mediaType == MediaType.PROFILE) {
-                    maxSize = 120;
-                } else {
-                    maxSize = 100;
-                }
-                GifUtil.gifInputToOutput(tempFile.toFile(),dir,maxSize);
+                File newFile = temporaryFileStore.createTemporaryFile().toFile();
+                GifUtil.gifInputToOutput(tempFile.toFile(), newFile);
+                s3Service.upload(newFile,path);
             }
             else{
-                Files.write(dir.toPath(),data);
+                s3Service.upload(file,path);
             }
         }catch (IOException e){
             //TODO 에러 처리
@@ -93,6 +88,7 @@ public class FileService {
      * mediaDir 탐색 -> dir, file 목록(filesInFolder)
      * content 파싱 -> media path 목록(filesInContent)
      * A에서 B제외, cmt 폴더 제외, 나머지 제거
+     * TODO s3 적용
      * @param mediaDir 미디어 directory path
      * @param contentAfter 변경된 내용
      * @param thumbNailImg 변경된 썸네일
@@ -132,9 +128,9 @@ public class FileService {
         }
     }
 
-    public void deleteDir(String target) throws IOException{
-        File f = new File(baseDir+target);
-        FileUtils.deleteDirectory(f);
+    public void deleteCmtDir(String target) throws IOException{
+        File f = new File(target);
+        s3Service.delete(f.getParentFile().getParent());
     }
 
 
@@ -143,9 +139,9 @@ public class FileService {
             InputStream inputStream = new FileInputStream(baseDir+name);
             byte[] byteArray = IOUtils.toByteArray(inputStream);
             inputStream.close();
-            return new ResponseEntity<byte[]>(byteArray, HttpStatus.OK);
+            return new ResponseEntity<>(byteArray, HttpStatus.OK);
         }catch (IOException ignored){
-            return new ResponseEntity<byte[]>((byte[]) null,HttpStatus.OK);
+            return new ResponseEntity<>((byte[]) null, HttpStatus.OK);
         }
     }
 }

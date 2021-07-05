@@ -1,24 +1,16 @@
 package com.humorpage.sunbro.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.humorpage.sunbro.advice.exception.UserNotFoundException;
 import com.humorpage.sunbro.model.PlatformUser;
 import com.humorpage.sunbro.model.User;
 import com.humorpage.sunbro.model.UserSimple;
-import com.humorpage.sunbro.respository.UserRepository;
-import com.humorpage.sunbro.respository.UserSimpleRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.service.*;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -111,9 +103,9 @@ public class AccountController {
 
     @ApiOperation(value = "로그인", notes = "UserSimple 엔티티로 로그인 이후 access/refresh token 생성")
     @PostMapping(value = "/login")
-    CommonResult login(@ApiParam(value = "회원ID ", required = true) @RequestParam String uid,
-                       @ApiParam(value = "비밀번호", required = true) @RequestParam String password,
-                       @ApiParam(value = "로그인 유지", defaultValue = "false") @RequestParam Boolean keepLogin,
+    CommonResult login(@RequestParam String uid,
+                       @RequestParam String password,
+                       @RequestParam(defaultValue = "false", required = false) Boolean keepLogin,
                        HttpServletResponse res) {
         return accountService.login(uid,password,keepLogin,res);
     }
@@ -130,9 +122,7 @@ public class AccountController {
      * 회원가입
      * @param user 유저 폼, Valid 검사는 프론트에서 진행
      * @param isPlatForm 타 플랫폼 통해 가입한 경우 비밀번호는 무작위 부여
-     * @return 성공 여부,
-     * 실패하는 경우가 있나? -> db가 응답하지 않는 경우
-     * TODO : db가 응답하지 않는 경우 처리
+     * @return 성공 여부
      */
     @PostMapping(value = "/signup")
     CommonResult signup(@ModelAttribute User user,
@@ -143,8 +133,8 @@ public class AccountController {
 
     @ApiOperation(value = "회원 탈퇴", notes = "authentication의 정보, 입력받은 id, pw 대조하여 확인 후 유저 삭제")
     @PostMapping(value = "/delete-account")
-    CommonResult deleteAccount(@ApiParam(value = "id",required = true)@RequestParam String uid,
-                            @ApiParam(value = "pw", required = true)@RequestParam String password,
+    CommonResult deleteAccount(@RequestParam String uid,
+                            @RequestParam String password,
                             Authentication authentication,
                             HttpServletResponse res,
                             HttpServletRequest req) {

@@ -80,8 +80,7 @@ function Profile({userDetail,...props}){
                     formData.append('file',blob);
                     formData.append('path',`/${key}`+path);
                     formData.append('needResize',key<Math.max(x.width,x.height))
-                    formData.append('mediaType',"PROFILE")
-                    Axios.post("/file/upload-image",formData,{
+                    Axios.post("/file/upload/image",formData,{
                       headers:{
                         'Content-Type':'multipart/form-data',
                       }
@@ -94,8 +93,7 @@ function Profile({userDetail,...props}){
             const formData = new FormData();
             formData.append('file',blob);
             formData.append('path',path);
-            formData.append('mediaType',"PROFILE")
-            Axios.post("/file/upload-image",formData,{
+            Axios.post("/file/upload/image",formData,{
               headers:{
                 'Content-Type':'multipart/form-data',
               }

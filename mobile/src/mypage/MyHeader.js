@@ -36,9 +36,8 @@ function MyHeader({
             x.onload = () =>{
                 formData.append('file',blob);
                 formData.append('path',path);
-                formData.append('mediaType',"PROFILE")
                 formData.append('needResize',120<Math.max(x.width,x.height))
-                Axios.post("/file/upload-image",formData,{
+                Axios.post("/file/upload/image",formData,{
                   headers:{
                     'Content-Type':'multipart/form-data',
                   }

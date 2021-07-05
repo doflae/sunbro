@@ -151,12 +151,11 @@ class CustomImage extends BlockEmbed{
     return node
   }
 
-  static save = (file,path,mediaType="BOARD") => {
+  static save = (file,path) => {
     this.mediaFileSend = true
     const formData = new FormData();
     formData.append('file',file);
     formData.append('path',path);
-    formData.append("mediaType",mediaType)
     Axios.post("/file/upload/image",formData,{
       headers:{
         'Content-Type':'multipart/form-data',

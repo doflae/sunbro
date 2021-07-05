@@ -15,6 +15,7 @@ import ReactDomServer from "react-dom/server"
 
 function CommentUploader({...props}){
     const c = props.c
+    const fileDir = c && c.mediaDir || props.mediaDir+"/"+newName;
     const inputSet = c&&c.content?splitCname(c.content):null
     const cname = props.cname || (inputSet?inputSet.cname:null)
     const content = c&&c.content?inputSet.content:""
@@ -30,6 +31,8 @@ function CommentUploader({...props}){
         }
     },[])
     
+    // 댓글 업로드 시 삭제된 게시글이라면
+    // 미디어 파일은 이미 전송되었기 때문에 미디어 파일 삭제 요청 전송
     const submitComment = async () =>{
         const user = props.user
         if(user==null){
@@ -79,6 +82,9 @@ function CommentUploader({...props}){
                 }else if(res.code){
                     //삭제된 상위 글
                     //caller에서 callbackcancel
+                    
+                    //전송된 미디어 파일 삭제 요청
+
                     alert(props.failedMsg)
                     //재조회
                     props.failedHandler()
@@ -125,18 +131,14 @@ function CommentUploader({...props}){
         let lg = Img.dataset.lg
         Img.removeChild(Img.firstElementChild)
         Img.className = "ng-img-div"
-        const parentPath = props.mediaDir
         const newName = getRandomGenerator(10)
-        const fileDir = c && c.mediaDir || parentPath+"/"+newName;
         await fetch(sm).then(r=>r.blob()).then(async(blob)=>{
             const formData = new FormData();
             const type = blob.type.split("/")[1]
             const filePath = fileDir+"/"+newName+"sm."+type;
             formData.append("file",blob)
             formData.append("path",filePath)
-            formData.append("parentPath",parentPath)
             formData.append('needResize',type==="gif")
-            formData.append("mediaType","COMMENT")
             await Axios.post("/file/upload/image",formData,{
                 headers:{
                     'Content-Type':'multipart/form-data',
@@ -151,9 +153,7 @@ function CommentUploader({...props}){
             const filePath = fileDir+"/"+newName+"lg."+type;
             formData.append("file",blob)
             formData.append("path",filePath)
-            formData.append("parentPath",parentPath)
             formData.append('needResize',false)
-            formData.append("mediaType","COMMENT")
             await Axios.post("/file/upload/image",formData,{
                 headers:{
                     'Content-Type':'multipart/form-data',

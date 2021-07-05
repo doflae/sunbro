@@ -7,6 +7,7 @@ import {IconStyled} from "../MainStyled"
 import {uploadWrapper} from "../upload/UploadWrapper"
 import {boardWrapper} from "./BoardWrapper"
 import { observeTrigger,throttle } from '../utils/Utils';
+import { useParams } from 'react-router-dom';
 
 export const cache = new CellMeasurerCache({
     defaultWidth:100,
@@ -28,7 +29,9 @@ class BoardConnector extends Component{
         this._measureCallbacks = {}
         this._remeasure = this._remeasure.bind(this)
         this.changeMode = this.changeMode.bind(this)
-        this.baseUrl = "/board/recently?"
+        this.baseUrl = this.props.match.params.key?
+        `/board/user?userNum=${this.props.match.params.key}`:
+        "/board/recently?"
     }
 
 
@@ -66,7 +69,6 @@ class BoardConnector extends Component{
         const {boards} = this.state
         this.props.request('get',resturl).then(res=>{
             const resData = res.data.list
-            console.log(res)
             if(0<resData.length && resData.length<6){
                 this.setState({
                     boards:[...boards,...resData]
@@ -127,7 +129,8 @@ class BoardConnector extends Component{
         const {boards} = this.state
         return (
         <React.Fragment>
-            <BoardZoneHeader changeMode = {this.changeMode}/>
+            <BoardZoneHeader
+            changeMode = {this.changeMode}/>
             <BoardMainBoxStyled ref={this.mainBoxRef}>
                 <WindowScroller>
                     {({ height, scrollTop, isScrolling, onChildScroll }) => (
@@ -175,6 +178,8 @@ const BoardZoneHeader = authWrapper(uploadWrapper(({changeMode,...props}) =>{
         else props.setAuthPageOption(0);
     }
     const renderBtn = () =>{
+        let params = useParams();
+        if(params.key) return null;
         return menus.map((menu,key)=>{
             return <HeaderBtnStyled key = {key}
                 onClick={()=>{changeMode(menu.url)}}>

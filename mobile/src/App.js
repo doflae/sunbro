@@ -13,7 +13,6 @@ import UploadConnector from "./upload/UploadConnector"
 import Header from "./header/Header"
 import {Login} from "./auth/Login"
 import {SideBar} from "./sidebar/SideBar"
-import UserPage from "./userpage/UserPage"
 import BoardSingleConnector from './board/BoardSingleConnector';
 import styled from 'styled-components';
 
@@ -27,7 +26,7 @@ const App = () =>{
               <MainBoxStyled>
                 <BoardBoxStyled>
                 <Route exact path="/" component={BoardConnector}/>
-                <Route path="/userpage/:key" component={UserPage}/>
+                <Route path="/userpage/:key" component={BoardConnector}/>
                 <Route path="/board/:key" component={BoardSingleConnector}/>
                 </BoardBoxStyled>
                 <Login/>

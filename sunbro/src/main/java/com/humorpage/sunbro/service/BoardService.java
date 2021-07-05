@@ -87,7 +87,7 @@ public class BoardService {
             try {
                 boardRepository.delete(board);
                 redisRankingService.deleteBoard(bid);
-                fileService.deleteDir(board.getMediaDir());
+                fileService.deleteCmtDir(board.getMediaDir());
             }catch (Exception e){
                 e.printStackTrace();
             }

@@ -15,6 +15,7 @@ import ReactDomServer from "react-dom/server"
 
 function CommentUploader({...props}){
     const c = props.c
+    const fileDir = c && c.mediaDir || parentPath+"/"+newName;
     const inputSet = c&&c.content?splitCname(c.content):null
     const cname = props.cname || (inputSet?inputSet.cname:null)
     const content = c&&c.content?inputSet.content:""
@@ -126,7 +127,6 @@ function CommentUploader({...props}){
         Img.className = "ng-img-div"
         const parentPath = props.mediaDir
         const newName = getRandomGenerator(10)
-        const fileDir = c && c.mediaDir || parentPath+"/"+newName;
         await fetch(sm).then(r=>r.blob()).then(async(blob)=>{
             const formData = new FormData();
             const type = blob.type.split("/")[1]
@@ -135,7 +135,6 @@ function CommentUploader({...props}){
             formData.append("path",filePath)
             formData.append("parentPath",parentPath)
             formData.append('needResize',type==="gif")
-            formData.append("mediaType","COMMENT")
             await Axios.post("/file/upload/image",formData,{
                 headers:{
                     'Content-Type':'multipart/form-data',
@@ -152,7 +151,6 @@ function CommentUploader({...props}){
             formData.append("path",filePath)
             formData.append("parentPath",parentPath)
             formData.append('needResize',false)
-            formData.append("mediaType","COMMENT")
             await Axios.post("/file/upload/image",formData,{
                 headers:{
                     'Content-Type':'multipart/form-data',

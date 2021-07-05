@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.io.IOException;
 
 @Slf4j
@@ -63,11 +64,18 @@ public class CommentService {
         }
     }
 
-    //TODO: 미디어 컬럼 파싱 후 삭제
-    //TODO: 대댓글 미디어 경로 부모 댓글에 종속
+    //게시글 삭제로 댓글 작성 실패 시 전송된 미디어 삭제
+    public void deleteMedia(Comment comment){
+        try {
+            fileService.deleteCmtDir(comment.getMediaDir());
+        }catch (IOException ignored){
+
+        }
+    }
+
     public void delete(Comment comment){
         try{
-            fileService.deleteDir(comment.getMediaDir());
+            fileService.deleteCmtDir(comment.getMediaDir());
         }catch (IOException ignored){
 
         }

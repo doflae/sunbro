@@ -2,8 +2,13 @@ package com.humorpage.sunbro.controller;
 
 import com.humorpage.sunbro.advice.exception.BoardNotFoundException;
 import com.humorpage.sunbro.advice.exception.UserNotFoundException;
-import com.humorpage.sunbro.model.*;
-import com.humorpage.sunbro.respository.*;
+import com.humorpage.sunbro.model.Board;
+import com.humorpage.sunbro.model.BoardDetail;
+import com.humorpage.sunbro.model.UserSimple;
+import com.humorpage.sunbro.respository.BoardDetailRepository;
+import com.humorpage.sunbro.respository.BoardRepository;
+import com.humorpage.sunbro.respository.UserRepository;
+import com.humorpage.sunbro.respository.UserSimpleRepository;
 import com.humorpage.sunbro.result.CommonResult;
 import com.humorpage.sunbro.result.ListResult;
 import com.humorpage.sunbro.result.SingleResult;
@@ -19,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -111,8 +115,7 @@ public class BoardController {
      *                thumbnail 썸네일에 들어갈 텍스트
      *                board의 id가 존재 할 경우 해당 글 수정
      */
-    /*TODO 업로드 트랜잭션화
-     */
+    //TODO 업로드 트랜잭션화
     @PostMapping(value = "/upload")
     CommonResult upload(@ModelAttribute Board board,
                           Authentication authentication){
@@ -148,7 +151,8 @@ public class BoardController {
     }
 
     @GetMapping("/recently")
-    ListResult<BoardDetail> recently(@RequestParam(value = "lastId",required = false) Long lastId, Authentication authentication){
+    ListResult<BoardDetail> recently(@RequestParam(required = false) Long lastId,
+                                     Authentication authentication){
         List<BoardDetail> boardDetailList;
         if(lastId==null){
             boardDetailList = boardDetailRepository.findByOrderByIdDesc(PageRequest.of(0,5));
@@ -163,7 +167,7 @@ public class BoardController {
     @GetMapping("/rank/{rankType}")
     ListResult<BoardDetail> ranked(
             @PathVariable RankingType rankType,
-            @RequestParam (value = "lastId", required = false, defaultValue = "0") Long lastId,
+            @RequestParam (required = false, defaultValue = "0") Long lastId,
             Authentication authentication){
         List<Long> boardIdList =
                 redisRankingService.getBoardRanking(rankType,lastId,5L);
@@ -179,14 +183,13 @@ public class BoardController {
                 boardRepository.findById(id).orElse(new Board()).getContent());
     }
 
-    //TODO: 유저 페이지 구현
     @GetMapping("/user")
     @ApiOperation(value = "유저 key값", notes="유저 key값을 받아 조회 last_id는 가장 최근 조회 게시물")
-    ListResult<BoardDetail> user(Long usernum,
-                                 @RequestParam(required = false) Long last_id){
-        if(usernum>0){
-            if(last_id==null||last_id==0) return responseService.getListResult(boardDetailRepository.findByAuthorNumOrderByIdDesc(usernum,PageRequest.of(0,10)));
-            else return responseService.getListResult(boardDetailRepository.findByAuthorNumAndIdLessThanOrderByIdDesc(usernum,last_id,PageRequest.of(0,10)));
+    ListResult<BoardDetail> user(Long userNum,
+                                 @RequestParam(required = false) Long lastId){
+        if(userNum>0){
+            if(lastId==null||lastId==0) return responseService.getListResult(boardDetailRepository.findByAuthorNumOrderByIdDesc(userNum,PageRequest.of(0,5)));
+            else return responseService.getListResult(boardDetailRepository.findByAuthorNumAndIdLessThanOrderByIdDesc(userNum,lastId,PageRequest.of(0,5)));
         }
         return responseService.getFailedListResult();
     }
